@@ -27,7 +27,72 @@ for (const [from, to] of fonts) {
 }
 
 const wrapped = JSON.parse(await readFile(p('data/wrapped.json'), 'utf8'));
+validate(wrapped);
 await copyFile(p('data/wrapped.json'), p('public/wrapped.json'));
+
+/**
+ * The site reads this file and nothing else, so a field that drifts out of
+ * shape is a card that renders wrong on the one night it gets looked at.
+ * Cheaper to fail here.
+ */
+function validate({ meta, cards }) {
+  const problems = [];
+  const require = (ok, message) => {
+    if (!ok) problems.push(message);
+  };
+
+  require(meta && typeof meta.placeholder === 'boolean', 'meta.placeholder must be a boolean');
+  require(Array.isArray(cards) && cards.length > 0, 'cards must be a non-empty array');
+  if (problems.length > 0) fail(problems);
+
+  const needs = {
+    opening: ['title', 'dateline', 'caption'],
+    figure: ['value', 'format', 'caption'],
+    split: ['sides', 'format', 'caption'],
+    word: ['word', 'value', 'caption'],
+    quote: ['text', 'author', 'caption'],
+    closing: ['text', 'author'],
+  };
+
+  for (const [i, card] of cards.entries()) {
+    const where = `cards[${i}]`;
+    if (!needs[card.kind]) {
+      problems.push(`${where}: unknown kind "${card.kind}"`);
+      continue;
+    }
+    for (const field of needs[card.kind]) {
+      require(card[field] !== undefined && card[field] !== '', `${where}: ${field} is missing`);
+    }
+    if ('format' in card) {
+      require(
+        card.format === 'integer' || card.format === 'clock',
+        `${where}: format must be "integer" or "clock", not "${card.format}"`
+      );
+    }
+    if (card.countUp) {
+      require(card.format === 'integer', `${where}: countUp only works on integers`);
+    }
+    if (card.kind === 'split') {
+      require(card.sides?.length === 2, `${where}: split needs exactly two sides`);
+    }
+    if (card.kind === 'closing') {
+      require(i === cards.length - 1, `${where}: the closing card has to be last`);
+    }
+  }
+
+  require(cards.at(-1)?.kind === 'closing', 'the last card has to be a closing card');
+
+  // "Use them on the two or three cards where the magnitude is the point."
+  const counting = cards.filter((card) => card.countUp).length;
+  require(counting <= 3, `${counting} cards count up; at most three should`);
+
+  if (problems.length > 0) fail(problems);
+}
+
+function fail(problems) {
+  console.error(`\ndata/wrapped.json is not valid:\n${problems.map((p) => `  - ${p}`).join('\n')}\n`);
+  process.exit(1);
+}
 
 const building = process.argv.includes('--build');
 if (wrapped.meta.placeholder) {

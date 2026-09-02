@@ -91,7 +91,8 @@
     {
       "kind": "figure",
       "value": 31,
-      "format": "hours",
+      "format": "integer",
+      "unit": "hours",
       "caption": "The longest we went quiet."
     },
     {
