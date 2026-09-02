@@ -1,0 +1,24 @@
+{
+  "_README": "Edit this before running `npm run data`. Hour-of-day figures are meaningless without the right timezone, and the split card is wrong without the right author ids.",
+  "timezone": "America/New_York",
+  "range": { "start": "", "end": "" },
+  "people": {
+    "her": { "name": "", "discordId": "" },
+    "him": { "name": "", "discordId": "" }
+  },
+  "quotes": {
+    "_README": "Message ids picked by hand from the export. `first` is the opening quote card; `closing` is the last card and must be something she said.",
+    "first": "",
+    "closing": ""
+  },
+  "laughPatterns": ["lol", "lmao", "lmfao", "haha", "hehe", "heh", "hah", "ahaha"],
+  "stopwords": [
+    "the", "a", "an", "and", "or", "but", "if", "of", "to", "in", "on", "at", "for",
+    "is", "it", "its", "im", "i", "you", "u", "we", "me", "my", "your", "that", "this",
+    "was", "be", "been", "am", "are", "do", "did", "does", "so", "just", "like", "not",
+    "no", "yes", "yeah", "ok", "okay", "with", "have", "has", "had", "he", "she", "they",
+    "them", "his", "her", "what", "when", "why", "how", "who", "there", "here", "then",
+    "than", "can", "will", "would", "could", "should", "get", "got", "up", "out", "one",
+    "all", "know", "think", "gonna", "wanna", "too", "very", "really", "about", "from"
+  ]
+}

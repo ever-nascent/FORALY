@@ -1,0 +1,6 @@
+{
+  "_why": "content-hidden-at-rest: this surface is a card deck. Exactly one card is visible at a time and the other twelve are visibility:hidden and inert, which is the point of the format and the correct pattern for assistive tech. The rule reads that as a failed reveal. Nothing else is waived.",
+  "detector": {
+    "ignoreRules": ["content-hidden-at-rest"]
+  }
+}

@@ -1,0 +1,80 @@
+/* ---------------------------------------------------------------------------
+   Print. The sequence becomes a set of plates for the printed companion piece:
+   one card per page, no motion, the lacquer reproduced rather than dropped.
+--------------------------------------------------------------------------- */
+
+@page {
+  size: 148mm 210mm;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    height: auto;
+    overflow: visible;
+    background: var(--paper);
+  }
+
+  .loader,
+  .pace,
+  .control {
+    display: none;
+  }
+
+  .stage {
+    position: static;
+    inset: auto;
+  }
+
+  .card,
+  .card[data-state='current'] {
+    position: relative;
+    inset: auto;
+    width: 148mm;
+    height: 210mm;
+    padding: 18mm 16mm 20mm;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: none;
+    break-after: page;
+    break-inside: avoid;
+  }
+
+  .card:last-child {
+    break-after: auto;
+  }
+
+  .card[data-state='current'] .card__head,
+  .card[data-state='current'] .card__foot {
+    animation: none;
+  }
+
+  .card::before {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Screen sizing is viewport-relative; on the plate it is millimetre-relative. */
+  :root {
+    --step-figure: 46mm;
+    --step-word: 22mm;
+    --step-quote: 9mm;
+    --step-title: 14mm;
+    --step-caption: 4.4mm;
+    --step-small: 3mm;
+    --gutter: 16mm;
+    --measure: 116mm;
+    --floor: 0mm;
+  }
+
+  /* The counting figures print at their final value, not mid-count. */
+  .figure__ghost {
+    visibility: visible;
+  }
+
+  .figure__live {
+    display: none;
+  }
+}

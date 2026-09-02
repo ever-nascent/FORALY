@@ -1,0 +1,103 @@
+{
+  "_README": "PLACEHOLDER. Every figure below is invented so the sequence can be designed and reviewed. Run `npm run data` against the real Discord export to overwrite it. `npm run build` refuses to build while meta.placeholder is true.",
+  "meta": {
+    "placeholder": true,
+    "generatedAt": "1970-01-01T00:00:00.000Z",
+    "range": { "start": "2026-06-01", "end": "2026-09-01" },
+    "timezone": "America/New_York",
+    "people": { "her": "Her", "him": "Him" }
+  },
+  "cards": [
+    {
+      "kind": "opening",
+      "title": "Three months, timestamped",
+      "dateline": "1 June — 1 September",
+      "caption": "Counted from the log, not from memory."
+    },
+    {
+      "kind": "figure",
+      "value": 41208,
+      "format": "integer",
+      "unit": "messages",
+      "countUp": true,
+      "caption": "This is how much we said to each other."
+    },
+    {
+      "kind": "figure",
+      "value": 214675,
+      "format": "integer",
+      "unit": "words",
+      "countUp": true,
+      "caption": "Typos included."
+    },
+    {
+      "kind": "split",
+      "format": "integer",
+      "sides": [
+        { "label": "Her", "value": 21940 },
+        { "label": "Him", "value": 19268 }
+      ],
+      "caption": "You wrote more of them."
+    },
+    {
+      "kind": "figure",
+      "value": 1380,
+      "format": "clock",
+      "caption": "The hour we talk in most."
+    },
+    {
+      "kind": "figure",
+      "value": 92,
+      "format": "integer",
+      "unit": "days",
+      "caption": "Days in a row without a gap."
+    },
+    {
+      "kind": "word",
+      "word": "goodnight",
+      "value": 271,
+      "unit": "times",
+      "caption": "The word you used more than any other."
+    },
+    {
+      "kind": "figure",
+      "value": 2604,
+      "format": "integer",
+      "countUp": true,
+      "caption": "Times one of us typed a laugh."
+    },
+    {
+      "kind": "quote",
+      "text": "hey — sorry this is random but i think we have the same book",
+      "author": "Her",
+      "timestamp": "2026-06-01T21:14:00-04:00",
+      "caption": "The first thing you said to me.",
+      "footnote": "1 June, 9:14 pm"
+    },
+    {
+      "kind": "figure",
+      "value": 252,
+      "format": "clock",
+      "caption": "The latest we ever stayed up talking."
+    },
+    {
+      "kind": "figure",
+      "value": 1447,
+      "format": "integer",
+      "unit": "messages",
+      "caption": "The longest we went without stopping.",
+      "footnote": "One night in July, seven hours"
+    },
+    {
+      "kind": "figure",
+      "value": 31,
+      "format": "hours",
+      "caption": "The longest we went quiet."
+    },
+    {
+      "kind": "closing",
+      "text": "ok but i'm keeping this one",
+      "author": "Her"
+    }
+  ]
+}

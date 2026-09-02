@@ -1,0 +1,219 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--face-text);
+  font-size: 100%;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior: none;
+  /* The sequence is advanced by tap and swipe; the page itself never scrolls. */
+  overflow: hidden;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+p,
+h1,
+h2,
+figure,
+blockquote {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Loader. Holds the paper ground until the fonts and the data are in memory,
+   so nothing hitches once the sequence starts.
+--------------------------------------------------------------------------- */
+
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  transition: opacity var(--dur-cross) var(--ease-out);
+}
+
+.loader[data-done='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loader__mark {
+  width: 2.5rem;
+  height: 1px;
+  background: var(--gold-line);
+  transform-origin: 50% 50%;
+  animation: breathe 2.4s var(--ease-in-out) infinite;
+}
+
+@keyframes breathe {
+  0%,
+  100% {
+    transform: scaleX(0.35);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Stage and cards.
+--------------------------------------------------------------------------- */
+
+.stage {
+  position: fixed;
+  inset: 0;
+  isolation: isolate;
+  outline: none;
+}
+
+.stage:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -4px;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  /* Bottom-weighted: a calm field of paper above, the figure and the line it
+     belongs to sitting together in the half of the screen her thumb reaches. */
+  grid-template-rows: 1fr auto;
+  row-gap: clamp(2.5rem, 10vh, 5.5rem);
+  padding-block: calc(var(--gutter) * 1.5) calc(var(--gutter) * 1.6 + var(--floor));
+  padding-inline: max(var(--gutter), calc((100vw - var(--measure)) / 2));
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(var(--card-shift, 0), 0, 0);
+  transition:
+    opacity var(--dur-cross) var(--ease-out),
+    transform var(--dur-cross) var(--ease-out),
+    visibility 0s linear var(--dur-cross);
+}
+
+.card[data-state='current'] {
+  opacity: 1;
+  visibility: visible;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 0s;
+  z-index: 1;
+}
+
+/* Two coats over the paper, in the order they go on the nail. */
+.card[data-ground='milk']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(var(--coat-top), var(--coat-top)),
+    linear-gradient(var(--coat-base), var(--coat-base)),
+    radial-gradient(120% 90% at 50% 8%, var(--paper), var(--paper-shade));
+}
+
+.card[data-ground='paper']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(120% 95% at 50% 12%, var(--paper), var(--paper-shade));
+}
+
+/* ---------------------------------------------------------------------------
+   Pace. A hairline at the very bottom edge — how far in she is, and nothing
+   more. Not navigation: it has no labels, no marks and no hit area.
+--------------------------------------------------------------------------- */
+
+.pace {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 2;
+  height: 1px;
+  background: var(--lacquer-edge);
+  pointer-events: none;
+}
+
+.pace__fill {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform var(--dur-pace) var(--ease-in-out);
+}
+
+/* ---------------------------------------------------------------------------
+   Controls. Real buttons for keyboard and assistive tech, invisible until
+   they take focus so the surface stays free of chrome.
+--------------------------------------------------------------------------- */
+
+.control {
+  position: fixed;
+  /* Top, not bottom: the head of every card is empty, so a focused control
+     can never sit on top of the copy. */
+  top: calc(0.75rem + env(safe-area-inset-top));
+  z-index: 4;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--gold-line);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--step-small);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.control--prev {
+  left: 1rem;
+}
+
+.control--next {
+  right: 1rem;
+}
+
+.control:focus-visible {
+  opacity: 1;
+  pointer-events: auto;
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.noscript {
+  position: fixed;
+  inset: auto var(--gutter) calc(var(--gutter) + var(--floor));
+  z-index: 5;
+  max-width: 28rem;
+  font-size: var(--step-caption);
+  line-height: 1.35;
+  color: var(--ink-quiet);
+}
+
+.a11y {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#fcf8f7" />
+    <title>Three months, timestamped</title>
+    <link rel="icon" href="/mark.svg" type="image/svg+xml" />
+
+    <link rel="preload" href="/fonts/display-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/text-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/wrapped.json" as="fetch" type="application/json" crossorigin />
+
+    <!-- The loader has to be right before any stylesheet has parsed. -->
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: #fcf8f7;
+      }
+      #loader {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #fcf8f7;
+      }
+    </style>
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <main
+      id="stage"
+      class="stage"
+      tabindex="0"
+      aria-roledescription="card sequence"
+      aria-describedby="how"
+    ></main>
+
+    <p id="how" class="a11y">Use the right and left arrow keys to move through the cards.</p>
+    <p id="live" class="a11y" role="status" aria-live="polite"></p>
+
+    <button id="prev" class="control control--prev" type="button">Back</button>
+    <button id="next" class="control control--next" type="button">Next</button>
+
+    <div class="pace" aria-hidden="true"><span id="pace-fill" class="pace__fill"></span></div>
+
+    <div id="loader" class="loader"><span class="loader__mark"></span></div>
+
+    <noscript>
+      <p class="noscript">
+        This one needs JavaScript switched on. Everything is already on the page —
+        it just will not turn without it.
+      </p>
+    </noscript>
+  </body>
+</html>

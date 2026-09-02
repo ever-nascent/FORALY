@@ -1,0 +1,10 @@
+node_modules/
+dist/
+public/fonts/
+public/wrapped.json
+data/export/
+.vercel/
+.DS_Store
+
+# Third-party agent skills fetched during setup; not this project's source.
+.claude/skills/
