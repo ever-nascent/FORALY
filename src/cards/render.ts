@@ -78,7 +78,15 @@ function renderSplit(card: SplitCard): HTMLElement {
   };
 
   split.append(side(first.label, first.value), el('div', 'split__seam'), side(second.label, second.value));
-  return split;
+  if (!card.context) return split;
+
+  // A plain wrapper so both this and the context line land in .card__head
+  // together — `display: contents` (see cards.css) so it never becomes a
+  // second grid item competing with .split's own width:100%.
+  const wrap = el('div', undefined);
+  wrap.dataset.splitWrap = '';
+  wrap.append(split, el('p', 'footnote', card.context));
+  return wrap;
 }
 
 /**

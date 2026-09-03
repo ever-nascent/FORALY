@@ -62,6 +62,9 @@ export interface SplitCard extends Base {
   kind: 'split';
   sides: [{ label: string; value: number }, { label: string; value: number }];
   format: Format;
+  /** Same job as FigureCard's `context` — what these two numbers actually
+   *  are, for a caption that's a reaction rather than a description of them. */
+  context?: string;
   footnote?: string;
 }
 

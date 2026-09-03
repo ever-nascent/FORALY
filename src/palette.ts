@@ -27,7 +27,8 @@ export type ShapeKind =
   | 'sparse'
   | 'bloom'
   | 'stars'
-  | 'sunrise';
+  | 'sunrise'
+  | 'megaphone';
 
 /** Where the stack sits in the frame. Variety, so thirteen cards are not
  *  thirteen identical centred columns. */
@@ -93,6 +94,11 @@ export const THEMES: Theme[] = [
   { name: 'crimson',  ground: '#9c0f31', glow: '#a72948', ink: '#ffd9e8', quiet: '#fccedb', faint: '#f9c6d5', accent: '#dfff6b', shape: 'spiral', align: 'center' },
   { name: 'slate',    ground: '#3a4a52', glow: '#505e65', ink: '#fff3e4', quiet: '#d3dcdf', faint: '#cbd6d9', accent: '#ffa98f', shape: 'sparse', align: 'start'  },
   { name: 'rose',     ground: '#e8a0a8', glow: '#e9a5ac', ink: '#2e1638', quiet: '#4a2630', faint: '#573039', accent: '#5e2f24', shape: 'bloom',  align: 'center' },
+  // Every card now carries an explicit `theme` pin (see build-data.mjs), so
+  // this array is really a lookup table by name more than a cycled arc.
+  // Added after `rose` rather than resorting the list to keep it first —
+  // CLOSING below finds it by name, not position, so this is safe.
+  { name: 'fuchsia',  ground: '#a81863', glow: '#c02a72', ink: '#fff3e4', quiet: '#f4d9ea', faint: '#f0cade', accent: '#eafd6b', shape: 'megaphone', align: 'center' },
 ];
 
 /**
@@ -129,7 +135,10 @@ export const GREETING_DAY: Theme = {
   align: 'center',
 };
 
-const CLOSING = THEMES[THEMES.length - 1] as Theme;
+// By name, not position — `rose` no longer has to stay the array's last
+// entry for this to find it, so a theme can be added after it (as `fuchsia`
+// is, below) without silently reassigning the closing card's colour.
+const CLOSING = THEMES.find((theme) => theme.name === 'rose') as Theme;
 
 export type ThemeName = (typeof THEMES)[number]['name'];
 

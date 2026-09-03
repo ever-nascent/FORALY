@@ -334,6 +334,19 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
         ...rays,
       ];
     }
+
+    // The Yapper card: sound waves aimed one way, not radiating in every
+    // direction like the rings do — this one's coming from somewhere.
+    case 'megaphone':
+      return [16, 28, 42, 58, 76].map((r, i) =>
+        part(
+          'path',
+          { d: `M 14 ${50 - r} A ${r} ${r} 0 0 1 14 ${50 + r}`, fill: 'none' },
+          'line',
+          i,
+          { motion: 'ripple', pivot: [14, 50] }
+        )
+      );
   }
 }
 

@@ -306,18 +306,15 @@ function build(messages, config) {
       },
       {
         kind: 'split',
-        // There are only 12 non-rose themes for the 12 cards the arc was
-        // originally built for, and this card is new — one repeat is
-        // unavoidable. Marigold's rays going outward (built for "laughs",
-        // four cards away) fit "big mouth" well enough to be the one that
-        // repeats, and it's far enough from its neighbours here not to read
-        // as a mistake.
-        theme: 'marigold',
+        // Its own theme now — sound waves aimed one way, not the rays
+        // borrowed from "laughs" this used to repeat.
+        theme: 'fuchsia',
         format: 'integer',
         sides: [
           { label: herName, value: wordCounts[her] },
           { label: himName, value: wordCounts[him] },
         ],
+        context: 'How many words you each sent.',
         caption: sheYappedMore
           ? "Looks like someone's got a big mouth."
           : "I guess I just can't shut up around you.",

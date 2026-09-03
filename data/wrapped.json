@@ -45,12 +45,13 @@
     },
     {
       "kind": "split",
-      "theme": "marigold",
+      "theme": "fuchsia",
       "format": "integer",
       "sides": [
         { "label": "Her", "value": 118000 },
         { "label": "Him", "value": 96675 }
       ],
+      "context": "How many words you each sent.",
       "caption": "Looks like someone's got a big mouth."
     },
     {

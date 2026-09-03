@@ -226,6 +226,14 @@
   color: var(--faint);
 }
 
+/* Only present when a split card carries a `context` — a wrapper purely so
+   the .split grid and the context line can land in .card__head together;
+   `display: contents` keeps it from becoming a second grid item next to
+   .split's own width: 100%. */
+[data-split-wrap] {
+  display: contents;
+}
+
 /* --- The race --------------------------------------------------------------
    Both sides count up together (src/deck.ts); whichever lands higher gets a
    quiet glow once both have finished. The glow is the accent colour used as

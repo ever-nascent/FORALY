@@ -124,12 +124,20 @@ ever wanted back.
 
 ## Colour
 
-Thirteen worlds, one per card, in `src/palette.ts`. The order is an arc rather
-than an alternation: a dark curtain, voltage, a stretch of loud colour, her own
-pink at the centre where the word she says most lands, a breath of bone for the
-first message she ever sent, the small hours in gold on black, and back to her
-rose to close. The last card always gets the rose — that ending is the point,
-not a position in a list.
+Started as thirteen worlds, one per card, in `src/palette.ts`. The order is an
+arc rather than an alternation: a dark curtain, voltage, a stretch of loud
+colour, her own pink at the centre where the word she says most lands, a
+breath of bone for the first message she ever sent, the small hours in gold on
+black, and back to her rose to close. The last card always gets the rose —
+that ending is the point, not a position in a list.
+
+A fourteenth, fuchsia, was added later for the Real Yapper card, which the
+original thirteen-card arc never accounted for — every card now carries an
+explicit `theme` pin (see Shapes below) rather than one being picked by
+position, so the array is closer to a lookup table by name today than a
+strictly cycled arc. The goodnight/good-morning card sits outside this
+arc entirely, in its own pair of night/day palettes — see the note under
+Shapes.
 
 Two colours in her life anchor the set even though the arc is free to leave
 them: the pink is the shade she wears (two coats of OPI Funny Bunny under one
@@ -161,6 +169,7 @@ in front of it:
 | Messages | One enormous disc, one satellite | The count, and the small thing orbiting it |
 | Words | Bars hung from the top edge | Words stacking up |
 | Who wrote more | Two overlapping circles | Two people, and the overlap |
+| Real Yapper | Sound waves aimed one way | Coming from somewhere, not radiating everywhere |
 | The hour | A clock face, off-centre | The hand points at the hour without crossing it |
 | Streak | A grid of dots below the figure | One mark per day, unbroken |
 | Goodnight / good morning | A scattered starfield, or the sun coming up | Whichever half of the day she's looking at |
