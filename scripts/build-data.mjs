@@ -333,7 +333,7 @@ function build(messages, config) {
         word: topWord,
         value: topWordCount,
         unit: 'times',
-        caption: 'The word you used more than any other.',
+        caption: "I'm not surprised.",
       },
       {
         kind: 'figure',
