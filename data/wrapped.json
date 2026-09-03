@@ -67,6 +67,7 @@
       "value": 92,
       "format": "integer",
       "unit": "days",
+      "context": "Days in a row without a gap.",
       "caption": "Can't get enough of me? Eh?"
     },
     {
