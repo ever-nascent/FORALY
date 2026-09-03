@@ -270,7 +270,8 @@ function build(messages, config) {
         kind: 'opening',
         title: 'Relationship Wrapped',
         dateline: `${longMonthDay(start, config.timezone)} — ${longMonthDay(end, config.timezone)}`,
-        caption: 'Counted from the log, not from memory.',
+        caption:
+          "4 months of us. I know love isn't a competition, but I like to think I'm beating you at it. Let's find out!",
       },
       {
         kind: 'figure',
