@@ -111,7 +111,7 @@ rounded:
   pill: 999px
 ---
 
-# Discord Wrapped — the system
+# Relationship Wrapped — the system
 
 Thirteen full-bleed cards, one statistic each, advanced by tap, swipe or arrow
 key. One recipient, on a phone, at night. Mobile is the target and desktop is

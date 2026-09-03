@@ -1,4 +1,4 @@
-# Discord Wrapped
+# Relationship Wrapped
 
 A private, password-gated Spotify-Wrapped-style recap of a Discord conversation:
 thirteen full-bleed cards, one real statistic each, advanced by tap, swipe or
