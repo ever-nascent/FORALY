@@ -279,15 +279,7 @@ function build(messages, config) {
         format: 'integer',
         unit: 'messages',
         countUp: true,
-        caption: 'This is how much we said to each other.',
-      },
-      {
-        kind: 'figure',
-        value: totalWords,
-        format: 'integer',
-        unit: 'words',
-        countUp: true,
-        caption: 'Typos included.',
+        caption: "This is how much we've bothered each other.",
       },
       {
         kind: 'split',
@@ -297,6 +289,14 @@ function build(messages, config) {
           { label: himName, value: counts[him] },
         ],
         caption: sheWroteMore ? 'You wrote more of them.' : 'I wrote more of them.',
+      },
+      {
+        kind: 'figure',
+        value: totalWords,
+        format: 'integer',
+        unit: 'words',
+        countUp: true,
+        caption: 'Typos included.',
       },
       {
         kind: 'figure',
