@@ -320,6 +320,7 @@ function build(messages, config) {
         value: peakHour * 60,
         format: 'clock',
         caption: sheTalksLater ? "It's your fault, not mine." : "It's my fault, not yours.",
+        footnote: 'The hour we talk in most.',
       },
       {
         kind: 'figure',
