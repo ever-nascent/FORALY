@@ -40,6 +40,15 @@
       "caption": "Typos included."
     },
     {
+      "kind": "split",
+      "format": "integer",
+      "sides": [
+        { "label": "Her", "value": 118000 },
+        { "label": "Him", "value": 96675 }
+      ],
+      "caption": "You're the real Yapper."
+    },
+    {
       "kind": "figure",
       "value": 1380,
       "format": "clock",

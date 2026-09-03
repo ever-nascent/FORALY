@@ -160,6 +160,7 @@ function build(messages, config) {
   }
 
   const counts = { [her]: 0, [him]: 0 };
+  const wordCounts = { [her]: 0, [him]: 0 };
   const perDay = new Map();
   const hours = new Array(24).fill(0);
   let totalWords = 0;
@@ -176,6 +177,7 @@ function build(messages, config) {
 
     const tokens = words(row.content);
     totalWords += tokens.length;
+    if (row.authorId in wordCounts) wordCounts[row.authorId] += tokens.length;
 
     const lowered = plainText(row.content).toLowerCase();
     if (laughPatterns.some((pattern) => lowered.includes(pattern))) laughs += 1;
@@ -253,6 +255,7 @@ function build(messages, config) {
   const herName = config.people.her.name;
   const himName = config.people.him.name;
   const sheWroteMore = counts[her] > counts[him];
+  const sheYappedMore = wordCounts[her] > wordCounts[him];
 
   const start = config.range.start || days[0];
   const end = config.range.end || days[days.length - 1];
@@ -297,6 +300,15 @@ function build(messages, config) {
         unit: 'words',
         countUp: true,
         caption: 'Typos included.',
+      },
+      {
+        kind: 'split',
+        format: 'integer',
+        sides: [
+          { label: herName, value: wordCounts[her] },
+          { label: himName, value: wordCounts[him] },
+        ],
+        caption: sheYappedMore ? "You're the real Yapper." : "Looks like I'm the real Yapper.",
       },
       {
         kind: 'figure',
