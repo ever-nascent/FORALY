@@ -164,7 +164,7 @@ function paint(root: HTMLElement, theme: Theme): void {
 }
 
 export function renderCard(card: Card, index: number, total: number): HTMLElement {
-  const theme = themeFor(index, card.kind === 'closing');
+  const theme = themeFor(index, card.kind === 'closing', 'theme' in card ? card.theme : undefined);
 
   const root = el('article', `card card--${card.kind}`);
   root.dataset.state = 'upcoming';

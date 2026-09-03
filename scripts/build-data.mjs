@@ -276,6 +276,7 @@ function build(messages, config) {
     cards: [
       {
         kind: 'opening',
+        theme: 'curtain',
         title: 'Relationship Wrapped',
         dateline: `${longMonthDay(start, config.timezone)} — ${longMonthDay(end, config.timezone)}`,
         caption:
@@ -283,6 +284,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'voltage',
         value: rows.length,
         format: 'integer',
         unit: 'messages',
@@ -291,6 +293,7 @@ function build(messages, config) {
       },
       {
         kind: 'split',
+        theme: 'coral',
         format: 'integer',
         sides: [
           { label: herName, value: counts[her] },
@@ -300,6 +303,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'acid',
         value: totalWords,
         format: 'integer',
         unit: 'words',
@@ -308,6 +312,13 @@ function build(messages, config) {
       },
       {
         kind: 'split',
+        // There are only 12 non-rose themes for the 12 cards the arc was
+        // originally built for, and this card is new — one repeat is
+        // unavoidable. Marigold's rays going outward (built for "laughs",
+        // four cards away) fit "big mouth" well enough to be the one that
+        // repeats, and it's far enough from its neighbours here not to read
+        // as a mistake.
+        theme: 'marigold',
         format: 'integer',
         sides: [
           { label: herName, value: wordCounts[her] },
@@ -319,6 +330,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'teal',
         value: peakHour * 60,
         format: 'clock',
         context: 'The hour we talk in most.',
@@ -326,6 +338,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'cobalt',
         value: streak,
         format: 'integer',
         unit: streak === 1 ? 'day' : 'days',
@@ -333,6 +346,7 @@ function build(messages, config) {
       },
       {
         kind: 'word',
+        theme: 'hers',
         word: topWord,
         value: topWordCount,
         unit: 'times',
@@ -340,6 +354,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'marigold',
         value: laughs,
         format: 'integer',
         countUp: true,
@@ -348,6 +363,7 @@ function build(messages, config) {
       },
       {
         kind: 'quote',
+        theme: 'bone',
         text: first.content,
         author: first.authorId === her ? herName : himName,
         timestamp: messages.find((m) => m.id === first.id).timestamp,
@@ -356,6 +372,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'night',
         value: latest.minuteOfDay,
         format: 'clock',
         context: 'The latest we ever stayed up talking.',
@@ -364,6 +381,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'crimson',
         value: longestSession.count,
         format: 'integer',
         unit: 'messages',
@@ -375,6 +393,7 @@ function build(messages, config) {
       },
       {
         kind: 'figure',
+        theme: 'slate',
         value: Math.floor(longestGapMs / 3_600_000),
         format: 'integer',
         unit: 'hours',

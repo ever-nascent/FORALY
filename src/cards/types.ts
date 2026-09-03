@@ -1,6 +1,8 @@
 // The shape of data/wrapped.json. Everything the sequence renders comes from
 // this file and nothing else — there is no runtime data fetching beyond it.
 
+import type { ThemeName } from '../palette';
+
 /** `clock` values are minutes since midnight in Meta.timezone. */
 export type Format = 'integer' | 'clock';
 
@@ -18,6 +20,12 @@ export interface Meta {
 interface Base {
   /** The one short line of copy. Sentence case, no exclamation marks. */
   caption: string;
+  /**
+   * Pins this card to a specific place in the colour arc — see themeFor() in
+   * palette.ts — so reordering cards in the deck can't scramble which shape
+   * and palette a card gets. Omit to fall back to cycling by position.
+   */
+  theme?: ThemeName;
 }
 
 /** Sets the sequence up. No figure. */

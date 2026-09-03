@@ -95,12 +95,24 @@ export const THEMES: Theme[] = [
 
 const CLOSING = THEMES[THEMES.length - 1] as Theme;
 
+export type ThemeName = (typeof THEMES)[number]['name'];
+
 /**
  * The arc is written for the thirteen cards the generator produces. If the set
  * ever grows or shrinks it cycles rather than running out, and the last card
  * always gets her rose — that ending is the point, not a position in a list.
+ *
+ * `name`, when a card carries one, pins it to a specific place in the arc
+ * regardless of where it lands in the deck — a card whose shape and colour
+ * were chosen for what it is (the clock for the hour, the dot grid for the
+ * streak) can't have that scrambled by moving cards around it. Falls back to
+ * cycling by position for anything that doesn't specify one, same as before.
  */
-export function themeFor(index: number, isClosing: boolean): Theme {
+export function themeFor(index: number, isClosing: boolean, name?: ThemeName): Theme {
   if (isClosing) return CLOSING;
+  if (name) {
+    const pinned = THEMES.find((theme) => theme.name === name);
+    if (pinned) return pinned;
+  }
   return THEMES[index % THEMES.length] as Theme;
 }
