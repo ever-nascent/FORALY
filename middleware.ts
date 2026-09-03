@@ -70,6 +70,7 @@ function page(wrong: boolean): Response {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17121c">
 <title>Three months, timestamped</title>
 <link rel="icon" href="/mark.svg" type="image/svg+xml">
 <style>
@@ -77,17 +78,17 @@ function page(wrong: boolean): Response {
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;display:grid;place-items:center;padding:2rem;
-    background:#fcf8f7;color:#2b2320;
+    background:radial-gradient(120% 92% at 50% 14%,#312c35,#17121c);color:#fff3e4;
     font-family:'Schibsted Grotesk',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
   form{display:grid;gap:1rem;width:min(20rem,100%)}
-  label{font-size:1rem;color:#574641}
-  input{width:100%;padding:.75rem .9rem;border:1px solid rgb(156 116 49/.45);border-radius:999px;
-    background:transparent;color:#2b2320;font:inherit;font-size:1rem}
-  input:focus-visible{outline:2px solid #9c7431;outline-offset:2px}
-  button{padding:.75rem 1rem;border:0;border-radius:999px;background:#2b2320;color:#fcf8f7;
-    font:inherit;font-size:1rem;cursor:pointer}
-  button:focus-visible{outline:2px solid #9c7431;outline-offset:2px}
-  p{margin:0;font-size:.8125rem;color:#6e5d56}
+  label{font-size:1.0625rem;font-weight:500;color:#c9bbd1}
+  input{width:100%;padding:.75rem .9rem;border:1px solid #e8b84b;border-radius:999px;
+    background:transparent;color:#fff3e4;font:inherit;font-size:1.0625rem}
+  input:focus-visible{outline:2px solid #e8b84b;outline-offset:2px}
+  button{padding:.75rem 1rem;border:0;border-radius:999px;background:#e8b84b;color:#17121c;
+    font:inherit;font-size:1.0625rem;font-weight:600;cursor:pointer}
+  button:focus-visible{outline:2px solid #fff3e4;outline-offset:2px}
+  p{margin:0;font-size:0.8125rem;color:#c9bbd1}
 </style>
 </head><body>
 <form method="POST" action="/">

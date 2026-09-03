@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#fcf8f7" />
+    <meta name="theme-color" content="#17121c" />
     <title>Three months, timestamped</title>
     <link rel="icon" href="/mark.svg" type="image/svg+xml" />
 
@@ -18,14 +18,14 @@
       body {
         height: 100%;
         margin: 0;
-        background: #fcf8f7;
+        background: #17121c;
       }
       #loader {
         position: fixed;
         inset: 0;
         display: grid;
         place-items: center;
-        background: #fcf8f7;
+        background: #17121c;
       }
     </style>
     <script type="module" src="/src/main.ts"></script>
@@ -39,13 +39,29 @@
       aria-describedby="how"
     ></main>
 
+    <div class="grain" aria-hidden="true"></div>
+
     <p id="how" class="a11y">Use the right and left arrow keys to move through the cards.</p>
     <p id="live" class="a11y" role="status" aria-live="polite"></p>
+
+    <div id="pace" class="pace" aria-hidden="true"></div>
 
     <button id="prev" class="control control--prev" type="button">Back</button>
     <button id="next" class="control control--next" type="button">Next</button>
 
-    <div class="pace" aria-hidden="true"><span id="pace-fill" class="pace__fill"></span></div>
+    <button id="sound" class="sound" type="button" aria-pressed="false">
+      <span class="a11y">Sound</span>
+      <svg class="sound__on" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4z" />
+        <path d="M16.5 8.5a5 5 0 0 1 0 7" />
+        <path d="M19 6a8.5 8.5 0 0 1 0 12" />
+      </svg>
+      <svg class="sound__off" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 9v6h4l5 4V5L8 9H4z" />
+        <path d="M17 10l4 4" />
+        <path d="M21 10l-4 4" />
+      </svg>
+    </button>
 
     <div id="loader" class="loader"><span class="loader__mark"></span></div>
 

@@ -1,44 +1,146 @@
 /* ---------------------------------------------------------------------------
    The type system, in one rule: the display face sets the figures and the one
-   word, and nothing else ever. Her messages are set in the text face at size —
+   word, and nothing else, ever. Her messages are set in the text face at size —
    a thing someone typed at midnight should look typed, not engraved.
 --------------------------------------------------------------------------- */
 
+.card {
+  display: grid;
+  padding: calc(3rem + var(--ceiling)) var(--gutter) calc(4rem + var(--floor));
+  justify-items: center;
+}
+
+.card[data-align='center'] {
+  align-content: center;
+}
+
+.card[data-align='start'] {
+  align-content: start;
+  padding-top: calc(5.5rem + var(--ceiling));
+}
+
+.card[data-align='end'] {
+  align-content: end;
+}
+
+.card__stack {
+  display: grid;
+  justify-items: center;
+  gap: clamp(1.75rem, 5vh, 3rem);
+  width: 100%;
+  max-width: var(--measure);
+  text-align: center;
+}
+
 .card__head {
   display: grid;
-  place-content: end center;
   justify-items: center;
-  text-align: center;
-  min-height: 0;
+  min-width: 0;
 }
 
 .card__foot {
   display: grid;
-  justify-items: start;
+  justify-items: center;
   gap: 0.75rem;
-  max-width: 32rem;
+  max-width: 26ch;
 }
 
 .rule {
   width: 2.5rem;
-  height: 1px;
+  height: 2px;
   border: 0;
   margin: 0;
-  background: var(--gold);
+  border-radius: 2px;
+  background: var(--accent);
 }
 
 .caption {
   font-size: var(--step-caption);
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  color: var(--ink-quiet);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.012em;
+  color: var(--quiet);
   text-wrap: pretty;
 }
 
 .footnote {
   font-size: var(--step-small);
+  font-weight: 450;
   line-height: 1.4;
-  color: var(--ink-faint);
+  color: var(--faint);
+}
+
+/* --- Shapes ---------------------------------------------------------------
+   One composition per card, chosen for the statistic in front of it. Sits
+   behind everything and never takes a pointer.
+--------------------------------------------------------------------------- */
+
+.shapes {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transform-origin: 50% 50%;
+}
+
+.card__stack {
+  position: relative;
+  z-index: 1;
+}
+
+.shape {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+}
+
+.shape--a {
+  fill: var(--shape-a);
+}
+
+.shape--b {
+  fill: var(--shape-b);
+}
+
+.shape--line {
+  fill: none;
+  stroke: var(--shape-line);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+}
+
+@keyframes shape-in {
+  from {
+    opacity: 0;
+    transform: scale(0.84);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.card[data-state='current'] .shape {
+  animation: shape-in var(--dur-shape) var(--ease-out) calc(var(--i) * var(--stagger)) both;
+}
+
+/* A slow sway on the three compositions built out of concentric forms. Scaled
+   up first so the rotation can never expose a corner. */
+@keyframes sway {
+  from {
+    transform: scale(1.08) rotate(-3.5deg);
+  }
+  to {
+    transform: scale(1.08) rotate(3.5deg);
+  }
+}
+
+.card[data-state='current'] .shapes--rings,
+.card[data-state='current'] .shapes--spiral,
+.card[data-state='current'] .shapes--bloom {
+  animation: sway 24s var(--ease-in-out) infinite alternate;
 }
 
 /* --- Figures -------------------------------------------------------------- */
@@ -54,8 +156,8 @@
   display: block;
   font-family: var(--face-display);
   font-weight: 400;
-  font-size: min(var(--step-figure), calc(var(--measure) / var(--fit-em, 3)));
-  line-height: 0.86;
+  font-size: min(var(--step-figure), calc(var(--measure) * 0.98 / var(--fit-em, 3)));
+  line-height: 0.84;
   letter-spacing: -0.02em;
   color: var(--ink);
 }
@@ -76,9 +178,10 @@
 .figure__unit {
   font-family: var(--face-text);
   font-size: var(--step-small);
-  font-weight: 450;
-  letter-spacing: 0.02em;
-  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--faint);
 }
 
 /* --- Split ---------------------------------------------------------------- */
@@ -93,34 +196,36 @@
 
 .split__seam {
   align-self: stretch;
-  width: 1px;
+  width: 2px;
   min-height: 4rem;
-  background: var(--gold-line);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
 }
 
 .split__side {
   display: grid;
   justify-items: center;
   gap: 0.5rem;
+  min-width: 0;
 }
 
 .split__value {
   font-family: var(--face-display);
   font-weight: 400;
   font-size: min(
-    clamp(2.75rem, 16vw, 6rem),
-    calc((var(--measure) - 2 * var(--split-gap) - 1px) / 2 / var(--fit-em, 3))
+    clamp(3rem, 19vw, 7.5rem),
+    calc((var(--measure) - 2 * var(--split-gap) - 2px) * 0.98 / 2 / var(--fit-em, 3))
   );
-  line-height: 0.9;
-  letter-spacing: -0.03em;
+  line-height: 0.88;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
 
 .split__label {
   font-size: var(--step-small);
-  font-weight: 450;
-  letter-spacing: 0.02em;
-  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--faint);
 }
 
 /* --- Word ----------------------------------------------------------------- */
@@ -134,81 +239,81 @@
 .word__text {
   font-family: var(--face-display);
   font-weight: 400;
-  font-size: min(var(--step-word), calc(var(--measure) / var(--fit-em, 5)));
+  font-size: min(var(--step-word), calc(var(--measure) * 0.98 / var(--fit-em, 5)));
   line-height: 0.95;
+  /* The word is built from one inline-block per letter, which gives the
+     browser somewhere to break; it is sized to fit, so it never should. */
+  white-space: nowrap;
   letter-spacing: -0.02em;
   color: var(--ink);
-  overflow-wrap: anywhere;
+}
+
+.word__letter {
+  display: inline-block;
+  white-space: pre;
 }
 
 .word__count {
   font-size: var(--step-small);
-  font-weight: 450;
-  letter-spacing: 0.02em;
-  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--faint);
 }
 
-/* --- Quote and closing ---------------------------------------------------- */
+/* --- Quote and opening ---------------------------------------------------- */
 
 .quote {
   margin: 0;
-  max-width: 24ch;
+  max-width: 22ch;
 }
 
 .quote__text {
   font-family: var(--face-text);
-  font-weight: 400;
+  font-weight: 500;
   font-size: var(--step-quote);
-  line-height: 1.32;
-  letter-spacing: -0.014em;
+  line-height: 1.28;
+  letter-spacing: -0.018em;
   color: var(--ink);
   text-wrap: pretty;
 }
 
-/* --- Opening and closing -------------------------------------------------- */
-
 .opening {
   display: grid;
   justify-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .opening__title {
   font-family: var(--face-text);
   font-size: var(--step-title);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: -0.04em;
   color: var(--ink);
   text-wrap: balance;
 }
 
 .opening__dateline {
   font-size: var(--step-small);
-  font-weight: 450;
-  letter-spacing: 0.02em;
-  color: var(--ink-faint);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--faint);
 }
 
-/* The last card carries one line and nothing else — no caption, no rule — and
-   is the only card that sits in the middle of the page. */
-.card--closing {
-  grid-template-rows: 1fr;
-}
-
-.card--closing .card__head {
-  place-content: center;
+/* The last card carries one line and nothing else. */
+.card--closing .card__stack {
+  gap: 0;
 }
 
 /* --- The reveal -----------------------------------------------------------
-   One orchestration per card, in two beats: everything the site says settles
-   first, then the figure lands. Nothing else moves.
+   Each kind of card enters in its own way, so thirteen cards are thirteen
+   moments rather than one moment thirteen times. The figure always lands last.
 --------------------------------------------------------------------------- */
 
 @keyframes settle {
   from {
     opacity: 0;
-    transform: translate3d(0, 8px, 0);
+    transform: translate3d(0, 14px, 0);
   }
   to {
     opacity: 1;
@@ -216,10 +321,12 @@
   }
 }
 
+/* The number arrives at size and settles into place rather than growing into
+   being — it is the loudest thing on the card and should land like one. */
 @keyframes land {
   from {
     opacity: 0;
-    transform: translate3d(0, 18px, 0) scale(0.965);
+    transform: translate3d(0, 4%, 0) scale(1.16);
   }
   to {
     opacity: 1;
@@ -227,12 +334,100 @@
   }
 }
 
-.card[data-state='current'] .card__foot {
-  animation: settle var(--dur-settle) var(--ease-out) 40ms both;
+@keyframes side-in-left {
+  from {
+    opacity: 0;
+    transform: translate3d(-26%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
 }
 
-.card[data-state='current'] .card__head {
+@keyframes side-in-right {
+  from {
+    opacity: 0;
+    transform: translate3d(26%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes letter-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 46%, 0) rotate(5deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+}
+
+@keyframes wipe-down {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes wipe-across {
+  from {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.card[data-state='current'] .card__foot {
+  animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 190ms) both;
+}
+
+.card[data-state='current'] .figure {
   animation: land var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-state='current'] .split__side:first-child {
+  animation: side-in-left var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-state='current'] .split__side:last-child {
+  animation: side-in-right var(--dur-land) var(--ease-out) calc(var(--delay-land) + 70ms) both;
+}
+
+.card[data-state='current'] .split__seam {
+  animation: settle var(--dur-settle) var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-state='current'] .word__letter {
+  animation: letter-in var(--dur-land) var(--ease-out)
+    calc(var(--delay-land) + var(--i) * 38ms) both;
+}
+
+.card[data-state='current'] .word__count {
+  animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 300ms) both;
+}
+
+.card[data-state='current'] .quote__text {
+  animation: wipe-down var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-state='current'] .opening__title {
+  animation: wipe-across var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-state='current'] .opening__dateline {
+  animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 240ms) both;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -254,13 +449,66 @@
     }
   }
 
-  .card {
-    transform: none;
+  @keyframes side-in-left {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
   }
 
-  .loader__mark {
+  @keyframes side-in-right {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes letter-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes wipe-down {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes wipe-across {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes shape-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .card[data-state='current'] .shapes {
     animation: none;
-    opacity: 0.7;
   }
 
+  /* One letter at a time is movement dressed as type; reveal the word whole. */
+  .card[data-state='current'] .word__letter {
+    animation-delay: var(--delay-land);
+  }
 }

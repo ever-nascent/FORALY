@@ -1,4 +1,6 @@
 import { formatInteger, formatValue } from '../format';
+import { themeFor, type Theme } from '../palette';
+import { shapeLayer } from '../shapes';
 import type { Card, FigureCard, OpeningCard, SplitCard, WordCard } from './types';
 
 /** Every string here comes from the export, so nothing is ever set as HTML. */
@@ -32,9 +34,11 @@ function figureValue(text: string, countTo?: number): HTMLElement {
 function renderFigure(card: FigureCard): HTMLElement {
   const { text, suffix } = formatValue(card.value, card.format);
   const figure = el('p', 'figure');
-  figure.append(figureValue(text, card.countUp && card.format === 'integer' ? card.value : undefined));
-  if (suffix) figure.append(el('span', 'figure__unit', suffix));
-  else if (card.unit) figure.append(el('span', 'figure__unit', card.unit));
+  figure.append(
+    figureValue(text, card.countUp && card.format === 'integer' ? card.value : undefined)
+  );
+  const unit = suffix ?? card.unit;
+  if (unit) figure.append(el('span', 'figure__unit', unit));
   return figure;
 }
 
@@ -42,25 +46,30 @@ function renderSplit(card: SplitCard): HTMLElement {
   const split = el('div', 'split');
   const [first, second] = card.sides;
 
-  for (const [index, side] of [first, second].entries()) {
+  const side = (label: string, value: number): HTMLElement => {
     const box = el('div', 'split__side');
-    const value = el('span', 'split__value', formatValue(side.value, card.format).text);
-    value.dataset.fit = value.textContent ?? '';
-    box.append(value);
-    box.append(el('span', 'split__label', side.label));
-    if (index === 0) {
-      split.append(box, el('div', 'split__seam'));
-    } else {
-      split.append(box);
-    }
-  }
+    const figure = el('span', 'split__value', formatValue(value, card.format).text);
+    figure.dataset.fit = figure.textContent ?? '';
+    box.append(figure, el('span', 'split__label', label));
+    return box;
+  };
+
+  split.append(side(first.label, first.value), el('div', 'split__seam'), side(second.label, second.value));
   return split;
 }
 
+/** The word arrives a letter at a time, so it reads as something being said. */
 function renderWord(card: WordCard): HTMLElement {
   const word = el('div', 'word');
-  const text = el('span', 'word__text', card.word);
+  const text = el('span', 'word__text');
   text.dataset.fit = card.word;
+
+  for (const [i, character] of [...card.word].entries()) {
+    const letter = el('span', 'word__letter', character);
+    letter.style.setProperty('--i', String(i));
+    text.append(letter);
+  }
+
   word.append(text);
   word.append(el('span', 'word__count', `${formatInteger(card.value)} ${card.unit ?? 'times'}`));
   return word;
@@ -96,37 +105,48 @@ function head(card: Card): HTMLElement {
     case 'word':
       return renderWord(card);
     case 'quote':
-      return renderQuote(card.text);
     case 'closing':
       return renderQuote(card.text);
   }
 }
 
-/** Milk every third card and always on the last one, so the pink paces the set. */
-function ground(index: number, card: Card): 'milk' | 'paper' {
-  return index % 3 === 0 || card.kind === 'closing' ? 'milk' : 'paper';
+function paint(root: HTMLElement, theme: Theme): void {
+  root.style.setProperty('--ground', theme.ground);
+  root.style.setProperty('--glow', theme.glow);
+  root.style.setProperty('--ink', theme.ink);
+  root.style.setProperty('--quiet', theme.quiet);
+  root.style.setProperty('--faint', theme.faint);
+  root.style.setProperty('--accent', theme.accent);
+  root.dataset.align = theme.align;
+  root.dataset.ground = theme.ground;
 }
 
 export function renderCard(card: Card, index: number, total: number): HTMLElement {
+  const theme = themeFor(index, card.kind === 'closing');
+
   const root = el('article', `card card--${card.kind}`);
-  root.dataset.ground = ground(index, card);
   root.dataset.state = 'upcoming';
   root.setAttribute('aria-label', `${index + 1} of ${total}`);
   root.inert = true;
+  paint(root, theme);
+  root.append(shapeLayer(theme.shape, String(index)));
 
+  const stack = el('div', 'card__stack');
   const headBox = el('div', 'card__head');
   headBox.append(head(card));
-  root.append(headBox);
+  stack.append(headBox);
 
-  if (card.kind === 'closing') return root;
-
-  const foot = el('div', 'card__foot');
-  foot.append(el('hr', 'rule'));
-  foot.append(el('p', 'caption', card.caption));
-  if ('footnote' in card && card.footnote) {
-    foot.append(el('p', 'footnote', card.footnote));
+  if (card.kind !== 'closing') {
+    const foot = el('div', 'card__foot');
+    foot.append(el('hr', 'rule'));
+    foot.append(el('p', 'caption', card.caption));
+    if ('footnote' in card && card.footnote) {
+      foot.append(el('p', 'footnote', card.footnote));
+    }
+    stack.append(foot);
   }
-  root.append(foot);
+
+  root.append(stack);
   return root;
 }
 

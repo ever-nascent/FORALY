@@ -11,41 +11,41 @@ body {
 
 body {
   margin: 0;
-  background: var(--paper);
+  /* The seam behind a card push takes the colour of the card being pushed to,
+     so the join between two worlds is never a flash of something else. */
+  background: var(--seam);
   color: var(--ink);
   font-family: var(--face-text);
-  font-size: 100%;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overscroll-behavior: none;
-  /* The sequence is advanced by tap and swipe; the page itself never scrolls. */
   overflow: hidden;
   touch-action: none;
   -webkit-tap-highlight-color: transparent;
+  transition: background 320ms var(--ease-out);
 }
 
 p,
 h1,
-h2,
 figure,
 blockquote {
   margin: 0;
 }
 
 /* ---------------------------------------------------------------------------
-   Loader. Holds the paper ground until the fonts and the data are in memory,
-   so nothing hitches once the sequence starts.
+   Loader. Holds until both faces, the data and — if it exists — the score are
+   in memory, so nothing hitches once the sequence starts.
 --------------------------------------------------------------------------- */
 
 .loader {
   position: fixed;
   inset: 0;
-  z-index: 3;
+  z-index: 6;
   display: grid;
   place-items: center;
-  background: var(--paper);
-  transition: opacity var(--dur-cross) var(--ease-out);
+  background: #17121c;
+  transition: opacity 420ms var(--ease-out);
 }
 
 .loader[data-done='true'] {
@@ -54,18 +54,19 @@ blockquote {
 }
 
 .loader__mark {
-  width: 2.5rem;
-  height: 1px;
-  background: var(--gold-line);
+  width: 3rem;
+  height: 2px;
+  border-radius: 2px;
+  background: #e8b84b;
   transform-origin: 50% 50%;
-  animation: breathe 2.4s var(--ease-in-out) infinite;
+  animation: breathe 2.2s var(--ease-in-out) infinite;
 }
 
 @keyframes breathe {
   0%,
   100% {
-    transform: scaleX(0.35);
-    opacity: 0.45;
+    transform: scaleX(0.3);
+    opacity: 0.4;
   }
   50% {
     transform: scaleX(1);
@@ -74,7 +75,7 @@ blockquote {
 }
 
 /* ---------------------------------------------------------------------------
-   Stage and cards.
+   Stage and the card push.
 --------------------------------------------------------------------------- */
 
 .stage {
@@ -85,95 +86,149 @@ blockquote {
 }
 
 .stage:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: -4px;
 }
 
 .card {
   position: absolute;
   inset: 0;
-  display: grid;
-  /* Bottom-weighted: a calm field of paper above, the figure and the line it
-     belongs to sitting together in the half of the screen her thumb reaches. */
-  grid-template-rows: 1fr auto;
-  row-gap: clamp(2.5rem, 10vh, 5.5rem);
-  padding-block: calc(var(--gutter) * 1.5) calc(var(--gutter) * 1.6 + var(--floor));
-  padding-inline: max(var(--gutter), calc((100vw - var(--measure)) / 2));
-  opacity: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 92% at 50% 14%, var(--glow), var(--ground));
+  color: var(--ink);
+  transform: translate3d(var(--card-x, 100%), 0, 0);
   visibility: hidden;
-  transform: translate3d(var(--card-shift, 0), 0, 0);
   transition:
-    opacity var(--dur-cross) var(--ease-out),
-    transform var(--dur-cross) var(--ease-out),
-    visibility 0s linear var(--dur-cross);
+    transform var(--dur-push) var(--ease-push),
+    visibility 0s linear var(--dur-push);
 }
 
 .card[data-state='current'] {
-  opacity: 1;
-  visibility: visible;
   transform: translate3d(0, 0, 0);
+  visibility: visible;
   transition-delay: 0s;
   z-index: 1;
 }
 
-/* Two coats over the paper, in the order they go on the nail. */
-.card[data-ground='milk']::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(var(--coat-top), var(--coat-top)),
-    linear-gradient(var(--coat-base), var(--coat-base)),
-    radial-gradient(120% 90% at 50% 8%, var(--paper), var(--paper-shade));
+/* The outgoing card travels a fraction of the distance, so the two worlds
+   move at different rates and the push reads as depth rather than a slide. */
+.card[data-state='past'] {
+  visibility: visible;
+  z-index: 0;
 }
 
-.card[data-ground='paper']::before {
-  content: '';
-  position: absolute;
+/* Grain. A single static overlay; it stops the flat colour fields from
+   reading as vector art. */
+.grain {
+  position: fixed;
   inset: 0;
-  z-index: -1;
-  background: radial-gradient(120% 95% at 50% 12%, var(--paper), var(--paper-shade));
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.34;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
 }
 
 /* ---------------------------------------------------------------------------
-   Pace. A hairline at the very bottom edge — how far in she is, and nothing
-   more. Not navigation: it has no labels, no marks and no hit area.
+   Pace. Thirteen segments across the top — the one piece of Wrapped's own
+   grammar the sequence borrows, because it is the thing that tells her how
+   much is left without a word on screen.
 --------------------------------------------------------------------------- */
 
 .pace {
   position: fixed;
-  inset: auto 0 0 0;
-  z-index: 2;
-  height: 1px;
-  background: var(--lacquer-edge);
+  inset: calc(0.5rem + var(--ceiling)) var(--gutter) auto;
+  z-index: 4;
+  display: flex;
+  gap: 4px;
   pointer-events: none;
 }
 
-.pace__fill {
+.pace__seg {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--ink) 26%, transparent);
+  overflow: hidden;
+}
+
+.pace__seg::after {
+  content: '';
   display: block;
   height: 100%;
-  background: var(--gold);
+  background: var(--ink);
   transform: scaleX(0);
   transform-origin: 0 50%;
-  transition: transform var(--dur-pace) var(--ease-in-out);
+  transition: transform var(--dur-pace) var(--ease-out);
+}
+
+.pace__seg[data-done='true']::after {
+  transform: scaleX(1);
 }
 
 /* ---------------------------------------------------------------------------
-   Controls. Real buttons for keyboard and assistive tech, invisible until
-   they take focus so the surface stays free of chrome.
+   Controls. The sound toggle is always there because audio that starts on its
+   own needs a way to stop it. Back and next are for keyboard and assistive
+   tech and stay invisible until they take focus.
 --------------------------------------------------------------------------- */
+
+.sound {
+  position: fixed;
+  right: var(--gutter);
+  bottom: calc(1rem + var(--floor));
+  z-index: 5;
+  display: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--ink) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--ground) 70%, transparent);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.sound[data-available='true'] {
+  display: grid;
+}
+
+.sound:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sound svg {
+  width: 1.0625rem;
+  height: 1.0625rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sound__off {
+  display: none;
+}
+
+.sound[aria-pressed='true'] .sound__on {
+  display: none;
+}
+
+.sound[aria-pressed='true'] .sound__off {
+  display: block;
+}
 
 .control {
   position: fixed;
-  /* Top, not bottom: the head of every card is empty, so a focused control
-     can never sit on top of the copy. */
-  top: calc(0.75rem + env(safe-area-inset-top));
-  z-index: 4;
+  bottom: calc(1rem + var(--floor));
+  z-index: 5;
   padding: 0.5rem 0.9rem;
-  border: 1px solid var(--gold-line);
+  border: 1px solid color-mix(in srgb, var(--ink) 40%, transparent);
   border-radius: 999px;
-  background: var(--paper);
+  background: var(--ground);
   color: var(--ink);
   font-family: inherit;
   font-size: var(--step-small);
@@ -182,28 +237,27 @@ blockquote {
 }
 
 .control--prev {
-  left: 1rem;
+  left: var(--gutter);
 }
 
 .control--next {
-  right: 1rem;
+  left: calc(var(--gutter) + 5rem);
 }
 
 .control:focus-visible {
   opacity: 1;
   pointer-events: auto;
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
 .noscript {
   position: fixed;
   inset: auto var(--gutter) calc(var(--gutter) + var(--floor));
-  z-index: 5;
+  z-index: 7;
   max-width: 28rem;
+  color: #fff3e4;
   font-size: var(--step-caption);
-  line-height: 1.35;
-  color: var(--ink-quiet);
 }
 
 .a11y {
@@ -216,4 +270,26 @@ blockquote {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transform: none;
+    opacity: 0;
+    transition:
+      opacity var(--dur-push) var(--ease-out),
+      visibility 0s linear var(--dur-push);
+  }
+
+  .card[data-state='current'] {
+    opacity: 1;
+  }
+
+  .card[data-state='past'] {
+    visibility: hidden;
+  }
+
+  .loader__mark {
+    animation: none;
+  }
 }

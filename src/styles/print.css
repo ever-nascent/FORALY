@@ -1,6 +1,7 @@
 /* ---------------------------------------------------------------------------
    Print. The sequence becomes a set of plates for the printed companion piece:
-   one card per page, no motion, the lacquer reproduced rather than dropped.
+   one card per page, no motion, every ground and every shape reproduced rather
+   than dropped.
 --------------------------------------------------------------------------- */
 
 @page {
@@ -13,12 +14,16 @@
   body {
     height: auto;
     overflow: visible;
-    background: var(--paper);
+    /* No ground of its own: each card paints its own, and the paper is the
+       paper. Declaring one here only fights the printer. */
+    background: none;
   }
 
   .loader,
   .pace,
-  .control {
+  .control,
+  .sound,
+  .grain {
     display: none;
   }
 
@@ -28,45 +33,49 @@
   }
 
   .card,
-  .card[data-state='current'] {
+  .card[data-state='current'],
+  .card[data-state='past'] {
     position: relative;
     inset: auto;
     width: 148mm;
     height: 210mm;
-    padding: 18mm 16mm 20mm;
-    opacity: 1;
+    padding: 20mm 16mm;
     visibility: visible;
+    opacity: 1;
     transform: none;
     transition: none;
     break-after: page;
     break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .card:last-child {
     break-after: auto;
   }
 
-  .card[data-state='current'] .card__head,
-  .card[data-state='current'] .card__foot {
-    animation: none;
-  }
-
-  .card::before {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  /* Nothing on a plate is mid-animation. */
+  .card *,
+  .card[data-state='current'] * {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
   }
 
   /* Screen sizing is viewport-relative; on the plate it is millimetre-relative. */
   :root {
-    --step-figure: 46mm;
+    --step-figure: 44mm;
     --step-word: 22mm;
     --step-quote: 9mm;
     --step-title: 14mm;
-    --step-caption: 4.4mm;
+    --step-caption: 4.6mm;
     --step-small: 3mm;
     --gutter: 16mm;
     --measure: 116mm;
+    --split-gap: 5mm;
     --floor: 0mm;
+    --ceiling: 0mm;
   }
 
   /* The counting figures print at their final value, not mid-count. */

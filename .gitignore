@@ -8,3 +8,6 @@ data/export/
 
 # Third-party agent skills fetched during setup; not this project's source.
 .claude/skills/
+
+# The score is supplied at deploy time, not committed.
+public/score.mp3

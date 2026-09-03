@@ -3,6 +3,7 @@ import './styles/base.css';
 import './styles/cards.css';
 import './styles/print.css';
 
+import { loadScore } from './audio';
 import { createDeck } from './deck';
 import { preload } from './preload';
 
@@ -22,12 +23,19 @@ async function start(): Promise<void> {
     );
   }
 
-  createDeck(wrapped.cards, {
+  const deck = createDeck(wrapped.cards, {
     stage: need<HTMLElement>('#stage'),
-    pace: need<HTMLElement>('#pace-fill'),
+    pace: need<HTMLElement>('#pace'),
     live: need<HTMLElement>('#live'),
     prev: need<HTMLButtonElement>('#prev'),
     next: need<HTMLButtonElement>('#next'),
+    sound: need<HTMLButtonElement>('#sound'),
+  });
+
+  // The score is optional and never gates the sequence. If public/score.mp3 is
+  // not there this resolves to null and the sound control never appears.
+  void loadScore().then((score) => {
+    if (score) deck.attachScore(score);
   });
 
   need<HTMLElement>('#loader').dataset.done = 'true';

@@ -2,6 +2,7 @@ import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
 import { fit } from './fit';
 import type { Card } from './cards/types';
+import type { Score } from './audio';
 
 export interface DeckElements {
   stage: HTMLElement;
@@ -9,10 +10,13 @@ export interface DeckElements {
   live: HTMLElement;
   prev: HTMLButtonElement;
   next: HTMLButtonElement;
+  sound: HTMLButtonElement;
 }
 
-/** How far a card slides out of the way. Small: the swipe is the spatial cue. */
-const SHIFT = '2.5%';
+/** How far a card travels. The outgoing one moves a fraction of the incoming
+ *  one's distance, so the push reads as depth rather than as a slide. */
+const ENTER = 100;
+const EXIT = 28;
 /** Past this, a pointer gesture is a swipe rather than a tap. */
 const SWIPE_PX = 40;
 const TAP_PX = 10;
@@ -25,15 +29,29 @@ function cssMs(name: string): number {
   return raw.endsWith('ms') ? value : value * 1000;
 }
 
-export function createDeck(cards: Card[], els: DeckElements): void {
+export interface Deck {
+  /** The score arrives after the first card, so it can never delay it. */
+  attachScore(score: Score): void;
+}
+
+export function createDeck(cards: Card[], els: DeckElements): Deck {
   if (cards.length === 0) throw new Error('wrapped.json holds no cards');
 
   const nodes = cards.map((card, i) => renderCard(card, i, cards.length));
   els.stage.replaceChildren(...nodes);
   fit(els.stage);
 
+  const segments = cards.map(() => {
+    const seg = document.createElement('span');
+    seg.className = 'pace__seg';
+    return seg;
+  });
+  els.pace.replaceChildren(...segments);
+
   let index = -1;
   let counting: CountHandle | null = null;
+  let score: Score | null = null;
+  let woken = false;
 
   function show(target: number, direction: 1 | -1): void {
     const wanted = Math.min(Math.max(target, 0), cards.length - 1);
@@ -44,7 +62,7 @@ export function createDeck(cards: Card[], els: DeckElements): void {
 
     const leaving = nodes[index];
     if (leaving) {
-      leaving.style.setProperty('--card-shift', direction > 0 ? `-${SHIFT}` : SHIFT);
+      leaving.style.setProperty('--card-x', `${direction > 0 ? -EXIT : EXIT}%`);
       leaving.dataset.state = 'past';
       leaving.inert = true;
     }
@@ -53,13 +71,18 @@ export function createDeck(cards: Card[], els: DeckElements): void {
     const card = cards[wanted];
     if (!entering || !card) return;
 
-    // Park the incoming card off its mark without animating it there.
+    // Park the incoming card off-screen without animating it there.
     entering.style.transition = 'none';
-    entering.style.setProperty('--card-shift', direction > 0 ? SHIFT : `-${SHIFT}`);
+    entering.style.setProperty('--card-x', `${direction > 0 ? ENTER : -ENTER}%`);
     void entering.offsetWidth;
     entering.style.transition = '';
     entering.dataset.state = 'current';
     entering.inert = false;
+
+    // The seam behind the push takes the colour of the card arriving.
+    if (entering.dataset.ground) {
+      document.body.style.setProperty('--seam', entering.dataset.ground);
+    }
 
     const live = entering.querySelector<HTMLElement>('[data-count-to]');
     if (live?.dataset.countTo) {
@@ -72,21 +95,35 @@ export function createDeck(cards: Card[], els: DeckElements): void {
     }
 
     index = wanted;
-    els.pace.style.transform = `scaleX(${(index + 1) / cards.length})`;
+    for (const [i, seg] of segments.entries()) seg.dataset.done = String(i <= index);
     els.live.textContent = describe(card);
     els.prev.disabled = index === 0;
     els.next.disabled = index === cards.length - 1;
+    score?.dip();
   }
 
   const forward = (): void => show(index + 1, 1);
   const back = (): void => show(index - 1, -1);
 
+  // Browsers will not start audio without a gesture; the first one starts it.
+  const wake = (): void => {
+    woken = true;
+    score?.start();
+  };
+
   els.next.addEventListener('click', forward);
   els.prev.addEventListener('click', back);
+
+  els.sound.addEventListener('click', () => {
+    if (!score) return;
+    woken = true;
+    els.sound.setAttribute('aria-pressed', String(score.toggle()));
+  });
 
   window.addEventListener('keydown', (event) => {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const onControl = event.target instanceof HTMLButtonElement;
+    wake();
 
     switch (event.key) {
       case 'ArrowRight':
@@ -131,6 +168,7 @@ export function createDeck(cards: Card[], els: DeckElements): void {
     const dy = event.clientY - origin.y;
     const elapsed = event.timeStamp - origin.at;
     origin = null;
+    wake();
 
     if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > Math.abs(dy)) {
       if (dx < 0) forward();
@@ -146,4 +184,14 @@ export function createDeck(cards: Card[], els: DeckElements): void {
 
   show(0, 1);
   els.stage.focus({ preventScroll: true });
+
+  return {
+    attachScore(ready: Score) {
+      score = ready;
+      els.sound.dataset.available = 'true';
+      els.sound.setAttribute('aria-pressed', String(ready.muted));
+      // If she has already tapped by the time the file lands, start it now.
+      if (woken) ready.start();
+    },
+  };
 }

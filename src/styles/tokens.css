@@ -49,81 +49,77 @@
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: light dark;
 
-  /* --- Ground -------------------------------------------------------------
-     Warm off-white paper. Never white, never black. */
-  --paper: #fcf8f7;
-  --paper-shade: #f7ebe9;
+  /* --- Theme ---------------------------------------------------------------
+     Every card sets these six inline from src/palette.ts. The values here are
+     only the fallback, so nothing is ever undefined mid-transition. */
+  /* The seam behind a card push. JS keeps it on the colour being pushed to. */
+  --seam: #17121c;
 
-  /* --- The lacquer --------------------------------------------------------
-     Two coats of OPI Funny Bunny under one of Bubble Bath. Held as two
-     translucent layers over the paper rather than one flat hex, so the pink
-     reads the way the polish does: soft, slightly opaque, warm. */
-  --coat-base: rgb(232 190 184 / 0.55);
-  --coat-top: rgb(247 223 224 / 0.5);
-  --lacquer-edge: rgb(214 176 170 / 0.5);
+  --ground: #17121c;
+  --glow: #312c35;
+  --ink: #fff3e4;
+  --quiet: #c9bbd1;
+  --faint: #a697b0;
+  --accent: #e8b84b;
 
-  /* --- Ink ----------------------------------------------------------------
-     Warm near-black. Quiet tones are tested against both grounds. */
-  --ink: #2b2320;
-  --ink-quiet: #574641;
-  --ink-faint: #6e5d56;
-
-  /* --- The one accent ----------------------------------------------------- */
-  --gold: #9c7431;
-  --gold-line: rgb(156 116 49 / 0.45);
+  /* The shape layer reads the theme rather than carrying colours of its own. */
+  --shape-a: color-mix(in srgb, var(--accent) 13%, transparent);
+  --shape-b: color-mix(in srgb, var(--ink) 8%, transparent);
+  --shape-line: color-mix(in srgb, var(--accent) 24%, transparent);
 
   /* --- Type ---------------------------------------------------------------
-     Two families, clearly distinct. The display face sets figures and one word
-     and never anything else — all of the boldness is spent there. Everything
-     with a sentence in it, her own messages included, is set in the sans. */
+     Two families, one rule: the display face sets figures and the one word and
+     nothing else. Everything with a sentence in it is the sans. */
   --face-display: 'Gloock', 'Iowan Old Style', Georgia, serif;
   --face-text: 'Schibsted Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  --step-figure: clamp(5.5rem, 36vw, 15rem);
-  --step-word: clamp(3.25rem, 22vw, 9rem);
-  --step-quote: clamp(1.625rem, 7vw, 2.75rem);
-  --step-title: clamp(2rem, 9vw, 4rem);
-  --step-caption: clamp(1rem, 4.4vw, 1.1875rem);
+  --step-figure: clamp(6rem, 42vw, 18rem);
+  --step-word: clamp(3.5rem, 24vw, 10rem);
+  --step-quote: clamp(1.75rem, 7.6vw, 3.25rem);
+  --step-title: clamp(2.5rem, 12vw, 6rem);
+  --step-caption: clamp(1.0625rem, 4.6vw, 1.3125rem);
   --step-small: 0.8125rem;
 
   /* --- Rhythm ------------------------------------------------------------- */
   --gutter: clamp(1.5rem, 7vw, 3.5rem);
-  --split-gap: clamp(1rem, 5vw, 2.5rem);
-  /* The inline space a card actually has. Everything that has to fit — the
-     figures, the words — is sized against this and nothing else. */
-  --measure: calc(100vw - 2 * var(--gutter));
   --floor: max(env(safe-area-inset-bottom), 0px);
+  --ceiling: max(env(safe-area-inset-top), 0px);
+  --measure: calc(100vw - 2 * var(--gutter));
+  --split-gap: clamp(0.75rem, 4vw, 2rem);
 
   /* --- Motion -------------------------------------------------------------
-     Curves are taken as-is from the animation standards, not approximated. */
+     Curves taken as-is from the animation standards, never approximated. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-push: cubic-bezier(0.32, 0.72, 0, 1);
 
-  --dur-settle: 260ms;
-  --dur-land: 420ms;
-  --dur-cross: 220ms;
+  --dur-push: 520ms;
+  --dur-shape: 760ms;
+  --dur-settle: 300ms;
+  --dur-land: 560ms;
+  --delay-land: 170ms;
+  --dur-count: 1500ms;
   --dur-pace: 280ms;
-  --delay-land: 220ms;
-  --dur-count: 1100ms;
+  --stagger: 46ms;
 }
 
-/* Desktop is the accommodation, not the target: hold the column together
-   rather than letting the caption drift a screen away from its figure. */
 @media (min-width: 60rem) {
   :root {
-    --measure: 52rem;
+    --measure: 54rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --dur-push: 220ms;
+    --dur-shape: 240ms;
     --dur-settle: 200ms;
-    --dur-land: 200ms;
-    --dur-cross: 200ms;
-    --dur-pace: 0ms;
+    --dur-land: 220ms;
     --delay-land: 60ms;
     --dur-count: 0ms;
+    --dur-pace: 0ms;
+    --stagger: 0ms;
   }
 }

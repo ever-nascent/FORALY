@@ -1,8 +1,9 @@
 # Three months, timestamped
 
 A private, password-gated Discord Wrapped: thirteen full-bleed cards, one real
-statistic each, advanced by tap, swipe or arrow key. Built for one person, on a
-phone, once.
+statistic each, advanced by tap, swipe or arrow key. Every card is its own
+colour world with its own shape composition and its own way of arriving. Built
+for one person, on a phone, once.
 
 Static site. No API, no database, no analytics, no third-party requests — the
 fonts are self-hosted and the data is one local JSON file.
@@ -48,6 +49,19 @@ Discord's own personal data package won't work: it records only your own
 messages, with no author on each one, so it can't produce the who-said-more
 card. The generator detects it and says so.
 
+## The score
+
+Drop an audio file at `public/score.mp3`. Nothing else is needed — it is loaded
+in the background, never gates the first card, fades up over 1.8s on the first
+tap (browsers will not start audio without a gesture), loops, and dips briefly
+on each card change. A sound toggle appears in the corner and the choice is
+remembered per browser.
+
+Leave the file out and `loadScore()` resolves to null, the control never
+appears, and the sequence behaves exactly as it does now. The file is
+git-ignored: supply it at deploy time rather than committing music into the
+repo.
+
 ## The password gate
 
 `middleware.ts` is Vercel Edge Middleware. Nothing behind it — not the cards,
@@ -87,6 +101,9 @@ data/export/          the raw Discord export (git-ignored)
 scripts/build-data.mjs  export -> wrapped.json
 scripts/prepare.mjs   fonts + data into public/, and the placeholder guard
 src/cards/            the card types and their renderers
+src/palette.ts        the thirteen-card colour arc
+src/shapes.ts         one shape composition per card
+src/audio.ts          the score, if there is one
 src/deck.ts           the sequence, and tap/swipe/keyboard
 src/fit.ts            measures each figure so it fits the measure
 src/countup.ts        the count-up, on the same curve as the landing
