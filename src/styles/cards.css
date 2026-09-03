@@ -182,7 +182,7 @@
   width: 2px;
   min-height: 4rem;
   border-radius: 2px;
-  background: color-mix(in srgb, var(--ink) 30%, transparent);
+  background: var(--seam);
 }
 
 .split__side {
@@ -487,7 +487,7 @@
   }
 
   /* One letter at a time is movement dressed as type; reveal the word whole. */
-  .card[data-state='current'] .word__letter {
+  :root:not([data-motion='on']) .card[data-state='current'] .word__letter {
     animation-delay: var(--delay-land);
   }
 
@@ -498,6 +498,13 @@
    A card that stops moving after its reveal is a still image she is looking at
    for the next twenty seconds. Every part keeps going once it has arrived, on
    its own period, so the composition breathes rather than marching.
+
+   Written in longhand with literal keyframe names on purpose. Handing the
+   `animation` shorthand a custom property for the animation *name* works in
+   Chromium and is dropped elsewhere — and a dropped shorthand takes the
+   entrance with it, which is how this ended up looking like a still page in
+   every browser but the one it was built in. Longhands fail one at a time, and
+   a literal name cannot fail at all.
 
    All of it is `transform` and `opacity`, so it runs on the compositor and off
    the main thread, and only ever on the card that is actually up.
@@ -543,7 +550,16 @@
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(calc(360deg * var(--dir, 1)));
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes amb-turn-rev {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
   }
 }
 
@@ -552,7 +568,16 @@
     transform: scaleY(1);
   }
   to {
-    transform: scaleY(calc(1 + 0.5 * var(--dir, 1)));
+    transform: scaleY(1.5);
+  }
+}
+
+@keyframes amb-stretch-rev {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.5);
   }
 }
 
@@ -567,10 +592,19 @@
 
 @keyframes amb-drift-x {
   from {
-    transform: translateX(calc(-10px * var(--dir, 1)));
+    transform: translateX(-10px);
   }
   to {
-    transform: translateX(calc(10px * var(--dir, 1)));
+    transform: translateX(10px);
+  }
+}
+
+@keyframes amb-drift-x-rev {
+  from {
+    transform: translateX(10px);
+  }
+  to {
+    transform: translateX(-10px);
   }
 }
 
@@ -598,64 +632,118 @@
     transform: rotate(0deg) scale(0.88);
   }
   to {
-    transform: rotate(calc(26deg * var(--dir, 1))) scale(1.2);
+    transform: rotate(26deg) scale(1.2);
   }
 }
 
-/* Entry, then the loop — the loop starts as the entrance finishes. */
-.card[data-state='current'] .shape[data-motion] {
-  animation:
-    shape-in var(--dur-shape) var(--ease-out) calc(var(--i) * var(--stagger)) both,
-    var(--amb-name) var(--amb-time) var(--amb-ease) calc(var(--dur-shape) + var(--i) * var(--stagger))
-      infinite var(--amb-direction, alternate);
+@keyframes amb-flare-rev {
+  from {
+    transform: rotate(0deg) scale(0.88);
+  }
+  to {
+    transform: rotate(-26deg) scale(1.2);
+  }
 }
 
+/* The entrance, then the loop. Everything but the two names is shared. */
+.card[data-state='current'] .shape[data-motion] {
+  animation-duration: var(--dur-shape), var(--amb-time, 6s);
+  animation-timing-function: var(--ease-out), var(--amb-ease, ease-in-out);
+  animation-delay: calc(var(--i) * var(--stagger)),
+    calc(var(--dur-shape) + var(--i) * var(--stagger));
+  animation-iteration-count: 1, infinite;
+  animation-direction: normal, var(--amb-direction, alternate);
+  animation-fill-mode: both, none;
+}
+
+.card[data-state='current'] .shape[data-motion='pulse'] {
+  animation-name: shape-in, amb-pulse;
+}
+
+.card[data-state='current'] .shape[data-motion='breathe'] {
+  animation-name: shape-in, amb-breathe;
+}
+
+.card[data-state='current'] .shape[data-motion='stretch'] {
+  animation-name: shape-in, amb-stretch;
+}
+
+.card[data-state='current'] .shape[data-motion='stretch'][data-mirror] {
+  animation-name: shape-in, amb-stretch-rev;
+}
+
+.card[data-state='current'] .shape[data-motion='widen'] {
+  animation-name: shape-in, amb-widen;
+}
+
+.card[data-state='current'] .shape[data-motion='driftX'] {
+  animation-name: shape-in, amb-drift-x;
+}
+
+.card[data-state='current'] .shape[data-motion='driftX'][data-mirror] {
+  animation-name: shape-in, amb-drift-x-rev;
+}
+
+.card[data-state='current'] .shape[data-motion='driftY'] {
+  animation-name: shape-in, amb-drift-y;
+}
+
+.card[data-state='current'] .shape[data-motion='twinkle'] {
+  animation-name: shape-in, amb-twinkle;
+}
+
+.card[data-state='current'] .shape[data-motion='flare'] {
+  animation-name: shape-in, amb-flare;
+}
+
+.card[data-state='current'] .shape[data-motion='flare'][data-mirror] {
+  animation-name: shape-in, amb-flare-rev;
+}
+
+.card[data-state='current'] .shape[data-motion='orbit'],
+.card[data-state='current'] .shape[data-motion='spin'],
+.card[data-state='current'] .shape[data-motion='sweep'] {
+  animation-name: shape-in, amb-turn;
+}
+
+.card[data-state='current'] .shape[data-motion='orbit'][data-mirror],
+.card[data-state='current'] .shape[data-motion='spin'][data-mirror],
+.card[data-state='current'] .shape[data-motion='sweep'][data-mirror] {
+  animation-name: shape-in, amb-turn-rev;
+}
+
+/* Periods. Short enough that a glance of two or three seconds catches
+   something moving. */
 .shape[data-motion='pulse'] {
-  --amb-name: amb-pulse;
   --amb-time: calc(var(--amb) + var(--i) * 460ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='breathe'] {
-  --amb-name: amb-breathe;
   --amb-time: calc(var(--amb) + var(--i) * 600ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='stretch'] {
-  --amb-name: amb-stretch;
   --amb-time: calc(var(--amb) * 0.5 + var(--i) * 380ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='widen'] {
-  --amb-name: amb-widen;
   --amb-time: calc(var(--amb) * 1.3);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='driftX'] {
-  --amb-name: amb-drift-x;
   --amb-time: calc(var(--amb) + var(--i) * 900ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='driftY'] {
-  --amb-name: amb-drift-y;
   --amb-time: calc(var(--amb) + var(--i) * 700ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='twinkle'] {
-  --amb-name: amb-twinkle;
   --amb-time: calc(var(--amb) * 0.4 + var(--i) * 520ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='flare'] {
-  --amb-name: amb-flare;
   --amb-time: calc(var(--amb) * 0.9 + var(--i) * 220ms);
-  --amb-ease: var(--ease-in-out);
 }
 
 /* The turning ones run one way and never reverse, so they read as machinery
@@ -663,7 +751,6 @@
 .shape[data-motion='orbit'],
 .shape[data-motion='spin'],
 .shape[data-motion='sweep'] {
-  --amb-name: amb-turn;
   --amb-ease: linear;
   --amb-direction: normal;
 }
@@ -687,15 +774,26 @@
 
 /* The ripple is its own entrance; it does not need a separate one. */
 .card[data-state='current'] .shape[data-motion='ripple'] {
-  animation: amb-ripple calc(var(--amb) * 0.8) var(--ease-out) calc(var(--i) * 700ms) infinite;
+  animation-name: amb-ripple;
+  animation-duration: calc(var(--amb) * 0.8);
+  animation-timing-function: var(--ease-out);
+  animation-delay: calc(var(--i) * 700ms);
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
 }
 
-/* Reduced motion, restated here because it has to beat the ambient rules above
-   and the cascade settles ties by order. Every part still arrives; nothing
-   keeps going afterwards. */
+/* Reduced motion, restated here because it has to beat the rules above and the
+   cascade settles ties by order. Every part still arrives; nothing loops. */
 @media (prefers-reduced-motion: reduce) {
-  .card[data-state='current'] .shape[data-motion],
-  .card[data-state='current'] .shape[data-motion='ripple'] {
-    animation: shape-in var(--dur-shape) var(--ease-out) both;
+  :root:not([data-motion='on']) .card[data-state='current'] .shape[data-motion],
+  :root:not([data-motion='on']) .card[data-state='current'] .shape[data-motion='ripple'] {
+    animation-name: shape-in;
+    animation-duration: var(--dur-shape);
+    animation-timing-function: var(--ease-out);
+    animation-delay: 0s;
+    animation-iteration-count: 1;
+    animation-direction: normal;
+    animation-fill-mode: both;
   }
 }

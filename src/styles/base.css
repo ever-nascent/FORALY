@@ -13,7 +13,7 @@ body {
   margin: 0;
   /* The seam behind a card push takes the colour of the card being pushed to,
      so the join between two worlds is never a flash of something else. */
-  background: var(--seam);
+  background: var(--behind);
   color: var(--ink);
   font-family: var(--face-text);
   line-height: 1.5;
@@ -171,7 +171,7 @@ blockquote {
   flex: 1;
   height: 3px;
   border-radius: 3px;
-  background: color-mix(in srgb, var(--ink) 26%, transparent);
+  background: var(--track);
   overflow: hidden;
 }
 
@@ -205,9 +205,9 @@ blockquote {
   width: 2.5rem;
   height: 2.5rem;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--ink) 34%, transparent);
+  border: 1px solid var(--edge);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--ground) 70%, transparent);
+  background: var(--veil);
   color: var(--ink);
   cursor: pointer;
 }
@@ -248,7 +248,7 @@ blockquote {
   bottom: calc(1rem + var(--floor));
   z-index: 5;
   padding: 0.5rem 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  border: 1px solid var(--edge);
   border-radius: 999px;
   background: var(--ground);
   color: var(--ink);
@@ -295,7 +295,7 @@ blockquote {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card {
+  :root:not([data-motion='on']) .card {
     transform: none;
     opacity: 0;
     transition:
@@ -303,20 +303,20 @@ blockquote {
       visibility 0s linear var(--dur-push);
   }
 
-  .card[data-state='current'] {
+  :root:not([data-motion='on']) .card[data-state='current'] {
     opacity: 1;
   }
 
-  .card[data-state='past'] {
+  :root:not([data-motion='on']) .card[data-state='past'] {
     visibility: hidden;
   }
 
-  .loader__mark {
+  :root:not([data-motion='on']) .loader__mark {
     animation: none;
   }
 
   /* Nothing keeps moving on its own. */
-  .card[data-state='current']::before {
+  :root:not([data-motion='on']) .card[data-state='current']::before {
     animation: none;
   }
 }

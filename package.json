@@ -7,7 +7,7 @@
     "predev": "node scripts/prepare.mjs",
     "dev": "vite",
     "prebuild": "node scripts/prepare.mjs --build",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && node scripts/check-css.mjs",
     "prepreview": "node scripts/prepare.mjs",
     "preview": "vite preview",
     "data": "node scripts/build-data.mjs",

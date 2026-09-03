@@ -1,5 +1,5 @@
 import { formatInteger, formatValue } from '../format';
-import { themeFor, type Theme } from '../palette';
+import { themeFor, tonesFor, type Theme } from '../palette';
 import { shapeLayer } from '../shapes';
 import type { Card, FigureCard, OpeningCard, SplitCard, WordCard } from './types';
 
@@ -117,6 +117,11 @@ function paint(root: HTMLElement, theme: Theme): void {
   root.style.setProperty('--quiet', theme.quiet);
   root.style.setProperty('--faint', theme.faint);
   root.style.setProperty('--accent', theme.accent);
+
+  for (const [name, value] of Object.entries(tonesFor(theme))) {
+    root.style.setProperty(`--${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, value);
+  }
+
   root.dataset.align = theme.align;
   root.dataset.ground = theme.ground;
 }

@@ -37,7 +37,7 @@ interface Options {
   motion?: Motion;
   /** Rotation or scaling centre in view-box units. Defaults to the part itself. */
   pivot?: [number, number];
-  /** Reverses the direction of a paired motion, so two parts move oppositely. */
+  /** Picks the mirrored variant of a paired motion, so two parts move oppositely. */
   mirror?: boolean;
 }
 
@@ -64,10 +64,13 @@ function part(
     style.push('transform-box: view-box');
     style.push(`transform-origin: ${options.pivot[0]}px ${options.pivot[1]}px`);
   }
-  if (options.mirror) style.push('--dir: -1');
   el.setAttribute('style', style.join('; '));
 
   if (options.motion) el.setAttribute('data-motion', options.motion);
+  // A separate keyframe set rather than a sign flipped inside the keyframes:
+  // a custom property inside a keyframe's transform is not something every
+  // engine interpolates.
+  if (options.mirror) el.setAttribute('data-mirror', '');
   return el;
 }
 
@@ -81,6 +84,7 @@ function group(children: SVGElement[], options: Options = {}, index = 0): SVGEle
   }
   g.setAttribute('style', style.join('; '));
   if (options.motion) g.setAttribute('data-motion', options.motion);
+  if (options.mirror) g.setAttribute('data-mirror', '');
   g.append(...children);
   return g;
 }

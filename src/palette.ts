@@ -43,6 +43,40 @@ export interface Theme {
   align: Align;
 }
 
+/**
+ * The translucent tones are worked out here rather than with `color-mix()` in
+ * CSS. `color-mix` is only a few years old, and a browser that does not know it
+ * drops the whole declaration — which would leave every shape with no fill and
+ * the page looking like it forgot to draw anything. A plain `rgba()` string
+ * cannot fail.
+ */
+function alpha(hex: string, a: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
+}
+
+export interface Tones {
+  shapeA: string;
+  shapeB: string;
+  shapeLine: string;
+  track: string;
+  edge: string;
+  seam: string;
+  veil: string;
+}
+
+export function tonesFor(theme: Theme): Tones {
+  return {
+    shapeA: alpha(theme.accent, 0.3),
+    shapeB: alpha(theme.ink, 0.18),
+    shapeLine: alpha(theme.accent, 0.48),
+    track: alpha(theme.ink, 0.26),
+    edge: alpha(theme.ink, 0.38),
+    seam: alpha(theme.ink, 0.3),
+    veil: alpha(theme.ground, 0.7),
+  };
+}
+
 export const THEMES: Theme[] = [
   { name: 'curtain',  ground: '#17121c', glow: '#312c35', ink: '#fff3e4', quiet: '#c9bbd1', faint: '#a697b0', accent: '#e8b84b', shape: 'rings',  align: 'center' },
   { name: 'voltage',  ground: '#2e1638', glow: '#45304e', ink: '#d9ff5c', quiet: '#c6b4d6', faint: '#b9a8cb', accent: '#d9ff5c', shape: 'orbit',  align: 'center' },

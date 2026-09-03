@@ -62,6 +62,22 @@ appears, and the sequence behaves exactly as it does now. The file is
 git-ignored: supply it at deploy time rather than committing music into the
 repo.
 
+## Motion
+
+If the sequence looks static, the two causes are, in order of likelihood:
+
+1. **Reduce Motion is switched on** in the operating system or browser. That is
+   respected on purpose — every part still arrives, nothing loops. Open the page
+   with `?motion=on` to turn the movement back on anyway, which also settles the
+   question either way.
+2. **A stylesheet that only works in one engine.** `npm run build` runs
+   `scripts/check-css.mjs`, which fails the build on the constructs that cause
+   this: a custom property supplying an animation *name* inside the `animation`
+   shorthand, a custom property read from inside `@keyframes`, and `color-mix()`.
+   All three work in Chromium and are dropped elsewhere — and a dropped shorthand
+   takes the entrance animation with it, so the page renders and simply never
+   moves. Each rule in that script is there because it shipped broken once.
+
 ## The password gate
 
 `middleware.ts` is Vercel Edge Middleware. Nothing behind it — not the cards,

@@ -54,8 +54,8 @@
   /* --- Theme ---------------------------------------------------------------
      Every card sets these six inline from src/palette.ts. The values here are
      only the fallback, so nothing is ever undefined mid-transition. */
-  /* The seam behind a card push. JS keeps it on the colour being pushed to. */
-  --seam: #17121c;
+  /* The colour behind a card push. JS keeps it on the card being pushed to. */
+  --behind: #17121c;
 
   --ground: #17121c;
   --glow: #312c35;
@@ -64,10 +64,16 @@
   --faint: #a697b0;
   --accent: #e8b84b;
 
-  /* The shape layer reads the theme rather than carrying colours of its own. */
-  --shape-a: color-mix(in srgb, var(--accent) 30%, transparent);
-  --shape-b: color-mix(in srgb, var(--ink) 18%, transparent);
-  --shape-line: color-mix(in srgb, var(--accent) 48%, transparent);
+  /* Translucent tones, worked out in src/palette.ts and set inline per card.
+     Plain rgba rather than color-mix, which a browser that does not know it
+     drops entirely — taking every shape fill with it. */
+  --shape-a: rgba(232, 184, 75, 0.3);
+  --shape-b: rgba(255, 243, 228, 0.18);
+  --shape-line: rgba(232, 184, 75, 0.48);
+  --track: rgba(255, 243, 228, 0.26);
+  --edge: rgba(255, 243, 228, 0.38);
+  --seam: rgba(255, 243, 228, 0.3);
+  --veil: rgba(23, 18, 28, 0.7);
 
   /* --- Type ---------------------------------------------------------------
      Two families, one rule: the display face sets figures and the one word and
@@ -117,7 +123,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :root {
+  :root:not([data-motion='on']) {
     --dur-push: 220ms;
     --dur-shape: 240ms;
     --dur-settle: 200ms;

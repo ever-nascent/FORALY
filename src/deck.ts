@@ -81,7 +81,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
     // The seam behind the push takes the colour of the card arriving.
     if (entering.dataset.ground) {
-      document.body.style.setProperty('--seam', entering.dataset.ground);
+      document.body.style.setProperty('--behind', entering.dataset.ground);
     }
 
     const live = entering.querySelector<HTMLElement>('[data-count-to]');

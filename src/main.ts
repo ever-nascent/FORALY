@@ -13,7 +13,20 @@ function need<T extends Element>(selector: string): T {
   return node;
 }
 
+/**
+ * Someone who has asked their system for less motion gets a still sequence,
+ * which is right — but it is indistinguishable from the page being broken.
+ * Opening it with ?motion=on turns the movement back on for that person, and
+ * settles the question either way.
+ */
+function honourMotionOverride(): void {
+  if (new URLSearchParams(location.search).get('motion') === 'on') {
+    document.documentElement.dataset.motion = 'on';
+  }
+}
+
 async function start(): Promise<void> {
+  honourMotionOverride();
   const wrapped = await preload();
 
   if (wrapped.meta.placeholder) {

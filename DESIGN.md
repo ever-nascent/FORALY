@@ -257,6 +257,13 @@ magnitude is the point. The counter runs on the same cubic-bezier as the
 landing, solved exactly rather than approximated, and a hidden ghost at the
 final value holds the width so the digits cannot shift under themselves.
 
+**Written for engines other than the one it was built in.** No custom property
+ever supplies an animation name inside the `animation` shorthand, no keyframe
+reads a custom property, and no shipped stylesheet uses `color-mix()`. All three
+work in Chromium and are silently dropped elsewhere — and a dropped shorthand
+takes the entrance with it, so the page renders correctly and never moves.
+`scripts/check-css.mjs` fails the build on all three.
+
 **`prefers-reduced-motion` is gentler, not off:** every part still arrives, but
 opacity alone, no push, no per-letter stagger, no count-up, no drifting light,
 and nothing loops — verified as zero running infinite animations. The score
