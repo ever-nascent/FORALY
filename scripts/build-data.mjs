@@ -313,7 +313,9 @@ function build(messages, config) {
           { label: herName, value: wordCounts[her] },
           { label: himName, value: wordCounts[him] },
         ],
-        caption: sheYappedMore ? "You're the real Yapper." : "Looks like I'm the real Yapper.",
+        caption: sheYappedMore
+          ? "Looks like someone's got a big mouth."
+          : "I guess I just can't shut up around you.",
       },
       {
         kind: 'figure',
