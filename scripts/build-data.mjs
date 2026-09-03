@@ -372,7 +372,7 @@ function build(messages, config) {
         value: Math.floor(longestGapMs / 3_600_000),
         format: 'integer',
         unit: 'hours',
-        caption: 'The longest we went quiet.',
+        caption: "If you ever stop talking to me for this long again, we're gonna have a PROBLEM.",
       },
       {
         kind: 'closing',
