@@ -340,7 +340,7 @@ function build(messages, config) {
         value: laughs,
         format: 'integer',
         countUp: true,
-        caption: 'Times one of us typed a laugh.',
+        caption: 'Half of these were pity laughs.',
       },
       {
         kind: 'quote',
