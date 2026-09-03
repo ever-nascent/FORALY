@@ -20,7 +20,7 @@
       "format": "integer",
       "unit": "messages",
       "countUp": true,
-      "caption": "This is how much we've bothered each other."
+      "caption": "We bother each other a LOT..."
     },
     {
       "kind": "split",
@@ -29,7 +29,7 @@
         { "label": "Her", "value": 21940 },
         { "label": "Him", "value": 19268 }
       ],
-      "caption": "You wrote more of them."
+      "caption": "Somebody's a little obsessed."
     },
     {
       "kind": "figure",

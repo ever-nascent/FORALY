@@ -287,7 +287,7 @@ function build(messages, config) {
         format: 'integer',
         unit: 'messages',
         countUp: true,
-        caption: "This is how much we've bothered each other.",
+        caption: 'We bother each other a LOT...',
       },
       {
         kind: 'split',
@@ -296,7 +296,7 @@ function build(messages, config) {
           { label: herName, value: counts[her] },
           { label: himName, value: counts[him] },
         ],
-        caption: sheWroteMore ? 'You wrote more of them.' : 'I wrote more of them.',
+        caption: sheWroteMore ? "Somebody's a little obsessed." : "Somebody's me. It's me.",
       },
       {
         kind: 'figure',
