@@ -413,84 +413,37 @@
   animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 240ms) both;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  @keyframes settle {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+/* Still. Every part still arrives — on opacity alone, with nothing travelling,
+   scaling, rotating or wiping. One keyframe set does for all of them, because
+   "arrives" is the whole of it once the movement is gone. Selected by the
+   attribute rather than redefining the keyframes inside a media query, so the
+   control in the corner can put the movement back. */
 
-  @keyframes land {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
-
-  @keyframes side-in-left {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  to {
+    opacity: 1;
   }
+}
 
-  @keyframes side-in-right {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+:root[data-motion='off'] .card[data-state='current'] .card__foot,
+:root[data-motion='off'] .card[data-state='current'] .figure,
+:root[data-motion='off'] .card[data-state='current'] .split__side,
+:root[data-motion='off'] .card[data-state='current'] .split__seam,
+:root[data-motion='off'] .card[data-state='current'] .word__count,
+:root[data-motion='off'] .card[data-state='current'] .quote__text,
+:root[data-motion='off'] .card[data-state='current'] .opening__title,
+:root[data-motion='off'] .card[data-state='current'] .opening__dateline,
+:root[data-motion='off'] .card[data-state='current'] .shape {
+  animation-name: fade-in;
+}
 
-  @keyframes letter-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes wipe-down {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes wipe-across {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes shape-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* One letter at a time is movement dressed as type; reveal the word whole. */
-  :root:not([data-motion='on']) .card[data-state='current'] .word__letter {
-    animation-delay: var(--delay-land);
-  }
-
+/* One letter at a time is movement dressed as type; reveal the word whole. */
+:root[data-motion='off'] .card[data-state='current'] .word__letter {
+  animation-name: fade-in;
+  animation-delay: var(--delay-land);
 }
 
 
@@ -783,17 +736,16 @@
   animation-fill-mode: none;
 }
 
-/* Reduced motion, restated here because it has to beat the rules above and the
-   cascade settles ties by order. Every part still arrives; nothing loops. */
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='on']) .card[data-state='current'] .shape[data-motion],
-  :root:not([data-motion='on']) .card[data-state='current'] .shape[data-motion='ripple'] {
-    animation-name: shape-in;
-    animation-duration: var(--dur-shape);
-    animation-timing-function: var(--ease-out);
-    animation-delay: 0s;
-    animation-iteration-count: 1;
-    animation-direction: normal;
-    animation-fill-mode: both;
-  }
+/* Still, restated here because it has to beat every ambient rule above and the
+   cascade settles ties by order. Each shape arrives and then holds; nothing
+   loops, which is verifiable as zero running infinite animations. */
+:root[data-motion='off'] .card[data-state='current'] .shape[data-motion],
+:root[data-motion='off'] .card[data-state='current'] .shape[data-motion='ripple'] {
+  animation-name: fade-in;
+  animation-duration: var(--dur-shape);
+  animation-timing-function: var(--ease-out);
+  animation-delay: 0s;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  animation-fill-mode: both;
 }

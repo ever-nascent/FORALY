@@ -190,17 +190,25 @@ blockquote {
 }
 
 /* ---------------------------------------------------------------------------
-   Controls. The sound toggle is always there because audio that starts on its
-   own needs a way to stop it. Back and next are for keyboard and assistive
+   Controls. Two chips in the corner. The sound toggle is there because audio
+   that starts on its own needs a way to stop it; the motion toggle is there
+   because a sequence that has gone still on a system that asked for less
+   motion looks exactly like a sequence that is broken, and nothing else on the
+   page can tell you which it is. Back and next are for keyboard and assistive
    tech and stay invisible until they take focus.
 --------------------------------------------------------------------------- */
 
-.sound {
+.chrome {
   position: fixed;
   right: var(--gutter);
   bottom: calc(1rem + var(--floor));
   z-index: 5;
-  display: none;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.chip {
+  display: grid;
   place-items: center;
   width: 2.5rem;
   height: 2.5rem;
@@ -212,16 +220,12 @@ blockquote {
   cursor: pointer;
 }
 
-.sound[data-available='true'] {
-  display: grid;
-}
-
-.sound:focus-visible {
+.chip:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.sound svg {
+.chip svg {
   width: 1.0625rem;
   height: 1.0625rem;
   fill: none;
@@ -229,6 +233,15 @@ blockquote {
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* The score is optional; the control appears only once the file has landed. */
+.sound {
+  display: none;
+}
+
+.sound[data-available='true'] {
+  display: grid;
 }
 
 .sound__off {
@@ -241,6 +254,19 @@ blockquote {
 
 .sound[aria-pressed='true'] .sound__off {
   display: block;
+}
+
+/* Pressed means moving, so the crossed-out mark is what a still page shows. */
+.motion__on {
+  display: none;
+}
+
+.motion[aria-pressed='true'] .motion__on {
+  display: block;
+}
+
+.motion[aria-pressed='true'] .motion__off {
+  display: none;
 }
 
 .control {
@@ -294,29 +320,35 @@ blockquote {
   white-space: nowrap;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='on']) .card {
-    transform: none;
-    opacity: 0;
-    transition:
-      opacity var(--dur-push) var(--ease-out),
-      visibility 0s linear var(--dur-push);
-  }
+/* ---------------------------------------------------------------------------
+   Still. `data-motion` is settled in src/motion.ts before the first card is
+   built — from a choice made here before, from ?motion=on or ?motion=off, or
+   from the system's own reduced-motion setting. It is an attribute rather than
+   a media query because a media query cannot be overruled from inside the
+   page, and the control in the corner has to be able to overrule it.
+--------------------------------------------------------------------------- */
 
-  :root:not([data-motion='on']) .card[data-state='current'] {
-    opacity: 1;
-  }
+:root[data-motion='off'] .card {
+  transform: none;
+  opacity: 0;
+  transition:
+    opacity var(--dur-push) var(--ease-out),
+    visibility 0s linear var(--dur-push);
+}
 
-  :root:not([data-motion='on']) .card[data-state='past'] {
-    visibility: hidden;
-  }
+:root[data-motion='off'] .card[data-state='current'] {
+  opacity: 1;
+}
 
-  :root:not([data-motion='on']) .loader__mark {
-    animation: none;
-  }
+:root[data-motion='off'] .card[data-state='past'] {
+  visibility: hidden;
+}
 
-  /* Nothing keeps moving on its own. */
-  :root:not([data-motion='on']) .card[data-state='current']::before {
-    animation: none;
-  }
+:root[data-motion='off'] .loader__mark {
+  animation: none;
+}
+
+/* Nothing keeps moving on its own. */
+:root[data-motion='off'] .card[data-state='current']::before {
+  animation: none;
 }

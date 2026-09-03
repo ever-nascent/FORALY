@@ -7,6 +7,8 @@
  * and it fades up rather than cutting in.
  */
 
+import { currentMotion } from './motion';
+
 const SRC = '/score.mp3';
 const TARGET = 0.55;
 const FADE_MS = 1800;
@@ -86,10 +88,10 @@ export async function loadScore(): Promise<Score | null> {
   const audio = await buffer();
   if (!audio) return null;
 
-  // Someone who has asked the system for less motion gets the sequence silent
-  // until they ask for sound.
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let muted = remembered() ?? reduced;
+  // A still sequence is a silent one until she asks for sound. Read from the
+  // resolved motion state rather than the media query, so turning the movement
+  // back on and turning the sound back on stay one decision apart.
+  let muted = remembered() ?? currentMotion() === 'off';
   let started = false;
   let ramp = 0;
 

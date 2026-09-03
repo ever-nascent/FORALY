@@ -64,7 +64,27 @@ async function isValidCookie(header: string | null, secret: string): Promise<boo
   return timingSafeEqual(mac, await sign(expiry, secret));
 }
 
-function page(wrong: boolean): Response {
+/**
+ * The gate has to send you back to the address you asked for, query string and
+ * all — `?motion=on` is the documented way to settle whether a still sequence
+ * is still on purpose, and posting a password to `/` threw it away.
+ */
+function escapeAttribute(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function here(request: Request): string {
+  const url = new URL(request.url);
+  // Both halves come back percent-encoded from the parser; escaping is only
+  // for the HTML attribute this lands in.
+  return `${url.pathname}${url.search}`;
+}
+
+function page(wrong: boolean, action: string): Response {
   const body = `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -91,7 +111,7 @@ function page(wrong: boolean): Response {
   p{margin:0;font-size:0.8125rem;color:#c9bbd1}
 </style>
 </head><body>
-<form method="POST" action="/">
+<form method="POST" action="${escapeAttribute(action)}">
   <label for="p">Password</label>
   <input id="p" name="password" type="password" autocomplete="current-password" autofocus required>
   <button type="submit">Open</button>
@@ -131,7 +151,7 @@ export default async function middleware(request: Request): Promise<Response | u
       return new Response(null, {
         status: 303,
         headers: {
-          location: new URL(request.url).pathname,
+          location: here(request),
           'cache-control': 'no-store',
           'set-cookie':
             `${COOKIE}=${encodeURIComponent(value)}; Path=/; Max-Age=${SESSION_SECONDS}; ` +
@@ -141,8 +161,8 @@ export default async function middleware(request: Request): Promise<Response | u
     }
 
     await new Promise((resolve) => setTimeout(resolve, WRONG_PASSWORD_DELAY_MS));
-    return page(true);
+    return page(true, here(request));
   }
 
-  return page(false);
+  return page(false, here(request));
 }

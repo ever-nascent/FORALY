@@ -122,15 +122,15 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='on']) {
-    --dur-push: 220ms;
-    --dur-shape: 240ms;
-    --dur-settle: 200ms;
-    --dur-land: 220ms;
-    --delay-land: 60ms;
-    --dur-count: 0ms;
-    --dur-pace: 0ms;
-    --stagger: 0ms;
-  }
+/* Still. Settled in src/motion.ts and written to <html data-motion>; see the
+   note in base.css for why it is an attribute and not a media query. */
+:root[data-motion='off'] {
+  --dur-push: 220ms;
+  --dur-shape: 240ms;
+  --dur-settle: 200ms;
+  --dur-land: 220ms;
+  --delay-land: 60ms;
+  --dur-count: 0ms;
+  --dur-pace: 0ms;
+  --stagger: 0ms;
 }

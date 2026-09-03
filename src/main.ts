@@ -5,6 +5,7 @@ import './styles/print.css';
 
 import { loadScore } from './audio';
 import { createDeck } from './deck';
+import { currentMotion, startMotion, toggleMotion } from './motion';
 import { preload } from './preload';
 
 function need<T extends Element>(selector: string): T {
@@ -15,18 +16,22 @@ function need<T extends Element>(selector: string): T {
 
 /**
  * Someone who has asked their system for less motion gets a still sequence,
- * which is right — but it is indistinguishable from the page being broken.
- * Opening it with ?motion=on turns the movement back on for that person, and
- * settles the question either way.
+ * which is right — but it is indistinguishable from the page being broken. The
+ * control says which of the two it is and turns the movement back on, and the
+ * answer keeps for next time.
  */
-function honourMotionOverride(): void {
-  if (new URLSearchParams(location.search).get('motion') === 'on') {
-    document.documentElement.dataset.motion = 'on';
-  }
+function wireMotion(button: HTMLButtonElement): void {
+  const show = (state: 'on' | 'off'): void => {
+    button.setAttribute('aria-pressed', String(state === 'on'));
+  };
+
+  show(currentMotion());
+  button.addEventListener('click', () => show(toggleMotion()));
 }
 
 async function start(): Promise<void> {
-  honourMotionOverride();
+  startMotion();
+  wireMotion(need<HTMLButtonElement>('#motion'));
   const wrapped = await preload();
 
   if (wrapped.meta.placeholder) {

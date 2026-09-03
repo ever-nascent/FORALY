@@ -266,16 +266,26 @@ takes the entrance with it, so the page renders correctly and never moves.
 
 **`prefers-reduced-motion` is gentler, not off:** every part still arrives, but
 opacity alone, no push, no per-letter stagger, no count-up, no drifting light,
-and nothing loops — verified as zero running infinite animations. The score
-starts muted.
+and nothing loops — verified as zero running infinite animations on all thirteen
+cards. The score starts muted.
+
+**And it is answerable from inside the page.** A sequence that has gone still
+because the system asked is indistinguishable from one that is broken, so the
+still state is reached through `<html data-motion="off">` — settled once in
+`src/motion.ts` from a choice kept on the device, from `?motion=on`/`?motion=off`
+in the URL, or from the system setting — and never through a media query, which
+nothing in the page can overrule. The control in the corner flips it and the
+answer keeps.
 
 ## Chrome
 
 Thirteen segments across the top — the one piece of Wrapped's own grammar the
 sequence borrows, because it is what tells her how much is left without a word
-on screen. A sound toggle, which is not optional: audio that starts on its own
-needs a way to stop it. Back and next are real buttons for keyboard and
-assistive tech, invisible until they take focus.
+on screen. Two chips in the bottom corner, neither of them optional: audio that
+starts on its own needs a way to stop it, and a sequence that has gone still
+needs a way to say whether it meant to. The sound chip appears only once a score
+has landed; the motion chip is always there. Back and next are real buttons for
+keyboard and assistive tech, invisible until they take focus.
 
 ## Score
 

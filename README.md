@@ -64,19 +64,31 @@ repo.
 
 ## Motion
 
-If the sequence looks static, the two causes are, in order of likelihood:
+**If the backgrounds are not moving, tap the motion control** — the left of the
+two chips in the bottom corner. Crossed out means the sequence is deliberately
+still; the tap turns the movement on and the answer keeps on that device.
 
-1. **Reduce Motion is switched on** in the operating system or browser. That is
-   respected on purpose — every part still arrives, nothing loops. Open the page
-   with `?motion=on` to turn the movement back on anyway, which also settles the
-   question either way.
-2. **A stylesheet that only works in one engine.** `npm run build` runs
+That control exists because a still sequence and a broken one look identical,
+and only one of the two causes is a bug:
+
+1. **Reduce Motion is switched on** in the operating system or browser. This is
+   by far the likelier of the two, it is respected by default, and it is not a
+   fault: every part still arrives, on opacity alone, and nothing loops. The
+   control overrules it, as does `?motion=on` (or `?motion=off`) in the URL,
+   which is remembered afterwards.
+2. **A stylesheet that only works in one engine.** If the movement is still not
+   there with the control lit, this is what is left. `npm run build` runs
    `scripts/check-css.mjs`, which fails the build on the constructs that cause
-   this: a custom property supplying an animation *name* inside the `animation`
+   it: a custom property supplying an animation *name* inside the `animation`
    shorthand, a custom property read from inside `@keyframes`, and `color-mix()`.
    All three work in Chromium and are dropped elsewhere — and a dropped shorthand
    takes the entrance animation with it, so the page renders and simply never
    moves. Each rule in that script is there because it shipped broken once.
+
+`src/motion.ts` settles the question once, before the first card is built, and
+writes the answer to `<html data-motion="on|off">`. Every stylesheet reads that
+attribute rather than asking `prefers-reduced-motion` itself, because a media
+query cannot be overruled from inside the page and this one has to be.
 
 ## The password gate
 
