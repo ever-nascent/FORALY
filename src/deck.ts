@@ -1,5 +1,6 @@
 import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
+import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
 import type { Card } from './cards/types';
 import type { Score } from './audio';
@@ -81,6 +82,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
   let index = -1;
   let counting: CountHandle[] = [];
+  let elapsed: ElapsedHandle | null = null;
   let score: Score | null = null;
   let woken = false;
 
@@ -90,6 +92,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
     for (const handle of counting) handle.cancel();
     counting = [];
+    elapsed?.cancel();
+    elapsed = null;
 
     const leaving = nodes[index];
     if (leaving) {
@@ -124,6 +128,11 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
           if (remaining === 0) markRaceWinner(liveEls);
         })
       );
+    }
+
+    const elapsedEl = entering.querySelector<HTMLElement>('[data-elapsed-since]');
+    if (elapsedEl?.dataset.elapsedSince) {
+      elapsed = mountElapsed(elapsedEl, elapsedEl.dataset.elapsedSince);
     }
 
     index = wanted;

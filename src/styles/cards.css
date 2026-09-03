@@ -303,6 +303,32 @@
   text-wrap: pretty;
 }
 
+/* The coda: how long ago that first message was, said over in ever-smaller
+   units. Quiet — same register as the footnote above it, not a second
+   caption. */
+.quote__elapsed {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--step-small);
+  font-weight: 450;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes elapsed-line-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.quote__elapsed-line {
+  display: block;
+  animation: elapsed-line-in 220ms var(--ease-out) both;
+}
+
 .opening {
   display: grid;
   justify-items: center;

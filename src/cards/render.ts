@@ -105,6 +105,20 @@ function renderQuote(text: string): HTMLElement {
   return quote;
 }
 
+/**
+ * The coda under the first-message card: src/elapsed.ts drives the actual
+ * sequence once the card is current — this just leaves it the timestamp and
+ * marks itself decorative. It's a rapidly-changing aside, not information the
+ * card depends on, so it stays out of the screen-reader announcement the
+ * caption and footnote already cover in `describe()` below.
+ */
+function elapsedSince(sinceIso: string): HTMLElement {
+  const p = el('p', 'quote__elapsed');
+  p.dataset.elapsedSince = sinceIso;
+  p.setAttribute('aria-hidden', 'true');
+  return p;
+}
+
 function renderOpening(card: OpeningCard): HTMLElement {
   const opening = el('div', 'opening');
   opening.append(el('h1', 'opening__title', card.title));
@@ -165,6 +179,9 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
     foot.append(el('p', 'caption', card.caption));
     if ('footnote' in card && card.footnote) {
       foot.append(el('p', 'footnote', card.footnote));
+    }
+    if (card.kind === 'quote') {
+      foot.append(elapsedSince(card.timestamp));
     }
     stack.append(foot);
   }
