@@ -347,7 +347,7 @@ function build(messages, config) {
         text: first.content,
         author: first.authorId === her ? herName : himName,
         timestamp: messages.find((m) => m.id === first.id).timestamp,
-        caption: first.authorId === her ? 'The first thing you said to me.' : 'How this started.',
+        caption: first.authorId === her ? "Who thought we'd get this far?" : 'How it all started.',
         footnote: `${longMonthDay(first.day, config.timezone)}, ${clockPhrase(first.minuteOfDay)}`,
       },
       {
