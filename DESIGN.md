@@ -202,8 +202,36 @@ of card enters in its own way, and the figure always lands last:
 | Quotes | A clip-path wipe down the lines, like it is being typed |
 | Opening | The title wipes across |
 
-Behind all of them the shapes scale up on a 46ms stagger, and the three
-compositions built from concentric forms sway slowly while their card is up.
+Behind all of them the shapes scale up on a 46ms stagger.
+
+**And then nothing stops.** A card that freezes after its reveal is a still
+image she is looking at for the next twenty seconds, so every part keeps moving
+once it has arrived — each on its own period, so a composition breathes rather
+than marching:
+
+| Card | What keeps moving |
+| --- | --- |
+| Opening | The rings go out as sonar, over and over |
+| Messages | The satellite orbits the count; the disc breathes |
+| Words | The bars rise and fall like a meter |
+| Who wrote more | The two circles drift together and apart |
+| The hour | The clock runs — two hands, different rates |
+| Streak | The days light up in a diagonal wave |
+| Her word | The blob turns slowly, two layers against each other |
+| Laughs | The rays pulse outward |
+| First message | The halo breathes; the ring ripples off it |
+| 4am | The moon drifts, the stars go in and out |
+| Longest conversation | Four rings turning at four different speeds |
+| Longest silence | Almost nothing: a line that stretches, a dot that drifts |
+| Closing | Five petals turning at different rates |
+
+The light in the ground moves too: the glow is its own oversized element on a
+26s drift, so the light source travels across the card rather than sitting where
+it was painted.
+
+Every part of this is `transform` and `opacity` only, so it runs on the
+compositor rather than the main thread, and only ever on the card that is
+actually up — the other twelve are idle.
 
 Between cards is a parallax push: the incoming card travels the full width, the
 outgoing one 28% of it, on `cubic-bezier(0.32, 0.72, 0, 1)` over 520ms. The seam
@@ -218,8 +246,10 @@ magnitude is the point. The counter runs on the same cubic-bezier as the
 landing, solved exactly rather than approximated, and a hidden ghost at the
 final value holds the width so the digits cannot shift under themselves.
 
-**`prefers-reduced-motion` is gentler, not off:** opacity alone, no push, no
-sway, no per-letter stagger, no count-up, and the score starts muted.
+**`prefers-reduced-motion` is gentler, not off:** every part still arrives, but
+opacity alone, no push, no per-letter stagger, no count-up, no drifting light,
+and nothing loops — verified as zero running infinite animations. The score
+starts muted.
 
 ## Chrome
 

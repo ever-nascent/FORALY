@@ -78,7 +78,7 @@
 .shapes {
   position: absolute;
   inset: 0;
-  z-index: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   pointer-events: none;
@@ -87,7 +87,7 @@
 
 .card__stack {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .shape {
@@ -124,23 +124,6 @@
 
 .card[data-state='current'] .shape {
   animation: shape-in var(--dur-shape) var(--ease-out) calc(var(--i) * var(--stagger)) both;
-}
-
-/* A slow sway on the three compositions built out of concentric forms. Scaled
-   up first so the rotation can never expose a corner. */
-@keyframes sway {
-  from {
-    transform: scale(1.08) rotate(-3.5deg);
-  }
-  to {
-    transform: scale(1.08) rotate(3.5deg);
-  }
-}
-
-.card[data-state='current'] .shapes--rings,
-.card[data-state='current'] .shapes--spiral,
-.card[data-state='current'] .shapes--bloom {
-  animation: sway 24s var(--ease-in-out) infinite alternate;
 }
 
 /* --- Figures -------------------------------------------------------------- */
@@ -503,12 +486,196 @@
     }
   }
 
-  .card[data-state='current'] .shapes {
-    animation: none;
-  }
-
   /* One letter at a time is movement dressed as type; reveal the word whole. */
   .card[data-state='current'] .word__letter {
     animation-delay: var(--delay-land);
+  }
+
+}
+
+
+/* --- Ambient motion -------------------------------------------------------
+   A card that stops moving after its reveal is a still image she is looking at
+   for the next twenty seconds. Every part keeps going once it has arrived, on
+   its own period, so the composition breathes rather than marching.
+
+   All of it is `transform` and `opacity`, so it runs on the compositor and off
+   the main thread, and only ever on the card that is actually up.
+--------------------------------------------------------------------------- */
+
+@keyframes amb-pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes amb-breathe {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.11);
+    opacity: 0.72;
+  }
+}
+
+/* Sonar: out of the centre, over and over. */
+@keyframes amb-ripple {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+@keyframes amb-turn {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(calc(360deg * var(--dir, 1)));
+  }
+}
+
+@keyframes amb-stretch {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(calc(1 + 0.3 * var(--dir, 1)));
+  }
+}
+
+@keyframes amb-widen {
+  from {
+    transform: scaleX(0.84);
+  }
+  to {
+    transform: scaleX(1.1);
+  }
+}
+
+@keyframes amb-drift-x {
+  from {
+    transform: translateX(calc(-4px * var(--dir, 1)));
+  }
+  to {
+    transform: translateX(calc(4px * var(--dir, 1)));
+  }
+}
+
+@keyframes amb-drift-y {
+  from {
+    transform: translateY(-3px);
+  }
+  to {
+    transform: translateY(4px);
+  }
+}
+
+@keyframes amb-twinkle {
+  from {
+    opacity: 0.3;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Entry, then the loop — the loop starts as the entrance finishes. */
+.card[data-state='current'] .shape[data-motion] {
+  animation:
+    shape-in var(--dur-shape) var(--ease-out) calc(var(--i) * var(--stagger)) both,
+    var(--amb-name) var(--amb-time) var(--amb-ease) calc(var(--dur-shape) + var(--i) * var(--stagger))
+      infinite var(--amb-direction, alternate);
+}
+
+.shape[data-motion='pulse'] {
+  --amb-name: amb-pulse;
+  --amb-time: calc(var(--amb) + var(--i) * 460ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='breathe'] {
+  --amb-name: amb-breathe;
+  --amb-time: calc(var(--amb) * 1.4 + var(--i) * 700ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='stretch'] {
+  --amb-name: amb-stretch;
+  --amb-time: calc(var(--amb) * 0.5 + var(--i) * 380ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='widen'] {
+  --amb-name: amb-widen;
+  --amb-time: calc(var(--amb) * 1.8);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='driftX'] {
+  --amb-name: amb-drift-x;
+  --amb-time: calc(var(--amb) + var(--i) * 900ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='driftY'] {
+  --amb-name: amb-drift-y;
+  --amb-time: calc(var(--amb) * 1.2 + var(--i) * 800ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='twinkle'] {
+  --amb-name: amb-twinkle;
+  --amb-time: calc(var(--amb) * 0.4 + var(--i) * 520ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+/* The turning ones run one way and never reverse, so they read as machinery
+   rather than as something rocking back and forth. */
+.shape[data-motion='orbit'],
+.shape[data-motion='spin'],
+.shape[data-motion='sweep'] {
+  --amb-name: amb-turn;
+  --amb-ease: linear;
+  --amb-direction: normal;
+}
+
+.shape[data-motion='orbit'] {
+  --amb-time: calc(var(--amb) * 5.5);
+}
+
+.shape[data-motion='spin'] {
+  --amb-time: calc(var(--amb) * 6 + var(--i) * 4s);
+}
+
+/* Fast hand and slow hand, like a clock. */
+.shape[data-motion='sweep'] {
+  --amb-time: calc(var(--amb) * 2.4 + var(--i) * 6s);
+}
+
+/* The ripple is its own entrance; it does not need a separate one. */
+.card[data-state='current'] .shape[data-motion='ripple'] {
+  animation: amb-ripple calc(var(--amb) * 0.7) var(--ease-out) calc(var(--i) * 900ms) infinite;
+}
+
+/* Reduced motion, restated here because it has to beat the ambient rules above
+   and the cascade settles ties by order. Every part still arrives; nothing
+   keeps going afterwards. */
+@media (prefers-reduced-motion: reduce) {
+  .card[data-state='current'] .shape[data-motion],
+  .card[data-state='current'] .shape[data-motion='ripple'] {
+    animation: shape-in var(--dur-shape) var(--ease-out) both;
   }
 }

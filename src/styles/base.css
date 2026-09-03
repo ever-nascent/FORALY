@@ -94,8 +94,7 @@ blockquote {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  background:
-    radial-gradient(120% 92% at 50% 14%, var(--glow), var(--ground));
+  background: var(--ground);
   color: var(--ink);
   transform: translate3d(var(--card-x, 100%), 0, 0);
   visibility: hidden;
@@ -116,6 +115,29 @@ blockquote {
 .card[data-state='past'] {
   visibility: visible;
   z-index: 0;
+}
+
+/* The light in the ground is a shape of its own, and it moves. Oversized so
+   the drift can never pull its edge into the frame. */
+.card::before {
+  content: '';
+  position: absolute;
+  inset: -30%;
+  z-index: 0;
+  background: radial-gradient(closest-side, var(--glow), transparent);
+}
+
+.card[data-state='current']::before {
+  animation: glow-drift 26s var(--ease-in-out) infinite alternate;
+}
+
+@keyframes glow-drift {
+  from {
+    transform: translate3d(-7%, -5%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(7%, 6%, 0) scale(1.14);
+  }
 }
 
 /* Grain. A single static overlay; it stops the flat colour fields from
@@ -290,6 +312,11 @@ blockquote {
   }
 
   .loader__mark {
+    animation: none;
+  }
+
+  /* Nothing keeps moving on its own. */
+  .card[data-state='current']::before {
     animation: none;
   }
 }

@@ -103,6 +103,9 @@
   --dur-count: 1500ms;
   --dur-pace: 280ms;
   --stagger: 46ms;
+  /* Base period for the ambient motion. Each part offsets from this by its
+     own index so a composition never moves as one block. */
+  --amb: 9s;
 }
 
 @media (min-width: 60rem) {
