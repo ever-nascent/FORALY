@@ -65,9 +65,9 @@
   --accent: #e8b84b;
 
   /* The shape layer reads the theme rather than carrying colours of its own. */
-  --shape-a: color-mix(in srgb, var(--accent) 13%, transparent);
-  --shape-b: color-mix(in srgb, var(--ink) 8%, transparent);
-  --shape-line: color-mix(in srgb, var(--accent) 24%, transparent);
+  --shape-a: color-mix(in srgb, var(--accent) 30%, transparent);
+  --shape-b: color-mix(in srgb, var(--ink) 18%, transparent);
+  --shape-line: color-mix(in srgb, var(--accent) 48%, transparent);
 
   /* --- Type ---------------------------------------------------------------
      Two families, one rule: the display face sets figures and the one word and
@@ -104,8 +104,10 @@
   --dur-pace: 280ms;
   --stagger: 46ms;
   /* Base period for the ambient motion. Each part offsets from this by its
-     own index so a composition never moves as one block. */
-  --amb: 9s;
+     own index so a composition never moves as one block. Short enough that a
+     glance of two or three seconds catches something moving — at the leisurely
+     periods this started with, every card measured as a still image. */
+  --amb: 5.5s;
 }
 
 @media (min-width: 60rem) {

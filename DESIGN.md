@@ -227,7 +227,18 @@ than marching:
 
 The light in the ground moves too: the glow is its own oversized element on a
 26s drift, so the light source travels across the card rather than sitting where
-it was painted.
+it was painted. It stays a subtle lift, though — a glow bright enough to watch
+move is a glow that eats the contrast of the type sitting on it.
+
+**Ambient motion is measured, not assumed.** The first version of this ran at
+periods of nine to sixty-five seconds with shapes at 13% opacity, and every card
+measured as a still image: two of them changed 0.0% of their pixels over two and
+a half seconds. Shapes now sit at 30% (fills) and 48% (strokes), rotations take
+fifteen to twenty seconds rather than a minute, and every card changes between
+7% and 65% of its pixels in a two-and-a-half-second window. The card about how
+long they went quiet is still the sparsest — one line and one mark — but that
+mark now travels a long arc, because a card that does not move at all is
+indistinguishable from a card that is broken.
 
 Every part of this is `transform` and `opacity` only, so it runs on the
 compositor rather than the main thread, and only ever on the card that is

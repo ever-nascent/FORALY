@@ -107,7 +107,7 @@
 .shape--line {
   fill: none;
   stroke: var(--shape-line);
-  stroke-width: 0.7;
+  stroke-width: 0.9;
   stroke-linecap: round;
 }
 
@@ -505,21 +505,21 @@
 
 @keyframes amb-pulse {
   from {
-    transform: scale(1);
+    transform: scale(0.96);
   }
   to {
-    transform: scale(1.07);
+    transform: scale(1.18);
   }
 }
 
 @keyframes amb-breathe {
   from {
-    transform: scale(1);
+    transform: scale(0.98);
     opacity: 1;
   }
   to {
-    transform: scale(1.11);
-    opacity: 0.72;
+    transform: scale(1.15);
+    opacity: 0.62;
   }
 }
 
@@ -552,43 +552,53 @@
     transform: scaleY(1);
   }
   to {
-    transform: scaleY(calc(1 + 0.3 * var(--dir, 1)));
+    transform: scaleY(calc(1 + 0.5 * var(--dir, 1)));
   }
 }
 
 @keyframes amb-widen {
   from {
-    transform: scaleX(0.84);
+    transform: scaleX(0.55);
   }
   to {
-    transform: scaleX(1.1);
+    transform: scaleX(1.3);
   }
 }
 
 @keyframes amb-drift-x {
   from {
-    transform: translateX(calc(-4px * var(--dir, 1)));
+    transform: translateX(calc(-10px * var(--dir, 1)));
   }
   to {
-    transform: translateX(calc(4px * var(--dir, 1)));
+    transform: translateX(calc(10px * var(--dir, 1)));
   }
 }
 
 @keyframes amb-drift-y {
   from {
-    transform: translateY(-3px);
+    transform: translateY(-9px);
   }
   to {
-    transform: translateY(4px);
+    transform: translateY(11px);
   }
 }
 
 @keyframes amb-twinkle {
   from {
-    opacity: 0.3;
+    opacity: 0.12;
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Rays: turning and reaching out at the same time. */
+@keyframes amb-flare {
+  from {
+    transform: rotate(0deg) scale(0.88);
+  }
+  to {
+    transform: rotate(calc(26deg * var(--dir, 1))) scale(1.2);
   }
 }
 
@@ -608,7 +618,7 @@
 
 .shape[data-motion='breathe'] {
   --amb-name: amb-breathe;
-  --amb-time: calc(var(--amb) * 1.4 + var(--i) * 700ms);
+  --amb-time: calc(var(--amb) + var(--i) * 600ms);
   --amb-ease: var(--ease-in-out);
 }
 
@@ -620,7 +630,7 @@
 
 .shape[data-motion='widen'] {
   --amb-name: amb-widen;
-  --amb-time: calc(var(--amb) * 1.8);
+  --amb-time: calc(var(--amb) * 1.3);
   --amb-ease: var(--ease-in-out);
 }
 
@@ -632,13 +642,19 @@
 
 .shape[data-motion='driftY'] {
   --amb-name: amb-drift-y;
-  --amb-time: calc(var(--amb) * 1.2 + var(--i) * 800ms);
+  --amb-time: calc(var(--amb) + var(--i) * 700ms);
   --amb-ease: var(--ease-in-out);
 }
 
 .shape[data-motion='twinkle'] {
   --amb-name: amb-twinkle;
   --amb-time: calc(var(--amb) * 0.4 + var(--i) * 520ms);
+  --amb-ease: var(--ease-in-out);
+}
+
+.shape[data-motion='flare'] {
+  --amb-name: amb-flare;
+  --amb-time: calc(var(--amb) * 0.9 + var(--i) * 220ms);
   --amb-ease: var(--ease-in-out);
 }
 
@@ -653,21 +669,25 @@
 }
 
 .shape[data-motion='orbit'] {
-  --amb-time: calc(var(--amb) * 5.5);
+  --amb-time: calc(var(--amb) * 3);
+}
+
+.shapes--sparse .shape[data-motion='orbit'] {
+  --amb-time: calc(var(--amb) * 2.4);
 }
 
 .shape[data-motion='spin'] {
-  --amb-time: calc(var(--amb) * 6 + var(--i) * 4s);
+  --amb-time: calc(var(--amb) * 2.6 + var(--i) * 2.2s);
 }
 
 /* Fast hand and slow hand, like a clock. */
 .shape[data-motion='sweep'] {
-  --amb-time: calc(var(--amb) * 2.4 + var(--i) * 6s);
+  --amb-time: calc(var(--amb) * 2 + var(--i) * 5s);
 }
 
 /* The ripple is its own entrance; it does not need a separate one. */
 .card[data-state='current'] .shape[data-motion='ripple'] {
-  animation: amb-ripple calc(var(--amb) * 0.7) var(--ease-out) calc(var(--i) * 900ms) infinite;
+  animation: amb-ripple calc(var(--amb) * 0.8) var(--ease-out) calc(var(--i) * 700ms) infinite;
 }
 
 /* Reduced motion, restated here because it has to beat the ambient rules above

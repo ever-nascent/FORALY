@@ -26,6 +26,7 @@ type Motion =
   | 'spin'
   | 'stretch'
   | 'widen'
+  | 'flare'
   | 'driftX'
   | 'driftY'
   | 'twinkle';
@@ -211,7 +212,7 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
             },
             'line',
             i,
-            { motion: 'pulse', pivot: CENTRE }
+            { motion: 'flare', pivot: CENTRE, mirror: i % 2 === 1 }
           )
         );
       }
@@ -261,14 +262,16 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
         )
       );
 
-    // The quiet one. Almost nothing in the frame, on purpose, barely moving.
+    // The quiet one. Still the emptiest frame in the set — but one mark that
+    // travels a long way round it, because a card that does not move at all is
+    // indistinguishable from a card that is broken.
     case 'sparse':
       return [
         part('path', { d: 'M 6 62 L 58 62', fill: 'none' }, 'line', 0, {
           motion: 'widen',
           pivot: [6, 62],
         }),
-        part('circle', { cx: 84, cy: 32, r: 3 }, 'a', 1, { motion: 'driftY' }),
+        part('circle', { cx: 82, cy: 20, r: 15 }, 'a', 1, { motion: 'orbit', pivot: CENTRE }),
       ];
 
     // Her rose, opening — petals turning at slightly different rates.
