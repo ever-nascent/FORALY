@@ -354,7 +354,7 @@ function build(messages, config) {
         kind: 'figure',
         value: latest.minuteOfDay,
         format: 'clock',
-        caption: 'The latest we ever stayed up talking.',
+        caption: "So much for a 'bed time', huh?",
         footnote: longMonthDay(latest.day, config.timezone),
       },
       {
