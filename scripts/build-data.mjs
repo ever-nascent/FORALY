@@ -326,7 +326,7 @@ function build(messages, config) {
         value: streak,
         format: 'integer',
         unit: streak === 1 ? 'day' : 'days',
-        caption: 'Days in a row without a gap.',
+        caption: "Can't get enough of me? Eh?",
       },
       {
         kind: 'word',
