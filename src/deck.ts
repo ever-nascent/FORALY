@@ -29,6 +29,37 @@ function cssMs(name: string): number {
   return raw.endsWith('ms') ? value : value * 1000;
 }
 
+/**
+ * Called once every counter on the card has landed. A card with one counter
+ * has nothing to compare; a card with two — a split, racing to their values —
+ * gets the higher one marked, so the CSS can give it a quiet glow. Reads the
+ * numbers back off the elements themselves rather than the card data, so this
+ * stays generic to "however many things counted" instead of knowing about
+ * split cards specifically.
+ */
+function markRaceWinner(liveEls: HTMLElement[]): void {
+  if (liveEls.length < 2) return;
+
+  let winner: HTMLElement | null = null;
+  let max = -Infinity;
+  let tie = false;
+
+  for (const liveEl of liveEls) {
+    const box = liveEl.closest<HTMLElement>('[data-count-box]');
+    if (!box) continue;
+    const value = Number(liveEl.dataset.countTo);
+    if (value > max) {
+      max = value;
+      winner = box;
+      tie = false;
+    } else if (value === max) {
+      tie = true;
+    }
+  }
+
+  if (winner && !tie) winner.dataset.countWinner = 'true';
+}
+
 export interface Deck {
   /** The score arrives after the first card, so it can never delay it. */
   attachScore(score: Score): void;
@@ -49,7 +80,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   els.pace.replaceChildren(...segments);
 
   let index = -1;
-  let counting: CountHandle | null = null;
+  let counting: CountHandle[] = [];
   let score: Score | null = null;
   let woken = false;
 
@@ -57,8 +88,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     const wanted = Math.min(Math.max(target, 0), cards.length - 1);
     if (wanted === index) return;
 
-    counting?.cancel();
-    counting = null;
+    for (const handle of counting) handle.cancel();
+    counting = [];
 
     const leaving = nodes[index];
     if (leaving) {
@@ -84,13 +115,14 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
       document.body.style.setProperty('--behind', entering.dataset.ground);
     }
 
-    const live = entering.querySelector<HTMLElement>('[data-count-to]');
-    if (live?.dataset.countTo) {
-      counting = countUp(
-        live,
-        Number(live.dataset.countTo),
-        cssMs('--dur-count'),
-        cssMs('--delay-land')
+    const liveEls = [...entering.querySelectorAll<HTMLElement>('[data-count-to]')];
+    if (liveEls.length > 0) {
+      let remaining = liveEls.length;
+      counting = liveEls.map((liveEl) =>
+        countUp(liveEl, Number(liveEl.dataset.countTo), cssMs('--dur-count'), cssMs('--delay-land'), () => {
+          remaining -= 1;
+          if (remaining === 0) markRaceWinner(liveEls);
+        })
       );
     }
 

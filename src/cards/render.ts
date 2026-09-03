@@ -42,15 +42,33 @@ function renderFigure(card: FigureCard): HTMLElement {
   return figure;
 }
 
+/**
+ * Both sides race to their number at once. Integers only — a clock doesn't
+ * have a "more of it", so those keep the plain, static value. The winning
+ * side is marked once counting finishes; see the `data-count-winner` wiring
+ * in deck.ts, which decides that without either side knowing about the other.
+ */
+function splitValue(text: string, countTo?: number): HTMLElement {
+  const wrap = el('span', 'split__value');
+  wrap.dataset.fit = text;
+  wrap.append(el('span', 'split__ghost', text));
+
+  const live = el('span', 'split__live', countTo === undefined ? text : formatInteger(0));
+  if (countTo !== undefined) live.dataset.countTo = String(countTo);
+  wrap.append(live);
+  return wrap;
+}
+
 function renderSplit(card: SplitCard): HTMLElement {
   const split = el('div', 'split');
   const [first, second] = card.sides;
+  const races = card.format === 'integer';
 
   const side = (label: string, value: number): HTMLElement => {
     const box = el('div', 'split__side');
-    const figure = el('span', 'split__value', formatValue(value, card.format).text);
-    figure.dataset.fit = figure.textContent ?? '';
-    box.append(figure, el('span', 'split__label', label));
+    if (races) box.dataset.countBox = '';
+    const text = formatValue(value, card.format).text;
+    box.append(splitValue(text, races ? value : undefined), el('span', 'split__label', label));
     return box;
   };
 

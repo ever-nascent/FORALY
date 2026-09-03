@@ -193,6 +193,8 @@
 }
 
 .split__value {
+  position: relative;
+  display: block;
   font-family: var(--face-display);
   font-weight: 400;
   font-size: min(
@@ -204,11 +206,52 @@
   color: var(--ink);
 }
 
+/* The ghost holds the final value's width so the race can't shift the layout
+   as it counts, same trick as .figure__ghost. */
+.split__ghost {
+  visibility: hidden;
+}
+
+.split__live {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-align: center;
+}
+
 .split__label {
   font-size: var(--step-small);
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--faint);
+}
+
+/* --- The race --------------------------------------------------------------
+   Both sides count up together (src/deck.ts); whichever lands higher gets a
+   quiet glow once both have finished. The glow is the accent colour used as
+   a shadow rather than a text colour, so it never has to clear a text-contrast
+   bar the way recolouring the numeral or label would. */
+.split__side[data-count-winner] .split__value {
+  filter: drop-shadow(0 0 10px var(--accent));
+  animation: split-win var(--dur-land) var(--ease-out) both;
+}
+
+@keyframes split-win {
+  from {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Still means still: the glow stays as a static mark of who won, but nothing
+   pulses to get there. */
+:root[data-motion='off'] .split__side[data-count-winner] .split__value {
+  animation: none;
 }
 
 /* --- Word ----------------------------------------------------------------- */

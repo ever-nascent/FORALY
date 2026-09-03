@@ -43,14 +43,22 @@ export interface CountHandle {
   cancel(): void;
 }
 
+/**
+ * `onDone` fires once the number actually reaches its target — never on
+ * `cancel()`, which is a card being left, not a count finishing. A split
+ * card's race uses it to know when *both* sides have landed before it
+ * decides who won.
+ */
 export function countUp(
   el: HTMLElement,
   to: number,
   durationMs: number,
-  delayMs: number
+  delayMs: number,
+  onDone?: () => void
 ): CountHandle {
   if (durationMs <= 0) {
     el.textContent = formatInteger(to);
+    onDone?.();
     return { cancel() {} };
   }
 
@@ -67,7 +75,11 @@ export function countUp(
     }
     const t = Math.min(elapsed / durationMs, 1);
     el.textContent = formatInteger(to * ease(t));
-    if (t < 1) frame = requestAnimationFrame(step);
+    if (t < 1) {
+      frame = requestAnimationFrame(step);
+    } else {
+      onDone?.();
+    }
   };
 
   frame = requestAnimationFrame(step);
