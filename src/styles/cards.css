@@ -287,22 +287,25 @@
 }
 
 /* --- The goodnight / good-morning toggle -----------------------------------
-   The one interactive card. Fades to black, swaps everything underneath
-   (src/greeting.ts), fades back — see the opacity transition added to .card
-   itself in base.css. */
+   The one interactive card. The shapes and the stack (word, caption, button)
+   fade out, swap underneath, fade back in — never the card itself. The card
+   root has to stay opaque throughout: a card mid-transition sits in front of
+   the previous one, which is still visible, only pushed aside — see
+   .card[data-state='past'] above — and fading the root would show it
+   through, which is exactly the glitch this replaced. */
 
-.card.greeting-fade {
+[data-greeting-shapes].greeting-fade,
+.card__stack.greeting-fade {
   opacity: 0;
+  transition: opacity calc(var(--dur-greeting) / 2) var(--ease-out);
 }
 
-/* The two wrappers render.ts gives greeting.ts something to replaceChildren()
-   on. `display: contents` makes each disappear from layout entirely, so
-   .shapes still positions against .card and .word still centres in
-   .card__head's grid exactly as if the wrapper weren't there. */
-[data-greeting-shapes],
-[data-greeting-word] {
-  display: contents;
-}
+/* [data-greeting-shapes] and [data-greeting-word] are otherwise bare wrappers
+   render.ts gives greeting.ts something to replaceChildren() on. Neither
+   needs `display: contents` — .shapes is absolutely positioned regardless of
+   how many plain, unpositioned ancestors sit between it and .card, and .word
+   is a normal block that just sizes the wrapper to fit it — so both collapse
+   to their child's box exactly as if the wrapper weren't there. */
 
 .greeting__toggle {
   margin-top: 0.4rem;

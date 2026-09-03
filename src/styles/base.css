@@ -100,10 +100,7 @@ blockquote {
   visibility: hidden;
   transition:
     transform var(--dur-push) var(--ease-push),
-    visibility 0s linear var(--dur-push),
-    /* Untouched except by the goodnight/good-morning toggle's fade — no other
-       card ever changes its own opacity after landing. */
-    opacity calc(var(--dur-greeting) / 2) var(--ease-out);
+    visibility 0s linear var(--dur-push);
 }
 
 .card[data-state='current'] {

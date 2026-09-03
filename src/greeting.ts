@@ -26,11 +26,12 @@ type Phase = 'night' | 'day';
 
 export function wireGreeting(root: HTMLElement, card: GreetingCard, index: number): void {
   const shapesHolder = root.querySelector<HTMLElement>('[data-greeting-shapes]');
+  const stack = root.querySelector<HTMLElement>('.card__stack');
   const wordHolder = root.querySelector<HTMLElement>('[data-greeting-word]');
   const caption = root.querySelector<HTMLElement>('[data-greeting-caption]');
   const toggle = root.querySelector<HTMLButtonElement>('[data-greeting-toggle]');
   const label = root.querySelector<HTMLElement>('[data-greeting-toggle-label]');
-  if (!shapesHolder || !wordHolder || !caption || !toggle || !label) return;
+  if (!shapesHolder || !stack || !wordHolder || !caption || !toggle || !label) return;
 
   let phase: Phase = 'night';
 
@@ -72,15 +73,22 @@ export function wireGreeting(root: HTMLElement, card: GreetingCard, index: numbe
       return;
     }
 
-    // Fade the card to black, swap everything while it's hidden, fade back
-    // in — a transition, not an instant snap, without needing to animate a
-    // colour value directly (fragile across engines; this codebase has
-    // shipped that bug once already, see check-css.mjs).
-    root.classList.add('greeting-fade');
+    // Fade the shapes and the stack out, swap everything while they're
+    // hidden, fade back in — a transition, not an instant snap, without
+    // trying to animate a colour value directly (fragile across engines;
+    // this codebase has shipped that bug once already, see check-css.mjs).
+    // Never the card root itself: it sits in front of the previous card,
+    // which is still visible, only pushed aside, and fading the root would
+    // show it through.
+    shapesHolder.classList.add('greeting-fade');
+    stack.classList.add('greeting-fade');
     window.setTimeout(() => {
       apply(next, side);
-      void root.offsetWidth; // force a reflow so the class removal below re-triggers the transition
-      root.classList.remove('greeting-fade');
+      // Force a reflow so the class removal below re-triggers the transition
+      // instead of being coalesced with the addition above into a no-op.
+      void shapesHolder.offsetWidth;
+      shapesHolder.classList.remove('greeting-fade');
+      stack.classList.remove('greeting-fade');
     }, dur / 2);
   });
 }
