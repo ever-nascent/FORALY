@@ -374,6 +374,9 @@ function build(messages, config) {
         unit: 'hours',
         caption: "If you ever stop talking to me for this long again, we're gonna have a PROBLEM.",
       },
+      // TODO(closing card): earmarked for a redesign — holding the current
+      // one-line-and-nothing-else treatment (see ClosingCard in
+      // cards/types.ts and the closing case in cards/render.ts) until then.
       {
         kind: 'closing',
         text: closing.content,
