@@ -1,7 +1,7 @@
 import { formatInteger, formatValue } from '../format';
-import { themeFor, tonesFor, type Theme } from '../palette';
+import { GREETING_NIGHT, themeFor, tonesFor, type Theme } from '../palette';
 import { shapeLayer } from '../shapes';
-import type { Card, FigureCard, OpeningCard, SplitCard, WordCard } from './types';
+import type { Card, FigureCard, GreetingCard, OpeningCard, SplitCard, WordCard } from './types';
 
 /** Every string here comes from the export, so nothing is ever set as HTML. */
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -81,21 +81,31 @@ function renderSplit(card: SplitCard): HTMLElement {
   return split;
 }
 
-/** The word arrives a letter at a time, so it reads as something being said. */
-function renderWord(card: WordCard): HTMLElement {
-  const word = el('div', 'word');
+/**
+ * The word arrives a letter at a time, so it reads as something being said.
+ * Given the numeral treatment: letter-by-letter, with its count
+ * underneath. Shared by the plain word card and by each side of the
+ * goodnight/good-morning toggle, which rebuilds one of these fresh on every
+ * switch rather than trying to mutate letters in place.
+ */
+export function wordBlock(word: string, value: number, unit: string | undefined): HTMLElement {
+  const wrap = el('div', 'word');
   const text = el('span', 'word__text');
-  text.dataset.fit = card.word;
+  text.dataset.fit = word;
 
-  for (const [i, character] of [...card.word].entries()) {
+  for (const [i, character] of [...word].entries()) {
     const letter = el('span', 'word__letter', character);
     letter.style.setProperty('--i', String(i));
     text.append(letter);
   }
 
-  word.append(text);
-  word.append(el('span', 'word__count', `${formatInteger(card.value)} ${card.unit ?? 'times'}`));
-  return word;
+  wrap.append(text);
+  wrap.append(el('span', 'word__count', `${formatInteger(value)} ${unit ?? 'times'}`));
+  return wrap;
+}
+
+function renderWord(card: WordCard): HTMLElement {
+  return wordBlock(card.word, card.value, card.unit);
 }
 
 /**
@@ -131,7 +141,9 @@ function renderOpening(card: OpeningCard): HTMLElement {
   return opening;
 }
 
-function head(card: Card): HTMLElement {
+type NonGreetingCard = Exclude<Card, GreetingCard>;
+
+function head(card: NonGreetingCard): HTMLElement {
   switch (card.kind) {
     case 'opening':
       return renderOpening(card);
@@ -147,7 +159,9 @@ function head(card: Card): HTMLElement {
   }
 }
 
-function paint(root: HTMLElement, theme: Theme): void {
+/** Exported: src/greeting.ts repaints the same card between two palettes
+ *  on a click, rather than a fresh card being built. */
+export function paint(root: HTMLElement, theme: Theme): void {
   root.style.setProperty('--ground', theme.ground);
   root.style.setProperty('--glow', theme.glow);
   root.style.setProperty('--ink', theme.ink);
@@ -163,7 +177,61 @@ function paint(root: HTMLElement, theme: Theme): void {
   root.dataset.ground = theme.ground;
 }
 
+/**
+ * The one card with two states. Built entirely apart from the generic path
+ * below — it doesn't take a `theme` pin (it owns two palettes outright, see
+ * GREETING_NIGHT/GREETING_DAY in palette.ts) and its caption lives one level
+ * down, per side, rather than shared. Starts on the night side; src/deck.ts
+ * wires the toggle once, right after this builds, via wireGreeting() in
+ * src/greeting.ts — not on every visit, the way the count-ups and the
+ * first-message coda are, because a switch should stay where she left it,
+ * not reset itself each time she comes back to the card.
+ */
+function renderGreetingCard(card: GreetingCard, index: number, total: number): HTMLElement {
+  const root = el('article', 'card card--greeting');
+  root.dataset.state = 'upcoming';
+  root.dataset.greetingState = 'night';
+  root.setAttribute('aria-label', `${index + 1} of ${total}`);
+  root.inert = true;
+  paint(root, GREETING_NIGHT);
+
+  const shapesHolder = el('div', undefined);
+  shapesHolder.dataset.greetingShapes = '';
+  shapesHolder.append(shapeLayer(GREETING_NIGHT.shape, `${index}-night`));
+  root.append(shapesHolder);
+
+  const stack = el('div', 'card__stack');
+
+  const headBox = el('div', 'card__head');
+  const wordHolder = el('div', undefined);
+  wordHolder.dataset.greetingWord = '';
+  wordHolder.append(wordBlock(card.night.word, card.night.value, card.night.unit));
+  headBox.append(wordHolder);
+  stack.append(headBox);
+
+  const foot = el('div', 'card__foot');
+  foot.append(el('hr', 'rule'));
+  const caption = el('p', 'caption', card.night.caption);
+  caption.dataset.greetingCaption = '';
+  foot.append(caption);
+
+  const toggle = el('button', 'greeting__toggle');
+  toggle.type = 'button';
+  toggle.dataset.greetingToggle = '';
+  toggle.setAttribute('aria-pressed', 'false');
+  const label = el('span', undefined, 'See it by morning');
+  label.dataset.greetingToggleLabel = '';
+  toggle.append(label);
+  foot.append(toggle);
+
+  stack.append(foot);
+  root.append(stack);
+  return root;
+}
+
 export function renderCard(card: Card, index: number, total: number): HTMLElement {
+  if (card.kind === 'greeting') return renderGreetingCard(card, index, total);
+
   const theme = themeFor(index, card.kind === 'closing', 'theme' in card ? card.theme : undefined);
 
   const root = el('article', `card card--${card.kind}`);
@@ -213,5 +281,10 @@ export function describe(card: Card): string {
       return `${card.author} said, ${card.text}. ${card.caption}`;
     case 'closing':
       return `${card.author} said, ${card.text}`;
+    case 'greeting':
+      return (
+        `${card.night.word}, ${formatInteger(card.night.value)} ${card.night.unit ?? 'times'}. ` +
+        `${card.night.caption} A button switches it to good morning.`
+      );
   }
 }

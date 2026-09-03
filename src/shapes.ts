@@ -290,6 +290,50 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
           i * 36
         )
       );
+
+    // Goodnight: a scatter, not a single mark — the whole sky, twinkling out
+    // of sync. No moon here; that one belongs to the card about staying up
+    // until 4am, and this is a different hour.
+    case 'stars': {
+      const positions: [number, number, number][] = [
+        [12, 16, 1.6], [30, 8, 1.1], [48, 20, 1.9], [66, 12, 1.2], [84, 18, 1.5],
+        [94, 34, 1.1], [6, 40, 1.3], [36, 36, 1.7], [58, 42, 1.1], [78, 46, 1.4],
+        [16, 60, 1.2], [42, 56, 1.6], [64, 62, 1.1], [88, 58, 1.5],
+        [10, 78, 1.4], [32, 82, 1.1], [54, 76, 1.7], [74, 84, 1.2], [92, 80, 1.5],
+      ];
+      return positions.map(([cx, cy, r], i) =>
+        part('circle', { cx, cy, r }, i % 3 === 0 ? 'a' : 'line', i, { motion: 'twinkle' })
+      );
+    }
+
+    // Good morning: the sun coming up low, rays fanning out across the sky
+    // it's rising into.
+    case 'sunrise': {
+      const rays: SVGElement[] = [];
+      for (let i = 0; i < 9; i += 1) {
+        const angle = Math.PI + (i / 8) * Math.PI;
+        const inner = 24;
+        const outer = 48;
+        rays.push(
+          part(
+            'path',
+            {
+              d:
+                `M ${50 + Math.cos(angle) * inner} ${80 + Math.sin(angle) * inner} ` +
+                `L ${50 + Math.cos(angle) * outer} ${80 + Math.sin(angle) * outer}`,
+              fill: 'none',
+            },
+            'line',
+            i,
+            { motion: 'flare', pivot: [50, 80], mirror: i % 2 === 1 }
+          )
+        );
+      }
+      return [
+        part('circle', { cx: 50, cy: 80, r: 20 }, 'a', 0, { motion: 'breathe', pivot: [50, 80] }),
+        ...rays,
+      ];
+    }
   }
 }
 

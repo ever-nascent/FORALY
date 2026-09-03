@@ -70,12 +70,19 @@
       "caption": "Can't get enough of me? Eh?"
     },
     {
-      "kind": "word",
-      "theme": "hers",
-      "word": "goodnight",
-      "value": 271,
-      "unit": "times",
-      "caption": "I'm not surprised."
+      "kind": "greeting",
+      "night": {
+        "word": "goodnight",
+        "value": 271,
+        "unit": "times",
+        "caption": "The last thing we say before bed."
+      },
+      "day": {
+        "word": "good morning",
+        "value": 194,
+        "unit": "times",
+        "caption": "The first thing we say when we wake up."
+      }
     },
     {
       "kind": "figure",

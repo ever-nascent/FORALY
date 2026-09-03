@@ -163,7 +163,7 @@ in front of it:
 | Who wrote more | Two overlapping circles | Two people, and the overlap |
 | The hour | A clock face, off-centre | The hand points at the hour without crossing it |
 | Streak | A grid of dots below the figure | One mark per day, unbroken |
-| Her word | A soft blob | The only unruled shape in the set, on her card |
+| Goodnight / good morning | A scattered starfield, or the sun coming up | Whichever half of the day she's looking at |
 | Laughs | Rays going outward | Everything leaving at once |
 | First message | One halo | A single message, held |
 | 4am | A crescent and two small stars | The small hours |
@@ -174,6 +174,16 @@ in front of it:
 Compositions are placed to complement each card's alignment — a card that sets
 its type at the top gets its shapes below it, and the reverse — so nothing ever
 runs through a numeral.
+
+**One card carries two of everything.** The goodnight/good-morning card is the
+one interactive moment in the sequence — a button swaps it between two full
+palettes (`GREETING_NIGHT`/`GREETING_DAY` in `src/palette.ts`, contrast-checked
+the same way the thirteen-theme arc is, not part of that arc or its cycling),
+two shapes (`stars`/`sunrise`), and two words, fading through black rather than
+cutting or trying to animate a colour value directly across the swap. The
+toggle is wired once, when the card is built, and stays wherever she leaves
+it — unlike the count-ups and the first-message coda, it's a switch, not a
+reveal, and shouldn't reset itself on a revisit.
 
 ## Type
 
@@ -198,7 +208,7 @@ of card enters in its own way, and the figure always lands last:
 | --- | --- |
 | Figures | The number lands at size and settles, punching down from 1.16 |
 | Who wrote more | The two sides come in from opposite edges, 70ms apart |
-| Her word | One letter at a time, 38ms apart, each with a little rotation |
+| Goodnight / good morning | One letter at a time, 38ms apart, each with a little rotation — same on every switch, since each toggle rebuilds the word fresh |
 | Quotes | A clip-path wipe down the lines, like it is being typed |
 | Opening | The title wipes across |
 
@@ -217,7 +227,8 @@ than marching:
 | Who wrote more | The two circles drift together and apart |
 | The hour | The clock runs — two hands, different rates |
 | Streak | The days light up in a diagonal wave |
-| Her word | The blob turns slowly, two layers against each other |
+| Goodnight | The stars twinkle out of sync, a whole sky's worth |
+| Good morning | The sun breathes; its rays pulse outward |
 | Laughs | The rays pulse outward |
 | First message | The halo breathes; the ring ripples off it |
 | 4am | The moon drifts, the stars go in and out |

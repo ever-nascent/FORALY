@@ -109,6 +109,9 @@
   --dur-count: 1500ms;
   --dur-pace: 280ms;
   --stagger: 46ms;
+  /* The goodnight/good-morning toggle's fade-through-black. Read as one
+     duration in src/greeting.ts and split in half: dip to 0, swap, recover. */
+  --dur-greeting: 420ms;
   /* Base period for the ambient motion. Each part offsets from this by its
      own index so a composition never moves as one block. Short enough that a
      glance of two or three seconds catches something moving — at the leisurely
@@ -133,4 +136,5 @@
   --dur-count: 0ms;
   --dur-pace: 0ms;
   --stagger: 0ms;
+  --dur-greeting: 0ms;
 }

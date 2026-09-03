@@ -286,6 +286,47 @@
   color: var(--faint);
 }
 
+/* --- The goodnight / good-morning toggle -----------------------------------
+   The one interactive card. Fades to black, swaps everything underneath
+   (src/greeting.ts), fades back — see the opacity transition added to .card
+   itself in base.css. */
+
+.card.greeting-fade {
+  opacity: 0;
+}
+
+/* The two wrappers render.ts gives greeting.ts something to replaceChildren()
+   on. `display: contents` makes each disappear from layout entirely, so
+   .shapes still positions against .card and .word still centres in
+   .card__head's grid exactly as if the wrapper weren't there. */
+[data-greeting-shapes],
+[data-greeting-word] {
+  display: contents;
+}
+
+.greeting__toggle {
+  margin-top: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.greeting__toggle:hover {
+  background: var(--shape-a);
+}
+
+.greeting__toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* --- Quote and opening ---------------------------------------------------- */
 
 .quote {

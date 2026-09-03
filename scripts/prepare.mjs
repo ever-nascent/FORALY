@@ -52,6 +52,7 @@ function validate({ meta, cards }) {
     word: ['word', 'value', 'caption'],
     quote: ['text', 'author', 'caption'],
     closing: ['text', 'author'],
+    greeting: ['night', 'day'],
   };
 
   for (const [i, card] of cards.entries()) {

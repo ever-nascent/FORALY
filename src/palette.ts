@@ -25,7 +25,9 @@ export type ShapeKind =
   | 'moon'
   | 'spiral'
   | 'sparse'
-  | 'bloom';
+  | 'bloom'
+  | 'stars'
+  | 'sunrise';
 
 /** Where the stack sits in the frame. Variety, so thirteen cards are not
  *  thirteen identical centred columns. */
@@ -92,6 +94,40 @@ export const THEMES: Theme[] = [
   { name: 'slate',    ground: '#3a4a52', glow: '#505e65', ink: '#fff3e4', quiet: '#d3dcdf', faint: '#cbd6d9', accent: '#ffa98f', shape: 'sparse', align: 'start'  },
   { name: 'rose',     ground: '#e8a0a8', glow: '#e9a5ac', ink: '#2e1638', quiet: '#4a2630', faint: '#573039', accent: '#5e2f24', shape: 'bloom',  align: 'center' },
 ];
+
+/**
+ * The one card with two palettes instead of one — src/greeting.ts crossfades
+ * the card between these on a click, rather than the deck picking one at
+ * render time the way `THEMES` does. Not part of that arc: skipped by
+ * `themeFor`'s cycling, and never a valid `theme` pin.
+ *
+ * Contrast checked the same way as the arc above — ink and accent both clear
+ * their bars against each ground, computed against the actual hex values,
+ * not eyeballed.
+ */
+export const GREETING_NIGHT: Theme = {
+  name: 'goodnight',
+  ground: '#0b1526',
+  glow: '#182a44',
+  ink: '#eef4ff',
+  quiet: '#aebcd6',
+  faint: '#93a2bd',
+  accent: '#ffd166',
+  shape: 'stars',
+  align: 'center',
+};
+
+export const GREETING_DAY: Theme = {
+  name: 'goodmorning',
+  ground: '#bfe6f2',
+  glow: '#d8f1f8',
+  ink: '#122437',
+  quiet: '#33506b',
+  faint: '#456180',
+  accent: '#b3400f',
+  shape: 'sunrise',
+  align: 'center',
+};
 
 const CLOSING = THEMES[THEMES.length - 1] as Theme;
 

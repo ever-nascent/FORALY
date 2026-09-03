@@ -21,8 +21,6 @@ const p = (...parts) => resolve(root, ...parts);
 const SESSION_GAP_MINUTES = 60;
 /** Messages before this hour belong to the night before. */
 const NIGHT_ENDS_HOUR = 6;
-/** Words shorter than this are noise however often they appear. */
-const MIN_WORD_LENGTH = 3;
 
 function die(message) {
   console.error(`\n${message}\n`);
@@ -166,10 +164,16 @@ function build(messages, config) {
   const hoursByAuthor = { [her]: new Array(24).fill(0), [him]: new Array(24).fill(0) };
   let totalWords = 0;
   let laughs = 0;
-  const herWords = new Map();
+  let goodnights = 0;
+  let goodMornings = 0;
 
   const laughPatterns = config.laughPatterns.map((s) => s.toLowerCase());
-  const stopwords = new Set(config.stopwords.map((s) => s.toLowerCase()));
+  const goodnightPatterns = (config.goodnightPatterns ?? ['goodnight', 'good night']).map((s) =>
+    s.toLowerCase()
+  );
+  const goodMorningPatterns = (config.goodMorningPatterns ?? ['good morning']).map((s) =>
+    s.toLowerCase()
+  );
 
   for (const row of rows) {
     if (row.authorId in counts) counts[row.authorId] += 1;
@@ -184,14 +188,8 @@ function build(messages, config) {
 
     const lowered = plainText(row.content).toLowerCase();
     if (laughPatterns.some((pattern) => lowered.includes(pattern))) laughs += 1;
-
-    if (row.authorId === her) {
-      for (const token of tokens) {
-        const word = token.toLowerCase();
-        if (word.length < MIN_WORD_LENGTH || stopwords.has(word)) continue;
-        herWords.set(word, (herWords.get(word) ?? 0) + 1);
-      }
-    }
+    if (goodnightPatterns.some((pattern) => lowered.includes(pattern))) goodnights += 1;
+    if (goodMorningPatterns.some((pattern) => lowered.includes(pattern))) goodMornings += 1;
   }
 
   // Longest run of consecutive days that both of them showed up for.
@@ -235,11 +233,7 @@ function build(messages, config) {
   }
 
   const longestSession = sessions.reduce((best, s) => (s.count > best.count ? s : best));
-  const [topWord, topWordCount] = [...herWords.entries()].sort(
-    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
-  )[0] ?? [null, 0];
 
-  if (!topWord) die('Could not find a most-used word for her. Check people.her.discordId.');
   if (!latest) die('No message landed in the small hours during a conversation already running.');
 
   const pick = (key) => {
@@ -345,12 +339,19 @@ function build(messages, config) {
         caption: "Can't get enough of me? Eh?",
       },
       {
-        kind: 'word',
-        theme: 'hers',
-        word: topWord,
-        value: topWordCount,
-        unit: 'times',
-        caption: "I'm not surprised.",
+        kind: 'greeting',
+        night: {
+          word: 'goodnight',
+          value: goodnights,
+          unit: 'times',
+          caption: 'The last thing we say before bed.',
+        },
+        day: {
+          word: 'good morning',
+          value: goodMornings,
+          unit: 'times',
+          caption: 'The first thing we say when we wake up.',
+        },
       },
       {
         kind: 'figure',

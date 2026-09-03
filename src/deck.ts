@@ -2,6 +2,7 @@ import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
 import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
+import { wireGreeting } from './greeting';
 import type { Card } from './cards/types';
 import type { Score } from './audio';
 
@@ -72,6 +73,15 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   const nodes = cards.map((card, i) => renderCard(card, i, cards.length));
   els.stage.replaceChildren(...nodes);
   fit(els.stage);
+
+  // The greeting toggle is wired once, here, rather than per-visit like the
+  // count-ups below — a switch should stay wherever she left it, not reset
+  // itself every time she comes back to the card.
+  for (const [i, card] of cards.entries()) {
+    if (card.kind !== 'greeting') continue;
+    const node = nodes[i];
+    if (node) wireGreeting(node, card, i);
+  }
 
   const segments = cards.map(() => {
     const seg = document.createElement('span');

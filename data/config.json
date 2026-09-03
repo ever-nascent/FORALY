@@ -12,6 +12,8 @@
     "closing": ""
   },
   "laughPatterns": ["lol", "lmao", "lmfao", "haha", "hehe", "heh", "hah", "ahaha"],
+  "goodnightPatterns": ["goodnight", "good night", "gn", "night night", "nini"],
+  "goodMorningPatterns": ["good morning", "goodmorning", "gm"],
   "stopwords": [
     "the", "a", "an", "and", "or", "but", "if", "of", "to", "in", "on", "at", "for",
     "is", "it", "its", "im", "i", "you", "u", "we", "me", "my", "your", "that", "this",
