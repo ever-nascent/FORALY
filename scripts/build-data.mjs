@@ -268,7 +268,7 @@ function build(messages, config) {
     cards: [
       {
         kind: 'opening',
-        title: 'Three months, timestamped',
+        title: 'Discord Wrapped',
         dateline: `${longMonthDay(start, config.timezone)} — ${longMonthDay(end, config.timezone)}`,
         caption: 'Counted from the log, not from memory.',
       },

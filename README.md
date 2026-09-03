@@ -1,9 +1,9 @@
-# Three months, timestamped
+# Discord Wrapped
 
-A private, password-gated Discord Wrapped: thirteen full-bleed cards, one real
-statistic each, advanced by tap, swipe or arrow key. Every card is its own
-colour world with its own shape composition and its own way of arriving. Built
-for one person, on a phone, once.
+A private, password-gated Spotify-Wrapped-style recap of a Discord conversation:
+thirteen full-bleed cards, one real statistic each, advanced by tap, swipe or
+arrow key. Every card is its own colour world with its own shape composition
+and its own way of arriving. Built for one person, on a phone, once.
 
 Static site. No API, no database, no analytics, no third-party requests — the
 fonts are self-hosted and the data is one local JSON file.

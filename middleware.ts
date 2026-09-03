@@ -91,7 +91,7 @@ function page(wrong: boolean, action: string): Response {
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#17121c">
-<title>Three months, timestamped</title>
+<title>Discord Wrapped</title>
 <link rel="icon" href="/mark.svg" type="image/svg+xml">
 <style>
   @font-face{font-family:'Schibsted Grotesk';src:url(/fonts/text-latin.woff2) format('woff2');font-weight:400 900;font-display:swap}
