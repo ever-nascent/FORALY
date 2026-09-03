@@ -163,6 +163,7 @@ function build(messages, config) {
   const wordCounts = { [her]: 0, [him]: 0 };
   const perDay = new Map();
   const hours = new Array(24).fill(0);
+  const hoursByAuthor = { [her]: new Array(24).fill(0), [him]: new Array(24).fill(0) };
   let totalWords = 0;
   let laughs = 0;
   const herWords = new Map();
@@ -173,7 +174,9 @@ function build(messages, config) {
   for (const row of rows) {
     if (row.authorId in counts) counts[row.authorId] += 1;
     perDay.set(row.day, (perDay.get(row.day) ?? 0) + 1);
-    hours[Math.floor(row.minuteOfDay / 60)] += 1;
+    const hourOfDay = Math.floor(row.minuteOfDay / 60);
+    hours[hourOfDay] += 1;
+    if (row.authorId in hoursByAuthor) hoursByAuthor[row.authorId][hourOfDay] += 1;
 
     const tokens = words(row.content);
     totalWords += tokens.length;
@@ -203,6 +206,8 @@ function build(messages, config) {
   }
 
   const peakHour = hours.indexOf(Math.max(...hours));
+  // Whoever talks more *in that specific hour* carries the blame for it.
+  const sheTalksLater = hoursByAuthor[her][peakHour] > hoursByAuthor[him][peakHour];
 
   // Sessions: runs of messages with no pause longer than SESSION_GAP_MINUTES.
   const sessions = [];
@@ -314,7 +319,7 @@ function build(messages, config) {
         kind: 'figure',
         value: peakHour * 60,
         format: 'clock',
-        caption: 'The hour we talk in most.',
+        caption: sheTalksLater ? "It's your fault, not mine." : "It's my fault, not yours.",
       },
       {
         kind: 'figure',
