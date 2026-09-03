@@ -362,7 +362,7 @@ function build(messages, config) {
         value: longestSession.count,
         format: 'integer',
         unit: 'messages',
-        caption: 'The longest we went without stopping.',
+        caption: "We just don't shut up, do we?",
         footnote: `${longMonthDay(longestSession.first.day, config.timezone)}, starting ${clockPhrase(
           longestSession.first.minuteOfDay
         )}`,
