@@ -52,8 +52,8 @@
       "kind": "figure",
       "value": 1380,
       "format": "clock",
-      "caption": "It's your fault, not mine.",
-      "footnote": "The hour we talk in most."
+      "context": "The hour we talk in most.",
+      "caption": "It's your fault, not mine."
     },
     {
       "kind": "figure",
@@ -74,6 +74,7 @@
       "value": 2604,
       "format": "integer",
       "countUp": true,
+      "context": "Times one of us typed a laugh.",
       "caption": "Half of these were pity laughs."
     },
     {
@@ -88,6 +89,7 @@
       "kind": "figure",
       "value": 252,
       "format": "clock",
+      "context": "The latest we ever stayed up talking.",
       "caption": "So much for a 'bed time', huh?"
     },
     {
@@ -95,6 +97,7 @@
       "value": 1447,
       "format": "integer",
       "unit": "messages",
+      "context": "The longest we went without stopping.",
       "caption": "We just don't shut up, do we?",
       "footnote": "One night in July, seven hours"
     },
@@ -103,6 +106,7 @@
       "value": 31,
       "format": "integer",
       "unit": "hours",
+      "context": "The longest we went quiet.",
       "caption": "If you ever stop talking to me for this long again, we're gonna have a PROBLEM."
     },
     {

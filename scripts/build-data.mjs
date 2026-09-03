@@ -319,8 +319,8 @@ function build(messages, config) {
         kind: 'figure',
         value: peakHour * 60,
         format: 'clock',
+        context: 'The hour we talk in most.',
         caption: sheTalksLater ? "It's your fault, not mine." : "It's my fault, not yours.",
-        footnote: 'The hour we talk in most.',
       },
       {
         kind: 'figure',
@@ -341,6 +341,7 @@ function build(messages, config) {
         value: laughs,
         format: 'integer',
         countUp: true,
+        context: 'Times one of us typed a laugh.',
         caption: 'Half of these were pity laughs.',
       },
       {
@@ -355,6 +356,7 @@ function build(messages, config) {
         kind: 'figure',
         value: latest.minuteOfDay,
         format: 'clock',
+        context: 'The latest we ever stayed up talking.',
         caption: "So much for a 'bed time', huh?",
         footnote: longMonthDay(latest.day, config.timezone),
       },
@@ -363,6 +365,7 @@ function build(messages, config) {
         value: longestSession.count,
         format: 'integer',
         unit: 'messages',
+        context: 'The longest we went without stopping.',
         caption: "We just don't shut up, do we?",
         footnote: `${longMonthDay(longestSession.first.day, config.timezone)}, starting ${clockPhrase(
           longestSession.first.minuteOfDay
@@ -373,6 +376,7 @@ function build(messages, config) {
         value: Math.floor(longestGapMs / 3_600_000),
         format: 'integer',
         unit: 'hours',
+        context: 'The longest we went quiet.',
         caption: "If you ever stop talking to me for this long again, we're gonna have a PROBLEM.",
       },
       // TODO(closing card): earmarked for a redesign — holding the current

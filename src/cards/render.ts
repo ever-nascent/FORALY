@@ -39,6 +39,11 @@ function renderFigure(card: FigureCard): HTMLElement {
   );
   const unit = suffix ?? card.unit;
   if (unit) figure.append(el('span', 'figure__unit', unit));
+  // A <span>, not a <p>: `figure` is itself a <p>, and a nested <p> would
+  // close it early, splitting the grid layout across two siblings instead of
+  // stacking within one. `.figure`'s own grid still lays it out on its own
+  // line, same as the unit above it.
+  if (card.context) figure.append(el('span', 'footnote', card.context));
   return figure;
 }
 

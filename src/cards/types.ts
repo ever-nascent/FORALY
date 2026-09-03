@@ -36,6 +36,15 @@ export interface FigureCard extends Base {
   unit?: string;
   /** Only true where the magnitude itself is the point. Integers only. */
   countUp?: boolean;
+  /**
+   * Rendered quietly under the figure itself, above the rule — for a card
+   * whose caption is doing something other than saying what the number is
+   * (a joke, a reaction), and a unit like "messages" isn't carrying that on
+   * its own (a clock has no unit at all; "31 hours" doesn't say the hours
+   * were spent in silence). Same quiet register as `footnote`; the
+   * difference is only where it sits.
+   */
+  context?: string;
   /** Rendered quietly under the caption — a date, a qualifier. */
   footnote?: string;
 }
