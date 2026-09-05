@@ -1,22 +1,27 @@
 {
-  "_README": "PLACEHOLDER. Every figure below is invented so the sequence can be designed and reviewed. Run `npm run data` against the real Discord export to overwrite it. `npm run build` refuses to build while meta.placeholder is true.",
   "meta": {
-    "placeholder": true,
-    "generatedAt": "1970-01-01T00:00:00.000Z",
-    "range": { "start": "2026-06-01", "end": "2026-09-01" },
-    "timezone": "America/New_York",
-    "people": { "her": "Her", "him": "Him" }
+    "placeholder": false,
+    "generatedAt": "2026-09-05T22:16:46.085Z",
+    "range": {
+      "start": "2026-05-22",
+      "end": "2026-09-05"
+    },
+    "timezone": "America/Los_Angeles",
+    "people": {
+      "her": "Alyshia",
+      "him": "Zechariah"
+    }
   },
   "cards": [
     {
       "kind": "opening",
       "title": "Three months, timestamped",
-      "dateline": "1 June — 1 September",
+      "dateline": "22 May — 5 September",
       "caption": "Counted from the log, not from memory."
     },
     {
       "kind": "figure",
-      "value": 41208,
+      "value": 21549,
       "format": "integer",
       "unit": "messages",
       "countUp": true,
@@ -24,7 +29,7 @@
     },
     {
       "kind": "figure",
-      "value": 214675,
+      "value": 154589,
       "format": "integer",
       "unit": "words",
       "countUp": true,
@@ -34,71 +39,78 @@
       "kind": "split",
       "format": "integer",
       "sides": [
-        { "label": "Her", "value": 21940 },
-        { "label": "Him", "value": 19268 }
+        {
+          "label": "Alyshia",
+          "value": 11691
+        },
+        {
+          "label": "Zechariah",
+          "value": 9809
+        }
       ],
       "caption": "You wrote more of them."
     },
     {
       "kind": "figure",
-      "value": 1380,
+      "value": 540,
       "format": "clock",
       "caption": "The hour we talk in most."
     },
     {
       "kind": "figure",
-      "value": 92,
+      "value": 107,
       "format": "integer",
       "unit": "days",
       "caption": "Days in a row without a gap."
     },
     {
       "kind": "word",
-      "word": "goodnight",
-      "value": 271,
+      "word": "charm",
+      "value": 480,
       "unit": "times",
       "caption": "The word you used more than any other."
     },
     {
       "kind": "figure",
-      "value": 2604,
+      "value": 364,
       "format": "integer",
       "countUp": true,
       "caption": "Times one of us typed a laugh."
     },
     {
       "kind": "quote",
-      "text": "hey — sorry this is random but i think we have the same book",
-      "author": "Her",
-      "timestamp": "2026-06-01T21:14:00-04:00",
-      "caption": "The first thing you said to me.",
-      "footnote": "1 June, 9:14 pm"
+      "text": "Hey Velvet! I'm hosting a tournament and I'm inviting all of my mutuals to see if they'd be interested in joining! It'll be hosted from June 5th to June 19th. If you'd like to know more details, let me know!",
+      "author": "Zechariah",
+      "timestamp": "2026-05-23T14:09:29.7800000-07:00",
+      "caption": "How this started.",
+      "footnote": "23 May, 2:09 pm"
     },
     {
       "kind": "figure",
-      "value": 252,
+      "value": 359,
       "format": "clock",
-      "caption": "The latest we ever stayed up talking."
+      "caption": "The latest we ever stayed up talking.",
+      "footnote": "16 June"
     },
     {
       "kind": "figure",
-      "value": 1447,
+      "value": 476,
       "format": "integer",
       "unit": "messages",
       "caption": "The longest we went without stopping.",
-      "footnote": "One night in July, seven hours"
+      "footnote": "10 August, starting 9:48 am"
     },
     {
       "kind": "figure",
-      "value": 31,
+      "value": 28,
       "format": "integer",
       "unit": "hours",
       "caption": "The longest we went quiet."
     },
     {
       "kind": "closing",
-      "text": "ok but i'm keeping this one",
-      "author": "Her"
+      "text": "Anyways I love you with my whole heart and I still wanna marry you",
+      "author": "Alyshia"
     }
   ]
 }
