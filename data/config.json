@@ -1,15 +1,15 @@
 {
   "_README": "Edit this before running `npm run data`. Hour-of-day figures are meaningless without the right timezone, and the split card is wrong without the right author ids.",
-  "timezone": "America/New_York",
+  "timezone": "America/Los_Angeles",
   "range": { "start": "", "end": "" },
   "people": {
-    "her": { "name": "", "discordId": "" },
-    "him": { "name": "", "discordId": "" }
+    "her": { "name": "Alyshia", "discordId": "829516976148709406" },
+    "him": { "name": "Zechariah", "discordId": "1378474650010652762" }
   },
   "quotes": {
     "_README": "Message ids picked by hand from the export. `first` is the opening quote card; `closing` is the last card and must be something she said.",
-    "first": "",
-    "closing": ""
+    "first": "3",
+    "closing": "21507"
   },
   "laughPatterns": ["lol", "lmao", "lmfao", "haha", "hehe", "heh", "hah", "ahaha"],
   "stopwords": [
