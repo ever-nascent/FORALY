@@ -207,7 +207,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     const trace = entering.querySelector<SVGSVGElement>('[data-monitor]');
     if (trace) monitor = mountMonitor(trace, () => score?.time() ?? null);
     // Called back mid-exit, a card keeps what its gimmick already settled on.
-    if (!returning) gimmick = mountGimmick(entering, card);
+    if (!returning) gimmick = mountGimmick(entering, card, () => score?.time() ?? null);
 
     if (wanted !== 0 && armed) disarm();
 

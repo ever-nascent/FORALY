@@ -46,6 +46,11 @@ export interface Theme {
   accent: string;
   shape: ShapeKind;
   align: Align;
+  /**
+   * The shape washes, when the accent and ink would muddy the ground: on a
+   * bright ground, dark translucent fills go brown. Rarely needed.
+   */
+  washes?: { a: string; b: string };
 }
 
 /**
@@ -72,8 +77,8 @@ export interface Tones {
 
 export function tonesFor(theme: Theme): Tones {
   return {
-    shapeA: alpha(theme.accent, 0.3),
-    shapeB: alpha(theme.ink, 0.18),
+    shapeA: theme.washes?.a ?? alpha(theme.accent, 0.3),
+    shapeB: theme.washes?.b ?? alpha(theme.ink, 0.18),
     shapeLine: alpha(theme.accent, 0.48),
     track: alpha(theme.ink, 0.26),
     edge: alpha(theme.ink, 0.38),
@@ -86,7 +91,9 @@ export const THEMES: Theme[] = [
   { name: 'curtain',  ground: '#17121c', glow: '#312c35', ink: '#fff3e4', quiet: '#c9bbd1', faint: '#a697b0', accent: '#e8b84b', shape: 'rings',  align: 'center' },
   { name: 'voltage',  ground: '#2e1638', glow: '#45304e', ink: '#d9ff5c', quiet: '#c6b4d6', faint: '#b9a8cb', accent: '#d9ff5c', shape: 'plain',  align: 'center' },
   { name: 'acid',     ground: '#dfff6b', glow: '#e1ff72', ink: '#2e1638', quiet: '#4a2a5c', faint: '#5e3b72', accent: '#2e1638', shape: 'bars',   align: 'end'    },
-  { name: 'coral',    ground: '#ff5e4d', glow: '#ff7061', ink: '#26100e', quiet: '#3f1a15', faint: '#4a1f19', accent: '#26100e', shape: 'twin',   align: 'center' },
+  { name: 'coral',    ground: '#ff5e4d', glow: '#ff7061', ink: '#26100e', quiet: '#3f1a15', faint: '#4a1f19', accent: '#26100e', shape: 'twin',   align: 'center',
+    // Cream washes, not dark ones: dark on this coral turned the circles brown.
+    washes: { a: 'rgba(255, 243, 228, 0.22)', b: 'rgba(255, 243, 228, 0.13)' } },
   { name: 'teal',     ground: '#0b3b3c', glow: '#265151', ink: '#ff8a6b', quiet: '#bfd8d6', faint: '#b4cfcd', accent: '#ff8a6b', shape: 'plain',  align: 'center' },
   { name: 'cobalt',   ground: '#1b37c4', glow: '#344dca', ink: '#fff3e4', quiet: '#dce2ff', faint: '#d2daff', accent: '#dfff6b', shape: 'calendar', align: 'start' },
   { name: 'hers',     ground: '#f3d9d7', glow: '#f4dbd9', ink: '#2e1638', quiet: '#61414c', faint: '#6e4a56', accent: '#8a6224', shape: 'blob',   align: 'center' },

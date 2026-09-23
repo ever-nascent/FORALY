@@ -1,15 +1,17 @@
 /**
  * Each card's own trick. `decorate` adds whatever extra markup a gimmick
  * needs when the card is built; the CSS in cards.css does most of the rest.
- * Two of them are timed from here instead, because they rewrite text as they
- * go: `typo` types the figure out and fixes a mistake on the way, and
- * `flipclock` rolls a clock forward through the night. `mountGimmick` starts
+ * Four are timed from here instead. `typo` types the figure out and fixes a
+ * mistake on the way; `flipclock` rolls a clock forward through the night;
+ * `buzz` and `tug` move on the song's beat (src/beat.ts), so the phone goes
+ * off and the rope gets yanked in time with the music. `mountGimmick` starts
  * those when the card comes up, and hands back a way to stop them.
  *
  * Every string placed here comes from the data or is fixed decoration, and
  * all of it goes in as text, never as HTML.
  */
 
+import { beatWatcher, type SongClock } from './beat';
 import { formatClock } from './format';
 import { currentMotion } from './motion';
 import type { Card, FigureCard, QuoteCard, SplitCard } from './cards/types';
@@ -82,7 +84,9 @@ function badges(root: HTMLElement): void {
 function tug(head: HTMLElement, card: SplitCard): void {
   const [a, b] = card.sides;
   const lead = (b.value - a.value) / Math.max(a.value + b.value, 1);
-  const pull = Math.max(-0.42, Math.min(0.42, lead * 4.5));
+  // Kept well inside the rope, so the heaves on the beat have room to swing
+  // it back and forth rather than pinning it at one end.
+  const pull = Math.max(-0.2, Math.min(0.2, lead * 2.2));
   const rope = el('div', 'tug');
   rope.setAttribute('aria-hidden', 'true');
   rope.style.setProperty('--pull', `${(pull * 100).toFixed(2)}%`);
@@ -383,9 +387,119 @@ function mountFlipclock(root: HTMLElement, card: FigureCard): GimmickHandle {
   };
 }
 
+/** A phone buzz: two short shakes, then still. */
+const BUZZ: Keyframe[] = [
+  { transform: 'translate(0, 0) rotate(0deg)' },
+  { transform: 'translate(-4px, 1px) rotate(-1.2deg)', offset: 0.1 },
+  { transform: 'translate(4px, -1px) rotate(1.2deg)', offset: 0.2 },
+  { transform: 'translate(-4px, 1px) rotate(-1.2deg)', offset: 0.3 },
+  { transform: 'translate(4px, -1px) rotate(1.2deg)', offset: 0.4 },
+  { transform: 'translate(-2px, 0) rotate(-0.5deg)', offset: 0.55 },
+  { transform: 'translate(0, 0) rotate(0deg)' },
+];
+
+const BUMP: Keyframe[] = [
+  { transform: 'translate(-50%, -50%) scale(1)' },
+  { transform: 'translate(-50%, -50%) scale(1.2)', offset: 0.3 },
+  { transform: 'translate(-50%, -50%) scale(0.95)', offset: 0.6 },
+  { transform: 'translate(-50%, -50%) scale(1)' },
+];
+
+/** The phone goes off on every beat of the song, and every badge jumps. */
+function mountBuzz(root: HTMLElement, songTime: SongClock): GimmickHandle {
+  const value = root.querySelector<HTMLElement>('.figure__value');
+  const badgeEls = [...root.querySelectorAll<HTMLElement>('.badge')];
+  if (!value || currentMotion() === 'off') return { cancel() {} };
+
+  const onBeat = beatWatcher(songTime);
+  let frame = 0;
+  let begun = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = now;
+    const wall = (now - begun) / 1000;
+    if (onBeat(wall) && wall * 1000 > START_MS) {
+      value.animate(BUZZ, { duration: 340, easing: 'linear' });
+      for (const [i, badge] of badgeEls.entries()) {
+        badge.animate(BUMP, { duration: 380, delay: i * 22, easing: 'ease-out' });
+      }
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+    },
+  };
+}
+
+/**
+ * The tug-of-war, as a spring: the knot is pulled toward the winner's side,
+ * and on every beat one side or the other heaves — alternately, the winner a
+ * little harder — so it swings back and forth the way a real one does and
+ * never quite settles. Both numbers lean with the rope.
+ */
+function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
+  const tugEl = root.querySelector<HTMLElement>('.tug');
+  const marker = root.querySelector<HTMLElement>('.tug__marker');
+  const rope = root.querySelector<HTMLElement>('.tug__rope');
+  const sides = [...root.querySelectorAll<HTMLElement>('.split__side')];
+  if (!tugEl || !marker || !rope || currentMotion() === 'off') return { cancel() {} };
+
+  const target = Number.parseFloat(tugEl.style.getPropertyValue('--pull')) || 0;
+  const toward = target === 0 ? -1 : Math.sign(target);
+  const STIFF = 14;
+  const DAMP = 2.2;
+  const HEAVE = 26;
+  let x = 0;
+  let v = 0;
+  let pulls = 0;
+  const onBeat = beatWatcher(songTime);
+
+  const paint = (): void => {
+    marker.style.left = `calc(50% + ${x.toFixed(2)}%)`;
+    rope.style.transform = `translateX(${(x / 3).toFixed(2)}%)`;
+    for (const side of sides) side.style.rotate = `${(x * 0.12).toFixed(2)}deg`;
+  };
+
+  let frame = 0;
+  let begun = 0;
+  let last = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = last = now;
+    const wall = (now - begun) / 1000;
+    const dt = Math.min((now - last) / 1000, 0.05);
+    last = now;
+    if (wall * 1000 > START_MS / 2) {
+      if (onBeat(wall)) {
+        // Heave from alternate ends; the one ahead pulls a little harder.
+        const dir = pulls % 2 === 0 ? toward : -toward;
+        v += dir * (dir === toward ? HEAVE * 1.15 : HEAVE * 0.85);
+        pulls += 1;
+      }
+      v += (-STIFF * (x - target) - DAMP * v) * dt;
+      x = Math.max(-46, Math.min(46, x + v * dt));
+    }
+    paint();
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+      marker.style.left = '';
+      rope.style.transform = '';
+      for (const side of sides) side.style.rotate = '';
+    },
+  };
+}
+
 /** Starts a card's timed gimmick, if it has one. */
-export function mountGimmick(root: HTMLElement, card: Card): GimmickHandle | null {
+export function mountGimmick(root: HTMLElement, card: Card, songTime: SongClock): GimmickHandle | null {
   if (!('gimmick' in card)) return null;
+  if (card.gimmick === 'buzz') return mountBuzz(root, songTime);
+  if (card.gimmick === 'tug') return mountTug(root, songTime);
   if (card.gimmick === 'typo') return mountTypo(root);
   if (card.gimmick === 'flipclock' && card.kind === 'figure') return mountFlipclock(root, card);
   return null;

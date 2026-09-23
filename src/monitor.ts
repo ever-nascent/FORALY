@@ -12,7 +12,8 @@
  */
 
 import { currentMotion } from './motion';
-import { SCORE_BEATS, SCORE_BEAT_SECONDS } from './scoreBeats';
+import { sinceBeat, type SongClock } from './beat';
+import { SCORE_BEAT_SECONDS } from './scoreBeats';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -32,9 +33,6 @@ const REACH_PX = 6;
 export interface MonitorHandle {
   cancel(): void;
 }
-
-/** Seconds into the song while it is audibly playing; null when it is not. */
-export type SongClock = () => number | null;
 
 function node<K extends keyof SVGElementTagNameMap>(tag: K, className: string): SVGElementTagNameMap[K] {
   const el = document.createElementNS(NS, tag);
@@ -75,28 +73,6 @@ function spike(dt: number): number {
     if (dt <= t1) return y0 + ((y1 - y0) * (dt - t0)) / (t1 - t0);
   }
   return 0;
-}
-
-/** The latest strong beat of the song at or before `t`, or null before the first. */
-function lastSongBeat(t: number): number | null {
-  let lo = 0;
-  let hi = SCORE_BEATS.length - 1;
-  if (hi < 0 || t < (SCORE_BEATS[0] ?? 0)) return null;
-  while (lo < hi) {
-    const mid = (lo + hi + 1) >> 1;
-    if ((SCORE_BEATS[mid] ?? 0) <= t) lo = mid;
-    else hi = mid - 1;
-  }
-  return SCORE_BEATS[lo] ?? null;
-}
-
-/** Seconds since the last beat, on the song's beats or on the free-running pulse. */
-function sinceBeat(song: number | null, wall: number): number {
-  if (song !== null) {
-    const beat = lastSongBeat(song);
-    if (beat !== null) return song - beat;
-  }
-  return wall % SCORE_BEAT_SECONDS;
 }
 
 const LUB_DUB: Keyframe[] = [
