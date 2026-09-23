@@ -195,13 +195,19 @@ function build(messages, config) {
   // Longest run of consecutive days that both of them showed up for.
   const days = [...perDay.keys()].sort();
   let streak = 0;
+  let streakEnd = null;
   let run = 0;
   let previous = null;
   for (const day of days) {
     run = previous && dayAfter(previous) === day ? run + 1 : 1;
-    streak = Math.max(streak, run);
+    if (run > streak) {
+      streak = run;
+      streakEnd = day;
+    }
     previous = day;
   }
+  // The streak card draws a calendar with these days lit.
+  const streakStart = days[days.indexOf(streakEnd) - streak + 1];
 
   const peakHour = hours.indexOf(Math.max(...hours));
   // Whoever talks more *in that specific hour* carries the blame for it.
@@ -333,6 +339,7 @@ function build(messages, config) {
         value: streak,
         format: 'integer',
         unit: streak === 1 ? 'day' : 'days',
+        calendar: { start: streakStart, end: streakEnd },
         context: 'Days in a row without a gap.',
         caption: "Can't get enough of me? Eh?",
       },

@@ -55,6 +55,11 @@ export interface FigureCard extends Base {
   context?: string;
   /** Rendered quietly under the caption — a date, a qualifier. */
   footnote?: string;
+  /**
+   * Draws a calendar under the figure with every day from `start` to `end`
+   * (ISO dates, inclusive) lit — the streak card, shown as the days it was.
+   */
+  calendar?: { start: string; end: string };
 }
 
 /** Two figures, hers and his. */

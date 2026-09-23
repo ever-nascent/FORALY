@@ -29,7 +29,12 @@ type Motion =
   | 'flare'
   | 'driftX'
   | 'driftY'
-  | 'twinkle';
+  | 'twinkle'
+  | 'draw'
+  | 'fill'
+  | 'trace'
+  | 'traceBase'
+  | 'rise';
 
 type Attrs = Record<string, string | number>;
 
@@ -101,6 +106,24 @@ function turned(el: SVGElement, degrees: number): SVGElement {
 }
 
 const CENTRE: [number, number] = [50, 50];
+
+/** A heart `w` view-box units wide, centred on (cx, cy). */
+function heart(cx: number, cy: number, w: number): string {
+  const s = w / 44;
+  const p = (x: number, y: number): string => `${cx + x * s} ${cy + y * s}`;
+  return (
+    `M ${p(0, 19.5)} C ${p(0, 19.5)} ${p(-22, 6.5)} ${p(-22, -6.5)} ` +
+    `C ${p(-22, -14.5)} ${p(-16, -19.5)} ${p(-9.5, -19.5)} ` +
+    `C ${p(-5, -19.5)} ${p(-1.5, -17)} ${p(0, -13.5)} ` +
+    `C ${p(1.5, -17)} ${p(5, -19.5)} ${p(9.5, -19.5)} ` +
+    `C ${p(16, -19.5)} ${p(22, -14.5)} ${p(22, -6.5)} ` +
+    `C ${p(22, 6.5)} ${p(0, 19.5)} ${p(0, 19.5)} Z`
+  );
+}
+
+/** A long flat trace with one heartbeat in it, left of centre-right. */
+const FLATLINE =
+  'M -4 72 L 46 72 L 48.5 72 L 50.5 64 L 53 82 L 55.5 60 L 57.5 74 L 59 72 L 104 72';
 
 function build(kind: ShapeKind, uid: string): SVGElement[] {
   switch (kind) {
@@ -266,30 +289,44 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
         )
       );
 
-    // The quiet one. Still the emptiest frame in the set — but one mark that
-    // travels a long way round it, because a card that does not move at all is
-    // indistinguishable from a card that is broken.
+    // The quiet one: a monitor trace that runs flat for a long, long time and
+    // then gives one heartbeat — the silence, and then one of them came back.
+    // The faint line draws itself across once; a bright pulse runs along it
+    // after that, over and over, through the flat stretch and the beat.
     case 'sparse':
       return [
-        part('path', { d: 'M 6 62 L 58 62', fill: 'none' }, 'line', 0, {
-          motion: 'widen',
-          pivot: [6, 62],
+        part('path', { d: FLATLINE, fill: 'none', pathLength: 1 }, 'line', 0, {
+          motion: 'traceBase',
         }),
-        part('circle', { cx: 82, cy: 20, r: 15 }, 'a', 1, { motion: 'orbit', pivot: CENTRE }),
+        part('path', { d: FLATLINE, fill: 'none', pathLength: 1 }, 'line', 1, {
+          motion: 'trace',
+        }),
       ];
 
-    // Her rose, opening — petals turning at slightly different rates.
-    case 'bloom':
-      return [0, 1, 2, 3, 4].map((i) =>
-        turned(
-          part('ellipse', { cx: 50, cy: 50, rx: 40, ry: 15 }, i % 2 ? 'b' : 'a', i, {
-            motion: 'spin',
-            pivot: CENTRE,
-            mirror: i % 2 === 1,
-          }),
-          i * 36
-        )
-      );
+    // The streak: the calendar in front of it is the picture, so the ground
+    // carries only its own drifting light.
+    case 'calendar':
+      return [];
+
+    // Her last line: a heart that draws itself, fills, and then beats — with
+    // a few small ones drifting up past it.
+    case 'heart': {
+      const rising: [number, number, number][] = [
+        [34, 90, 3.2], [45, 94, 2.4], [55, 91, 3.6], [64, 95, 2.6], [40, 97, 2.2], [60, 99, 3],
+      ];
+      return [
+        // Sat a little low, so its widest part — just under the lobes — is
+        // level with the middle of the frame, where her words are.
+        part('path', { d: heart(50, 54, 42) }, 'a', 0, { motion: 'fill', pivot: [50, 54] }),
+        part('path', { d: heart(50, 54, 42), fill: 'none', pathLength: 1 }, 'line', 0, {
+          motion: 'draw',
+          pivot: [50, 54],
+        }),
+        ...rising.map(([x, y, w], i) =>
+          part('path', { d: heart(x, y, w) }, i % 2 ? 'b' : 'a', i, { motion: 'rise' })
+        ),
+      ];
+    }
 
     // Goodnight: a scatter, not a single mark — the whole sky, twinkling out
     // of sync. No moon here; that one belongs to the card about staying up

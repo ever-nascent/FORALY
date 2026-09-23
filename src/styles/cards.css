@@ -897,6 +897,274 @@
   animation-fill-mode: none;
 }
 
+/* --- The streak calendar --------------------------------------------------
+   The run of days, shown as the days it was. Each lit day comes up in order,
+   first to last, and then a slow shimmer keeps travelling through them.
+--------------------------------------------------------------------------- */
+
+.cal {
+  --cell: clamp(0.5rem, min(2.6vw, 1.6vh), 1rem);
+  --cell-gap: calc(var(--cell) * 0.35);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(0.6rem, 2.2vh, 1rem) clamp(0.9rem, 4vw, 1.5rem);
+  margin-top: clamp(1.25rem, 3.5vh, 2rem);
+}
+
+@media (max-width: 40rem) {
+  /* Three months to a row on a phone, so five read as a 3 + 2 block. */
+  .cal {
+    max-width: calc(3 * (7 * var(--cell) + 6 * var(--cell-gap)) + 2 * clamp(0.9rem, 4vw, 1.5rem) + 2px);
+  }
+}
+
+.cal__month {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: start;
+}
+
+.cal__label {
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+}
+
+.cal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: var(--cell-gap);
+}
+
+.cal__day {
+  position: relative;
+  border-radius: 30%;
+  background: var(--track);
+}
+
+.cal__day[data-on]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+@keyframes cal-light {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Starts at full opacity — where the light-up ends — so the hand-off is
+   seamless. The per-day delay turns it into a wave that runs through them. */
+@keyframes cal-shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+.card[data-live] .cal__day[data-on]::after {
+  animation:
+    cal-light 420ms var(--ease-out) calc(var(--delay-land) + 300ms + var(--d) * 16ms) both,
+    cal-shimmer 3.2s ease-in-out calc(var(--delay-land) + 2600ms + var(--d) * 30ms) infinite;
+}
+
+/* --- The quiet card: a monitor trace -------------------------------------- */
+
+.shape[data-motion='traceBase'] {
+  stroke-width: 0.35;
+  stroke-dasharray: 1;
+}
+
+.shape[data-motion='trace'] {
+  stroke: var(--accent);
+  stroke-width: 0.75;
+  stroke-dasharray: 0.14 1;
+}
+
+@keyframes trace-draw {
+  from {
+    opacity: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes trace-show {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* One bright pulse, entering at the left edge and leaving at the right. */
+@keyframes trace-run {
+  from {
+    stroke-dashoffset: 0.14;
+  }
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+.card[data-live] .shape[data-motion='traceBase'] {
+  animation: trace-draw 1.6s var(--ease-in-out) var(--delay-land) both;
+}
+
+.card[data-live] .shape[data-motion='trace'] {
+  animation:
+    trace-show 1ms linear calc(var(--delay-land) + 1.4s) both,
+    trace-run 3.4s linear calc(var(--delay-land) + 1.4s) infinite;
+}
+
+/* --- The last card: a heart that draws itself, fills, and beats ----------- */
+
+.shape[data-motion='fill'] {
+  /* A pale wash rather than the accent, so her words stay easy to read on
+     top of it. A mask-style tint, not a palette colour. */
+  /* impeccable-disable-next-line design-system-color */
+  fill: rgba(255, 243, 228, 0.34);
+}
+
+/* Narrow enough to sit inside the heart's widest part. */
+.card--closing .quote {
+  max-width: 15ch;
+}
+
+.shape[data-motion='draw'] {
+  stroke: var(--accent);
+  stroke-width: 0.6;
+  stroke-dasharray: 1;
+}
+
+@keyframes heart-draw {
+  from {
+    opacity: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes heart-fill {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Lub-dub, then a rest. Starts and ends at rest, so it picks up seamlessly
+   from the fill. */
+@keyframes heart-beat {
+  0%,
+  55%,
+  100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.06);
+  }
+  24% {
+    transform: scale(1);
+  }
+  36% {
+    transform: scale(1.04);
+  }
+}
+
+@keyframes heart-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-38px);
+  }
+}
+
+.card[data-live] .shape[data-motion='draw'] {
+  animation:
+    heart-draw 1.8s var(--ease-in-out) var(--delay-land) both,
+    heart-beat 1.7s ease-in-out calc(var(--delay-land) + 2.4s) infinite;
+}
+
+.card[data-live] .shape[data-motion='fill'] {
+  animation:
+    heart-fill 1.2s var(--ease-out) calc(var(--delay-land) + 1.3s) both,
+    heart-beat 1.7s ease-in-out calc(var(--delay-land) + 2.4s) infinite;
+}
+
+.card[data-live] .shape[data-motion='rise'] {
+  animation: heart-rise 6s var(--ease-in-out) calc(var(--delay-land) + 2s + var(--i) * 1.1s) infinite;
+}
+
+/* Her line, a word at a time, as if she were saying it. */
+.quote__word {
+  display: inline-block;
+}
+
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+.card--closing[data-live] .quote__text {
+  animation: none;
+}
+
+.card[data-live] .quote__word {
+  animation: word-in 700ms var(--ease-out) calc(var(--delay-land) + 700ms + var(--i) * 140ms) both;
+}
+
+/* Still: each of the three arrives whole and holds. */
+:root[data-motion='off'] .card[data-live] .cal__day[data-on]::after,
+:root[data-motion='off'] .card[data-live] .quote__word {
+  animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+:root[data-motion='off'] .shape[data-motion='trace'] {
+  display: none;
+}
+
 /* Still, restated here because it has to beat every ambient rule above and the
    cascade settles ties by order. Each shape arrives and then holds; nothing
    loops, which is verifiable as zero running infinite animations. */

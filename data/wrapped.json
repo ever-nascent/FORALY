@@ -86,6 +86,10 @@
       "value": 107,
       "format": "integer",
       "unit": "days",
+      "calendar": {
+        "start": "2026-05-22",
+        "end": "2026-09-05"
+      },
       "context": "Days in a row without a gap.",
       "caption": "Can't get enough of me? Eh?"
     },

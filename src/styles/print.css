@@ -83,6 +83,12 @@
     font-size: 6.5mm;
   }
 
+  /* The travelling pulse has nowhere to be on paper; the trace it runs
+     along prints whole. */
+  .shape[data-motion='trace'] {
+    display: none;
+  }
+
   /* The counting figures print at their final value, not mid-count. */
   .figure__ghost {
     visibility: visible;

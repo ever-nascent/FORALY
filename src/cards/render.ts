@@ -47,6 +47,54 @@ function renderFigure(card: FigureCard): HTMLElement {
   return figure;
 }
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const DAY_MS = 86_400_000;
+
+/** ISO date to a UTC timestamp, so no timezone can shift a day either way. */
+function utc(iso: string): number {
+  const [y, m, d] = iso.split('-').map(Number);
+  return Date.UTC(y ?? 1970, (m ?? 1) - 1, d ?? 1);
+}
+
+/**
+ * The streak, as the days it actually was: every month it touches, drawn as a
+ * small calendar with each day of the run lit. `--d` is a day's place in the
+ * run, so the CSS can light them in order, first day to last.
+ */
+function renderCalendar(range: { start: string; end: string }): HTMLElement {
+  const from = utc(range.start);
+  const to = utc(range.end);
+  const cal = el('div', 'cal');
+  cal.setAttribute('aria-hidden', 'true');
+
+  const first = new Date(from);
+  const last = new Date(to);
+  for (
+    let y = first.getUTCFullYear(), m = first.getUTCMonth();
+    y < last.getUTCFullYear() || (y === last.getUTCFullYear() && m <= last.getUTCMonth());
+    m === 11 ? ((m = 0), (y += 1)) : (m += 1)
+  ) {
+    const month = el('div', 'cal__month');
+    month.append(el('span', 'cal__label', MONTHS[m]));
+    const grid = el('div', 'cal__grid');
+    const lead = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    for (let i = 0; i < lead; i += 1) grid.append(el('span', 'cal__blank'));
+    const length = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    for (let d = 1; d <= length; d += 1) {
+      const at = Date.UTC(y, m, d);
+      const day = el('span', 'cal__day');
+      if (at >= from && at <= to) {
+        day.dataset.on = '';
+        day.style.setProperty('--d', String(Math.round((at - from) / DAY_MS)));
+      }
+      grid.append(day);
+    }
+    month.append(grid);
+    cal.append(month);
+  }
+  return cal;
+}
+
 /**
  * Both sides race to their number at once. Integers only — a clock doesn't
  * have a "more of it", so those keep the plain, static value. The winning
@@ -123,10 +171,21 @@ function renderWord(card: WordCard): HTMLElement {
 /** Past this many characters a message is set smaller and wider. */
 const LONG_QUOTE = 120;
 
-function renderQuote(text: string): HTMLElement {
+function renderQuote(text: string, byWord = false): HTMLElement {
   const quote = el('blockquote', text.length > LONG_QUOTE ? 'quote quote--long' : 'quote');
   const body = el('p', 'quote__text');
-  body.textContent = text;
+  if (byWord) {
+    // Her last line arrives a word at a time, as if she were saying it. Plain
+    // spaces between the spans, so it still wraps and reads as one sentence.
+    for (const [i, word] of text.split(/\s+/).filter(Boolean).entries()) {
+      if (i > 0) body.append(' ');
+      const span = el('span', 'quote__word', word);
+      span.style.setProperty('--i', String(i));
+      body.append(span);
+    }
+  } else {
+    body.textContent = text;
+  }
   quote.append(body);
   return quote;
 }
@@ -165,8 +224,9 @@ function head(card: NonGreetingCard): HTMLElement {
     case 'word':
       return renderWord(card);
     case 'quote':
-    case 'closing':
       return renderQuote(card.text);
+    case 'closing':
+      return renderQuote(card.text, true);
   }
 }
 
@@ -255,6 +315,7 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
   const stack = el('div', 'card__stack');
   const headBox = el('div', 'card__head');
   headBox.append(head(card));
+  if (card.kind === 'figure' && card.calendar) headBox.append(renderCalendar(card.calendar));
   stack.append(headBox);
 
   if (card.kind !== 'closing') {
