@@ -1,6 +1,8 @@
 import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
+import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
+import { wireGreeting } from './greeting';
 import type { Card } from './cards/types';
 import type { Score } from './audio';
 
@@ -31,6 +33,37 @@ function cssMs(name: string): number {
   return raw.endsWith('ms') ? value : value * 1000;
 }
 
+/**
+ * Called once every counter on the card has landed. A card with one counter
+ * has nothing to compare; a card with two — a split, racing to their values —
+ * gets the higher one marked, so the CSS can give it a quiet glow. Reads the
+ * numbers back off the elements themselves rather than the card data, so this
+ * stays generic to "however many things counted" instead of knowing about
+ * split cards specifically.
+ */
+function markRaceWinner(liveEls: HTMLElement[]): void {
+  if (liveEls.length < 2) return;
+
+  let winner: HTMLElement | null = null;
+  let max = -Infinity;
+  let tie = false;
+
+  for (const liveEl of liveEls) {
+    const box = liveEl.closest<HTMLElement>('[data-count-box]');
+    if (!box) continue;
+    const value = Number(liveEl.dataset.countTo);
+    if (value > max) {
+      max = value;
+      winner = box;
+      tie = false;
+    } else if (value === max) {
+      tie = true;
+    }
+  }
+
+  if (winner && !tie) winner.dataset.countWinner = 'true';
+}
+
 export interface Deck {
   /** The score arrives after the first card, so it can never delay it. */
   attachScore(score: Score): void;
@@ -42,6 +75,15 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   const nodes = cards.map((card, i) => renderCard(card, i, cards.length));
   els.stage.replaceChildren(...nodes);
   fit(els.stage);
+
+  // The greeting toggle is wired once, here, rather than per-visit like the
+  // count-ups below — a switch should stay wherever she left it, not reset
+  // itself every time she comes back to the card.
+  for (const [i, card] of cards.entries()) {
+    if (card.kind !== 'greeting') continue;
+    const node = nodes[i];
+    if (node) wireGreeting(node, card, i);
+  }
 
   const segments = cards.map(() => {
     const seg = document.createElement('span');
@@ -55,7 +97,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   if ('fonts' in document) void document.fonts.ready.then(() => fit(els.stage));
 
   let index = -1;
-  let counting: CountHandle | null = null;
+  let counting: CountHandle[] = [];
+  let elapsed: ElapsedHandle | null = null;
   let score: Score | null = null;
   let woken = false;
   /**
@@ -93,8 +136,10 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     const wanted = Math.min(Math.max(target, 0), cards.length - 1);
     if (wanted === index) return;
 
-    counting?.cancel();
-    counting = null;
+    for (const handle of counting) handle.cancel();
+    counting = [];
+    elapsed?.cancel();
+    elapsed = null;
 
     const leaving = nodes[index];
     if (leaving) {
@@ -134,17 +179,25 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
       document.body.style.setProperty('--behind', entering.dataset.ground);
     }
 
-    const live = entering.querySelector<HTMLElement>('[data-count-to]');
-    if (live?.dataset.countTo && !returning) {
-      counting = countUp(
-        live,
-        Number(live.dataset.countTo),
-        cssMs('--dur-count'),
-        cssMs('--delay-land')
+    const liveEls = [...entering.querySelectorAll<HTMLElement>('[data-count-to]')];
+    // A card called back mid-exit keeps the values it already settled on.
+    if (liveEls.length > 0 && !returning) {
+      let remaining = liveEls.length;
+      counting = liveEls.map((liveEl) =>
+        countUp(liveEl, Number(liveEl.dataset.countTo), cssMs('--dur-count'), cssMs('--delay-land'), () => {
+          remaining -= 1;
+          if (remaining === 0) markRaceWinner(liveEls);
+        })
       );
     }
 
+    const elapsedEl = entering.querySelector<HTMLElement>('[data-elapsed-since]');
+    if (elapsedEl?.dataset.elapsedSince) {
+      elapsed = mountElapsed(elapsedEl, elapsedEl.dataset.elapsedSince);
+    }
+
     if (wanted !== 0 && armed) disarm();
+
     index = wanted;
     for (const [i, seg] of segments.entries()) seg.dataset.done = String(i <= index);
     els.live.textContent = describe(card);

@@ -21,8 +21,6 @@ const p = (...parts) => resolve(root, ...parts);
 const SESSION_GAP_MINUTES = 60;
 /** Messages before this hour belong to the night before. */
 const NIGHT_ENDS_HOUR = 6;
-/** Words shorter than this are noise however often they appear. */
-const MIN_WORD_LENGTH = 3;
 
 function die(message) {
   console.error(`\n${message}\n`);
@@ -160,33 +158,38 @@ function build(messages, config) {
   }
 
   const counts = { [her]: 0, [him]: 0 };
+  const wordCounts = { [her]: 0, [him]: 0 };
   const perDay = new Map();
   const hours = new Array(24).fill(0);
+  const hoursByAuthor = { [her]: new Array(24).fill(0), [him]: new Array(24).fill(0) };
   let totalWords = 0;
   let laughs = 0;
-  const herWords = new Map();
+  let goodnights = 0;
+  let goodMornings = 0;
 
   const laughPatterns = config.laughPatterns.map((s) => s.toLowerCase());
-  const stopwords = new Set(config.stopwords.map((s) => s.toLowerCase()));
+  const goodnightPatterns = (config.goodnightPatterns ?? ['goodnight', 'good night']).map((s) =>
+    s.toLowerCase()
+  );
+  const goodMorningPatterns = (config.goodMorningPatterns ?? ['good morning']).map((s) =>
+    s.toLowerCase()
+  );
 
   for (const row of rows) {
     if (row.authorId in counts) counts[row.authorId] += 1;
     perDay.set(row.day, (perDay.get(row.day) ?? 0) + 1);
-    hours[Math.floor(row.minuteOfDay / 60)] += 1;
+    const hourOfDay = Math.floor(row.minuteOfDay / 60);
+    hours[hourOfDay] += 1;
+    if (row.authorId in hoursByAuthor) hoursByAuthor[row.authorId][hourOfDay] += 1;
 
     const tokens = words(row.content);
     totalWords += tokens.length;
+    if (row.authorId in wordCounts) wordCounts[row.authorId] += tokens.length;
 
     const lowered = plainText(row.content).toLowerCase();
     if (laughPatterns.some((pattern) => lowered.includes(pattern))) laughs += 1;
-
-    if (row.authorId === her) {
-      for (const token of tokens) {
-        const word = token.toLowerCase();
-        if (word.length < MIN_WORD_LENGTH || stopwords.has(word)) continue;
-        herWords.set(word, (herWords.get(word) ?? 0) + 1);
-      }
-    }
+    if (goodnightPatterns.some((pattern) => lowered.includes(pattern))) goodnights += 1;
+    if (goodMorningPatterns.some((pattern) => lowered.includes(pattern))) goodMornings += 1;
   }
 
   // Longest run of consecutive days that both of them showed up for.
@@ -201,6 +204,8 @@ function build(messages, config) {
   }
 
   const peakHour = hours.indexOf(Math.max(...hours));
+  // Whoever talks more *in that specific hour* carries the blame for it.
+  const sheTalksLater = hoursByAuthor[her][peakHour] > hoursByAuthor[him][peakHour];
 
   // Sessions: runs of messages with no pause longer than SESSION_GAP_MINUTES.
   const sessions = [];
@@ -228,11 +233,7 @@ function build(messages, config) {
   }
 
   const longestSession = sessions.reduce((best, s) => (s.count > best.count ? s : best));
-  const [topWord, topWordCount] = [...herWords.entries()].sort(
-    (a, b) => b[1] - a[1] || a[0].localeCompare(b[0])
-  )[0] ?? [null, 0];
 
-  if (!topWord) die('Could not find a most-used word for her. Check people.her.discordId.');
   if (!latest) die('No message landed in the small hours during a conversation already running.');
 
   const pick = (key) => {
@@ -253,6 +254,7 @@ function build(messages, config) {
   const herName = config.people.her.name;
   const himName = config.people.him.name;
   const sheWroteMore = counts[her] > counts[him];
+  const sheYappedMore = wordCounts[her] > wordCounts[him];
 
   const start = config.range.start || days[0];
   const end = config.range.end || days[days.length - 1];
@@ -268,20 +270,34 @@ function build(messages, config) {
     cards: [
       {
         kind: 'opening',
-        title: 'Three months, timestamped',
+        theme: 'curtain',
+        title: 'Relationship Wrapped',
         dateline: `${longMonthDay(start, config.timezone)} — ${longMonthDay(end, config.timezone)}`,
-        caption: 'Counted from the log, not from memory.',
+        caption:
+          "4 months of us. I know love isn't a competition, but I like to think I'm beating you at it. Let's find out!",
       },
       {
         kind: 'figure',
+        theme: 'voltage',
         value: rows.length,
         format: 'integer',
         unit: 'messages',
         countUp: true,
-        caption: 'This is how much we said to each other.',
+        caption: 'We bother each other a LOT...',
+      },
+      {
+        kind: 'split',
+        theme: 'coral',
+        format: 'integer',
+        sides: [
+          { label: herName, value: counts[her] },
+          { label: himName, value: counts[him] },
+        ],
+        caption: sheWroteMore ? "Somebody's a little obsessed." : "Somebody's me. It's me.",
       },
       {
         kind: 'figure',
+        theme: 'acid',
         value: totalWords,
         format: 'integer',
         unit: 'words',
@@ -290,72 +306,102 @@ function build(messages, config) {
       },
       {
         kind: 'split',
+        // Its own theme now — sound waves aimed one way, not the rays
+        // borrowed from "laughs" this used to repeat.
+        theme: 'fuchsia',
         format: 'integer',
         sides: [
-          { label: herName, value: counts[her] },
-          { label: himName, value: counts[him] },
+          { label: herName, value: wordCounts[her] },
+          { label: himName, value: wordCounts[him] },
         ],
-        caption: sheWroteMore ? 'You wrote more of them.' : 'I wrote more of them.',
+        context: 'How many words you each sent.',
+        caption: sheYappedMore
+          ? "Looks like someone's got a big mouth."
+          : "I guess I just can't shut up around you.",
       },
       {
         kind: 'figure',
+        theme: 'teal',
         value: peakHour * 60,
         format: 'clock',
-        caption: 'The hour we talk in most.',
+        context: 'The hour we talk in most.',
+        caption: sheTalksLater ? "It's your fault, not mine." : "It's my fault, not yours.",
       },
       {
         kind: 'figure',
+        theme: 'cobalt',
         value: streak,
         format: 'integer',
         unit: streak === 1 ? 'day' : 'days',
-        caption: 'Days in a row without a gap.',
+        context: 'Days in a row without a gap.',
+        caption: "Can't get enough of me? Eh?",
       },
       {
-        kind: 'word',
-        word: topWord,
-        value: topWordCount,
-        unit: 'times',
-        caption: 'The word you used more than any other.',
+        kind: 'greeting',
+        night: {
+          word: 'goodnight',
+          value: goodnights,
+          unit: 'times',
+          caption: 'The last thing we say before bed.',
+        },
+        day: {
+          word: 'good morning',
+          value: goodMornings,
+          unit: 'times',
+          caption: 'The first thing we say when we wake up.',
+        },
       },
       {
         kind: 'figure',
+        theme: 'marigold',
         value: laughs,
         format: 'integer',
         countUp: true,
-        caption: 'Times one of us typed a laugh.',
+        context: 'Times one of us typed a laugh.',
+        caption: 'Half of these were pity laughs.',
       },
       {
         kind: 'quote',
+        theme: 'bone',
         text: first.content,
         author: first.authorId === her ? herName : himName,
         timestamp: messages.find((m) => m.id === first.id).timestamp,
-        caption: first.authorId === her ? 'The first thing you said to me.' : 'How this started.',
+        caption: first.authorId === her ? "Who thought we'd get this far?" : 'How it all started.',
         footnote: `${longMonthDay(first.day, config.timezone)}, ${clockPhrase(first.minuteOfDay)}`,
       },
       {
         kind: 'figure',
+        theme: 'night',
         value: latest.minuteOfDay,
         format: 'clock',
-        caption: 'The latest we ever stayed up talking.',
+        context: 'The latest we ever stayed up talking.',
+        caption: "So much for a 'bed time', huh?",
         footnote: longMonthDay(latest.day, config.timezone),
       },
       {
         kind: 'figure',
+        theme: 'crimson',
         value: longestSession.count,
         format: 'integer',
         unit: 'messages',
-        caption: 'The longest we went without stopping.',
+        context: 'The longest we went without stopping.',
+        caption: "We just don't shut up, do we?",
         footnote: `${longMonthDay(longestSession.first.day, config.timezone)}, starting ${clockPhrase(
           longestSession.first.minuteOfDay
         )}`,
       },
       {
         kind: 'figure',
+        theme: 'slate',
         value: Math.floor(longestGapMs / 3_600_000),
         format: 'integer',
         unit: 'hours',
-        caption: 'The longest we went quiet.',
+        context: 'The longest we went quiet.',
+        caption: "If you ever stop talking to me for this long again, we're gonna have a PROBLEM.",
       },
+      // TODO(closing card): earmarked for a redesign — holding the current
+      // one-line-and-nothing-else treatment (see ClosingCard in
+      // cards/types.ts and the closing case in cards/render.ts) until then.
       {
         kind: 'closing',
         text: closing.content,

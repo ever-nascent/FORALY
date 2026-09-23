@@ -111,7 +111,7 @@ rounded:
   pill: 999px
 ---
 
-# Three months, timestamped — the system
+# Relationship Wrapped — the system
 
 Thirteen full-bleed cards, one statistic each, advanced by tap, swipe or arrow
 key. One recipient, on a phone, at night. Mobile is the target and desktop is
@@ -124,12 +124,20 @@ ever wanted back.
 
 ## Colour
 
-Thirteen worlds, one per card, in `src/palette.ts`. The order is an arc rather
-than an alternation: a dark curtain, voltage, a stretch of loud colour, her own
-pink at the centre where the word she says most lands, a breath of bone for the
-first message she ever sent, the small hours in gold on black, and back to her
-rose to close. The last card always gets the rose — that ending is the point,
-not a position in a list.
+Started as thirteen worlds, one per card, in `src/palette.ts`. The order is an
+arc rather than an alternation: a dark curtain, voltage, a stretch of loud
+colour, her own pink at the centre where the word she says most lands, a
+breath of bone for the first message she ever sent, the small hours in gold on
+black, and back to her rose to close. The last card always gets the rose —
+that ending is the point, not a position in a list.
+
+A fourteenth, fuchsia, was added later for the Real Yapper card, which the
+original thirteen-card arc never accounted for — every card now carries an
+explicit `theme` pin (see Shapes below) rather than one being picked by
+position, so the array is closer to a lookup table by name today than a
+strictly cycled arc. The goodnight/good-morning card sits outside this
+arc entirely, in its own pair of night/day palettes — see the note under
+Shapes.
 
 Two colours in her life anchor the set even though the arc is free to leave
 them: the pink is the shade she wears (two coats of OPI Funny Bunny under one
@@ -161,9 +169,10 @@ in front of it:
 | Messages | One enormous disc, one satellite | The count, and the small thing orbiting it |
 | Words | Bars hung from the top edge | Words stacking up |
 | Who wrote more | Two overlapping circles | Two people, and the overlap |
+| Real Yapper | Sound waves aimed one way | Coming from somewhere, not radiating everywhere |
 | The hour | A clock face, off-centre | The hand points at the hour without crossing it |
 | Streak | A grid of dots below the figure | One mark per day, unbroken |
-| Her word | A soft blob | The only unruled shape in the set, on her card |
+| Goodnight / good morning | A scattered starfield, or the sun coming up | Whichever half of the day she's looking at |
 | Laughs | Rays going outward | Everything leaving at once |
 | First message | One halo | A single message, held |
 | 4am | A crescent and two small stars | The small hours |
@@ -174,6 +183,16 @@ in front of it:
 Compositions are placed to complement each card's alignment — a card that sets
 its type at the top gets its shapes below it, and the reverse — so nothing ever
 runs through a numeral.
+
+**One card carries two of everything.** The goodnight/good-morning card is the
+one interactive moment in the sequence — a button swaps it between two full
+palettes (`GREETING_NIGHT`/`GREETING_DAY` in `src/palette.ts`, contrast-checked
+the same way the thirteen-theme arc is, not part of that arc or its cycling),
+two shapes (`stars`/`sunrise`), and two words, fading through black rather than
+cutting or trying to animate a colour value directly across the swap. The
+toggle is wired once, when the card is built, and stays wherever she leaves
+it — unlike the count-ups and the first-message coda, it's a switch, not a
+reveal, and shouldn't reset itself on a revisit.
 
 ## Type
 
@@ -198,7 +217,7 @@ of card enters in its own way, and the figure always lands last:
 | --- | --- |
 | Figures | The number lands at size and settles, punching down from 1.16 |
 | Who wrote more | The two sides come in from opposite edges, 70ms apart |
-| Her word | One letter at a time, 38ms apart, each with a little rotation |
+| Goodnight / good morning | One letter at a time, 38ms apart, each with a little rotation — same on every switch, since each toggle rebuilds the word fresh |
 | Quotes | A clip-path wipe down the lines, like it is being typed |
 | Opening | The title wipes across |
 
@@ -217,7 +236,8 @@ than marching:
 | Who wrote more | The two circles drift together and apart |
 | The hour | The clock runs — two hands, different rates |
 | Streak | The days light up in a diagonal wave |
-| Her word | The blob turns slowly, two layers against each other |
+| Goodnight | The stars twinkle out of sync, a whole sky's worth |
+| Good morning | The sun breathes; its rays pulse outward |
 | Laughs | The rays pulse outward |
 | First message | The halo breathes; the ring ripples off it |
 | 4am | The moon drifts, the stars go in and out |
@@ -266,16 +286,26 @@ takes the entrance with it, so the page renders correctly and never moves.
 
 **`prefers-reduced-motion` is gentler, not off:** every part still arrives, but
 opacity alone, no push, no per-letter stagger, no count-up, no drifting light,
-and nothing loops — verified as zero running infinite animations. The score
-starts muted.
+and nothing loops — verified as zero running infinite animations on all thirteen
+cards. The score starts muted.
+
+**And it is answerable from inside the page.** A sequence that has gone still
+because the system asked is indistinguishable from one that is broken, so the
+still state is reached through `<html data-motion="off">` — settled once in
+`src/motion.ts` from a choice kept on the device, from `?motion=on`/`?motion=off`
+in the URL, or from the system setting — and never through a media query, which
+nothing in the page can overrule. The control in the corner flips it and the
+answer keeps.
 
 ## Chrome
 
 Thirteen segments across the top — the one piece of Wrapped's own grammar the
 sequence borrows, because it is what tells her how much is left without a word
-on screen. A sound toggle, which is not optional: audio that starts on its own
-needs a way to stop it. Back and next are real buttons for keyboard and
-assistive tech, invisible until they take focus.
+on screen. Two chips in the bottom corner, neither of them optional: audio that
+starts on its own needs a way to stop it, and a sequence that has gone still
+needs a way to say whether it meant to. The sound chip appears only once a score
+has landed; the motion chip is always there. Back and next are real buttons for
+keyboard and assistive tech, invisible until they take focus.
 
 ## Score
 

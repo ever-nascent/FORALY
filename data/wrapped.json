@@ -1,6 +1,7 @@
 {
+  "_README": "PARTLY REAL. Every figure comes from the real export except three that the 14-card layout added and were never computed from it: the words-per-person split (card 5), the goodnight / good morning counts (card 8), and which caption the peak-hour card gets (card 6). Run `npm run data` against the export to fill them. `npm run build` refuses to build while meta.placeholder is true.",
   "meta": {
-    "placeholder": false,
+    "placeholder": true,
     "generatedAt": "2026-09-05T22:16:46.085Z",
     "range": {
       "start": "2026-05-22",
@@ -15,28 +16,23 @@
   "cards": [
     {
       "kind": "opening",
-      "title": "Three months, timestamped",
+      "theme": "curtain",
+      "title": "Relationship Wrapped",
       "dateline": "22 May — 5 September",
-      "caption": "Counted from the log, not from memory."
+      "caption": "4 months of us. I know love isn't a competition, but I like to think I'm beating you at it. Let's find out!"
     },
     {
       "kind": "figure",
+      "theme": "voltage",
       "value": 21549,
       "format": "integer",
       "unit": "messages",
       "countUp": true,
-      "caption": "This is how much we said to each other."
-    },
-    {
-      "kind": "figure",
-      "value": 154589,
-      "format": "integer",
-      "unit": "words",
-      "countUp": true,
-      "caption": "Typos included."
+      "caption": "We bother each other a LOT..."
     },
     {
       "kind": "split",
+      "theme": "coral",
       "format": "integer",
       "sides": [
         {
@@ -48,64 +44,111 @@
           "value": 9809
         }
       ],
-      "caption": "You wrote more of them."
+      "caption": "Somebody's a little obsessed."
     },
     {
       "kind": "figure",
+      "theme": "acid",
+      "value": 154589,
+      "format": "integer",
+      "unit": "words",
+      "countUp": true,
+      "caption": "Typos included."
+    },
+    {
+      "kind": "split",
+      "theme": "fuchsia",
+      "format": "integer",
+      "sides": [
+        {
+          "label": "Alyshia",
+          "value": 118000
+        },
+        {
+          "label": "Zechariah",
+          "value": 96675
+        }
+      ],
+      "context": "How many words you each sent.",
+      "caption": "Looks like someone's got a big mouth."
+    },
+    {
+      "kind": "figure",
+      "theme": "teal",
       "value": 540,
       "format": "clock",
-      "caption": "The hour we talk in most."
+      "context": "The hour we talk in most.",
+      "caption": "It's your fault, not mine."
     },
     {
       "kind": "figure",
+      "theme": "cobalt",
       "value": 107,
       "format": "integer",
       "unit": "days",
-      "caption": "Days in a row without a gap."
+      "context": "Days in a row without a gap.",
+      "caption": "Can't get enough of me? Eh?"
     },
     {
-      "kind": "word",
-      "word": "charm",
-      "value": 480,
-      "unit": "times",
-      "caption": "The word you used more than any other."
+      "kind": "greeting",
+      "night": {
+        "word": "goodnight",
+        "value": 271,
+        "unit": "times",
+        "caption": "The last thing we say before bed."
+      },
+      "day": {
+        "word": "good morning",
+        "value": 194,
+        "unit": "times",
+        "caption": "The first thing we say when we wake up."
+      }
     },
     {
       "kind": "figure",
+      "theme": "marigold",
       "value": 364,
       "format": "integer",
       "countUp": true,
-      "caption": "Times one of us typed a laugh."
+      "context": "Times one of us typed a laugh.",
+      "caption": "Half of these were pity laughs."
     },
     {
       "kind": "quote",
+      "theme": "bone",
       "text": "Hey Velvet! I'm hosting a tournament and I'm inviting all of my mutuals to see if they'd be interested in joining! It'll be hosted from June 5th to June 19th. If you'd like to know more details, let me know!",
       "author": "Zechariah",
       "timestamp": "2026-05-23T14:09:29.7800000-07:00",
-      "caption": "How this started.",
+      "caption": "How it all started.",
       "footnote": "23 May, 2:09 pm"
     },
     {
       "kind": "figure",
+      "theme": "night",
       "value": 359,
       "format": "clock",
-      "caption": "The latest we ever stayed up talking.",
+      "context": "The latest we ever stayed up talking.",
+      "caption": "So much for a 'bed time', huh?",
       "footnote": "16 June"
     },
     {
       "kind": "figure",
+      "theme": "crimson",
       "value": 476,
       "format": "integer",
       "unit": "messages",
-      "caption": "The longest we went without stopping.",
+      "context": "The longest we went without stopping.",
+      "caption": "We just don't shut up, do we?",
       "footnote": "10 August, starting 9:48 am"
     },
     {
       "kind": "figure",
+      "theme": "slate",
       "value": 28,
       "format": "integer",
       "unit": "hours",
-      "caption": "The longest we went quiet."
+      "context": "The longest we went quiet.",
+      "caption": "If you ever stop talking to me for this long again, we're gonna have a PROBLEM."
     },
     {
       "kind": "closing",

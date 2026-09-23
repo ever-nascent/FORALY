@@ -193,6 +193,8 @@
 }
 
 .split__value {
+  position: relative;
+  display: block;
   font-family: var(--face-display);
   font-weight: 400;
   font-size: min(
@@ -204,11 +206,60 @@
   color: var(--ink);
 }
 
+/* The ghost holds the final value's width so the race can't shift the layout
+   as it counts, same trick as .figure__ghost. */
+.split__ghost {
+  visibility: hidden;
+}
+
+.split__live {
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-align: center;
+}
+
 .split__label {
   font-size: var(--step-small);
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--faint);
+}
+
+/* Only present when a split card carries a `context` — a wrapper purely so
+   the .split grid and the context line can land in .card__head together;
+   `display: contents` keeps it from becoming a second grid item next to
+   .split's own width: 100%. */
+[data-split-wrap] {
+  display: contents;
+}
+
+/* --- The race --------------------------------------------------------------
+   Both sides count up together (src/deck.ts); whichever lands higher gets a
+   quiet glow once both have finished. The glow is the accent colour used as
+   a shadow rather than a text colour, so it never has to clear a text-contrast
+   bar the way recolouring the numeral or label would. */
+.split__side[data-count-winner] .split__value {
+  filter: drop-shadow(0 0 10px var(--accent));
+  animation: split-win var(--dur-land) var(--ease-out) both;
+}
+
+@keyframes split-win {
+  from {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* Still means still: the glow stays as a static mark of who won, but nothing
+   pulses to get there. */
+:root[data-motion='off'] .split__side[data-count-winner] .split__value {
+  animation: none;
 }
 
 /* --- Word ----------------------------------------------------------------- */
@@ -243,6 +294,50 @@
   color: var(--faint);
 }
 
+/* --- The goodnight / good-morning toggle -----------------------------------
+   The one interactive card. The shapes and the stack (word, caption, button)
+   fade out, swap underneath, fade back in — never the card itself. The card
+   root has to stay opaque throughout: a card mid-transition sits in front of
+   the previous one, which is still visible, only pushed aside — see
+   .card[data-state='past'] above — and fading the root would show it
+   through, which is exactly the glitch this replaced. */
+
+[data-greeting-shapes].greeting-fade,
+.card__stack.greeting-fade {
+  opacity: 0;
+  transition: opacity calc(var(--dur-greeting) / 2) var(--ease-out);
+}
+
+/* [data-greeting-shapes] and [data-greeting-word] are otherwise bare wrappers
+   render.ts gives greeting.ts something to replaceChildren() on. Neither
+   needs `display: contents` — .shapes is absolutely positioned regardless of
+   how many plain, unpositioned ancestors sit between it and .card, and .word
+   is a normal block that just sizes the wrapper to fit it — so both collapse
+   to their child's box exactly as if the wrapper weren't there. */
+
+.greeting__toggle {
+  margin-top: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.greeting__toggle:hover {
+  background: var(--shape-a);
+}
+
+.greeting__toggle:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 /* --- Quote and opening ---------------------------------------------------- */
 
 .quote {
@@ -266,6 +361,32 @@
   letter-spacing: -0.018em;
   color: var(--ink);
   text-wrap: pretty;
+}
+
+/* The coda: how long ago that first message was, said over in ever-smaller
+   units. Quiet — same register as the footnote above it, not a second
+   caption. */
+.quote__elapsed {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--step-small);
+  font-weight: 450;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes elapsed-line-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.quote__elapsed-line {
+  display: block;
+  animation: elapsed-line-in 220ms var(--ease-out) both;
 }
 
 .opening {
@@ -421,84 +542,37 @@
   animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 240ms) both;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  @keyframes settle {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+/* Still. Every part still arrives — on opacity alone, with nothing travelling,
+   scaling, rotating or wiping. One keyframe set does for all of them, because
+   "arrives" is the whole of it once the movement is gone. Selected by the
+   attribute rather than redefining the keyframes inside a media query, so the
+   control in the corner can put the movement back. */
 
-  @keyframes land {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
-
-  @keyframes side-in-left {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
+  to {
+    opacity: 1;
   }
+}
 
-  @keyframes side-in-right {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
+:root[data-motion='off'] .card[data-live] .card__foot,
+:root[data-motion='off'] .card[data-live] .figure,
+:root[data-motion='off'] .card[data-live] .split__side,
+:root[data-motion='off'] .card[data-live] .split__seam,
+:root[data-motion='off'] .card[data-live] .word__count,
+:root[data-motion='off'] .card[data-live] .quote__text,
+:root[data-motion='off'] .card[data-live] .opening__title,
+:root[data-motion='off'] .card[data-live] .opening__dateline,
+:root[data-motion='off'] .card[data-live] .shape {
+  animation-name: fade-in;
+}
 
-  @keyframes letter-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes wipe-down {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes wipe-across {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes shape-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  /* One letter at a time is movement dressed as type; reveal the word whole. */
-  :root:not([data-motion='on']) .card[data-live] .word__letter {
-    animation-delay: var(--delay-land);
-  }
-
+/* One letter at a time is movement dressed as type; reveal the word whole. */
+:root[data-motion='off'] .card[data-live] .word__letter {
+  animation-name: fade-in;
+  animation-delay: var(--delay-land);
 }
 
 
@@ -522,6 +596,17 @@
    the main thread, and only ever on the card that is up (and the one leaving,
    for as long as it is still on screen).
 --------------------------------------------------------------------------- */
+
+/* Every keyframe below starts exactly where shape-in leaves off — opacity 1,
+   an untransformed shape — because the two are chained, not sequential:
+   amb-X's animation-delay is set to land the instant shape-in's duration
+   ends (see the combined rule below), and CSS hands the animated property
+   from one animation to the next with no interpolation between them. A
+   keyframe whose `from` didn't match shape-in's `to` was a guaranteed jump
+   at that exact handoff — the shape visibly snapping to a different pose
+   before its loop proper began. Where the original range didn't already
+   touch that resting value, a third stop keeps the same full amplitude
+   while still landing on it first. */
 
 @keyframes amb-pulse {
   from {
@@ -595,41 +680,57 @@
 }
 
 @keyframes amb-widen {
-  from {
+  0% {
     transform: scaleX(1);
   }
-  to {
-    transform: scaleX(0.45);
+  45% {
+    transform: scaleX(0.55);
+  }
+  100% {
+    transform: scaleX(1.3);
   }
 }
 
 @keyframes amb-drift-x {
-  from {
+  0% {
     transform: translateX(0);
   }
-  to {
-    transform: translateX(20px);
+  50% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(10px);
   }
 }
 
 @keyframes amb-drift-x-rev {
-  from {
+  0% {
     transform: translateX(0);
   }
-  to {
-    transform: translateX(-20px);
+  50% {
+    transform: translateX(10px);
+  }
+  100% {
+    transform: translateX(-10px);
   }
 }
 
 @keyframes amb-drift-y {
-  from {
+  0% {
     transform: translateY(0);
   }
-  to {
-    transform: translateY(20px);
+  45% {
+    transform: translateY(-9px);
+  }
+  100% {
+    transform: translateY(11px);
   }
 }
 
+/* Runs the opposite way from the others on purpose: the resting value (full
+   opacity, matching shape-in) is the *start* of the loop, not an extreme it
+   passes through, so this is a plain two-stop swap rather than needing a
+   third. */
 @keyframes amb-twinkle {
   from {
     opacity: 1;
@@ -796,17 +897,16 @@
   animation-fill-mode: none;
 }
 
-/* Reduced motion, restated here because it has to beat the rules above and the
-   cascade settles ties by order. Every part still arrives; nothing loops. */
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='on']) .card[data-live] .shape[data-motion],
-  :root:not([data-motion='on']) .card[data-live] .shape[data-motion='ripple'] {
-    animation-name: shape-in;
-    animation-duration: var(--dur-shape);
-    animation-timing-function: var(--ease-out);
-    animation-delay: 0s;
-    animation-iteration-count: 1;
-    animation-direction: normal;
-    animation-fill-mode: both;
-  }
+/* Still, restated here because it has to beat every ambient rule above and the
+   cascade settles ties by order. Each shape arrives and then holds; nothing
+   loops, which is verifiable as zero running infinite animations. */
+:root[data-motion='off'] .card[data-live] .shape[data-motion],
+:root[data-motion='off'] .card[data-live] .shape[data-motion='ripple'] {
+  animation-name: fade-in;
+  animation-duration: var(--dur-shape);
+  animation-timing-function: var(--ease-out);
+  animation-delay: 0s;
+  animation-iteration-count: 1;
+  animation-direction: normal;
+  animation-fill-mode: both;
 }

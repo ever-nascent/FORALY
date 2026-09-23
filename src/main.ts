@@ -5,6 +5,7 @@ import './styles/print.css';
 
 import { loadScore } from './audio';
 import { createDeck } from './deck';
+import { currentMotion, startMotion, toggleMotion } from './motion';
 import { preload } from './preload';
 
 function need<T extends Element>(selector: string): T {
@@ -14,19 +15,23 @@ function need<T extends Element>(selector: string): T {
 }
 
 /**
- * The motion is the piece, and a still sequence is indistinguishable from a
- * broken one, so it moves even where the system asks for less: <html> ships
- * with data-motion="on". Opening it with ?motion=off hands the choice back to
- * the system's reduced-motion setting.
+ * Someone who has asked their system for less motion gets a still sequence,
+ * which is right — but it is indistinguishable from the page being broken. The
+ * control says which of the two it is and turns the movement back on, and the
+ * answer keeps for next time.
  */
-function honourMotionOverride(): void {
-  if (new URLSearchParams(location.search).get('motion') === 'off') {
-    delete document.documentElement.dataset.motion;
-  }
+function wireMotion(button: HTMLButtonElement): void {
+  const show = (state: 'on' | 'off'): void => {
+    button.setAttribute('aria-pressed', String(state === 'on'));
+  };
+
+  show(currentMotion());
+  button.addEventListener('click', () => show(toggleMotion()));
 }
 
 async function start(): Promise<void> {
-  honourMotionOverride();
+  startMotion();
+  wireMotion(need<HTMLButtonElement>('#motion'));
   const wrapped = await preload();
 
   if (wrapped.meta.placeholder) {

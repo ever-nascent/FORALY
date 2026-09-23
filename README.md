@@ -1,9 +1,9 @@
-# Three months, timestamped
+# Relationship Wrapped
 
-A private, password-gated Discord Wrapped: thirteen full-bleed cards, one real
-statistic each, advanced by tap, swipe or arrow key. Every card is its own
-colour world with its own shape composition and its own way of arriving. Built
-for one person, on a phone, once.
+A private, password-gated Spotify-Wrapped-style recap of a Discord conversation:
+thirteen full-bleed cards, one real statistic each, advanced by tap, swipe or
+arrow key. Every card is its own colour world with its own shape composition
+and its own way of arriving. Built for one person, on a phone, once.
 
 Static site. No API, no database, no analytics, no third-party requests — the
 fonts are self-hosted and the data is one local JSON file.
@@ -65,19 +65,25 @@ keep the repository private.
 
 ## Motion
 
-The sequence moves even when the device has Reduce Motion switched on: the
-motion is the piece, and a still sequence looks broken. `<html>` ships with
-`data-motion="on"`, which overrides the reduced-motion styles. Open the page
-with `?motion=off` to hand the choice back to the system setting.
+The sequence moves by default, even when the device has Reduce Motion switched
+on: the motion is the piece, and a still sequence looks broken. The motion
+control — the left of the two chips in the bottom corner — turns it off, and the
+answer keeps on that device. `?motion=off` (or `?motion=on`) in the URL does the
+same and is remembered afterwards.
 
-If the sequence still looks static, the likely cause is **a stylesheet that
-only works in one engine.** `npm run build` runs `scripts/check-css.mjs`, which
-fails the build on the constructs that cause this: a custom property supplying
-an animation *name* inside the `animation` shorthand, a custom property read
-from inside `@keyframes`, and `color-mix()`. All three work in Chromium and are
-dropped elsewhere — and a dropped shorthand takes the entrance animation with
-it, so the page renders and simply never moves. Each rule in that script is
-there because it shipped broken once.
+If the movement is missing with the control lit, the likely cause is **a
+stylesheet that only works in one engine.** `npm run build` runs
+`scripts/check-css.mjs`, which fails the build on the constructs that cause it:
+a custom property supplying an animation *name* inside the `animation`
+shorthand, a custom property read from inside `@keyframes`, and `color-mix()`.
+All three work in Chromium and are dropped elsewhere — and a dropped shorthand
+takes the entrance animation with it, so the page renders and simply never
+moves. Each rule in that script is there because it shipped broken once.
+
+`src/motion.ts` settles the question once, before the first card is built, and
+writes the answer to `<html data-motion="on|off">`. Every stylesheet reads that
+attribute rather than asking `prefers-reduced-motion` itself, because a media
+query cannot be overruled from inside the page and this one has to be.
 
 ## The password gate
 
