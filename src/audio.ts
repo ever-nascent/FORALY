@@ -34,6 +34,8 @@ export interface Score {
   dip(): void;
   toggle(): boolean;
   readonly muted: boolean;
+  /** Seconds into the song while it is audibly playing; null otherwise. */
+  time(): number | null;
 }
 
 function remembered(): boolean | null {
@@ -234,6 +236,9 @@ export async function loadScore(): Promise<Score | null> {
     },
     get muted() {
       return muted;
+    },
+    time() {
+      return started && !muted && !audio.paused ? audio.currentTime : null;
     },
   };
 }

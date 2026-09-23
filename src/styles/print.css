@@ -84,13 +84,12 @@
   }
 
   /* The sweep has nowhere to be on paper; the strip prints whole and lit. */
-  .ecg__trail,
-  .ecg__hot,
+  .ecg__fresh,
   .ecg__head {
     display: none;
   }
 
-  .ecg__base {
+  .ecg__old {
     stroke: var(--accent);
   }
 

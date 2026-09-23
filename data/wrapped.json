@@ -153,7 +153,7 @@
       "unit": "hours",
       "monitor": true,
       "context": "The longest we went quiet.",
-      "caption": "If you ever stop talking to me for this long again, we're gonna have a PROBLEM."
+      "caption": "If you ever stop talking to me for this long again, we're going to have a problem."
     },
     {
       "kind": "closing",

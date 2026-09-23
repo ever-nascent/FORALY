@@ -405,7 +405,7 @@ function build(messages, config) {
         unit: 'hours',
         monitor: true,
         context: 'The longest we went quiet.',
-        caption: "If you ever stop talking to me for this long again, we're gonna have a PROBLEM.",
+        caption: "If you ever stop talking to me for this long again, we're going to have a problem.",
       },
       // TODO(closing card): earmarked for a redesign — holding the current
       // one-line-and-nothing-else treatment (see ClosingCard in

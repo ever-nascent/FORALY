@@ -1,27 +1,31 @@
 /**
  * The longest-quiet card's heart monitor. A trace runs straight through the
- * middle of the number and beats like the real thing — a P wave, the sharp
- * QRS spike, a T wave, flat between — while a bright sweep writes it from
- * left to right with a fading trail, the way a bedside monitor does. When the
- * sweep passes through the number, the number lights up.
+ * middle of the number and is written live, the way a bedside monitor writes
+ * it: a head sweeps left to right at a constant speed, drawing a flat line
+ * until the heart beats, when it draws one sharp spike. Behind the head the
+ * fresh trace glows and fades; just ahead of it, the old sweep is erased.
  *
- * Driven from here rather than from CSS because a monitor sweeps at a
- * constant speed across the screen, and the trace has to be drawn in real
- * pixels to line up with the digits at every size. Rebuilt on resize.
+ * The heart beats in time with the score: on the song's own strong beats
+ * while it is playing (src/scoreBeats.ts), and at the same tempo on its own
+ * when it is not. On every beat the number beats too — lub, dub — and while
+ * the head is passing through the digits the number lights up.
  */
 
 import { currentMotion } from './motion';
+import { SCORE_BEATS, SCORE_BEAT_SECONDS } from './scoreBeats';
 
 const NS = 'http://www.w3.org/2000/svg';
 
-/** One sweep across the frame. About one beat a second, like a resting pulse. */
-const SWEEP_MS = 3200;
-const BEATS_PER_SWEEP = 3.4;
-/** Let the figure land before the first sweep starts. */
+/** How fast the head sweeps, in px a second — about three beats a sweep on a
+ *  phone, kept within bounds so a wide screen does not smear each spike. */
+const SPEED = { perWidth: 1 / 3.2, min: 110, max: 260 };
+/** Let the figure land before the head starts writing. */
 const START_DELAY_MS = 800;
-/** The trail behind the write head, as fractions of the width. */
-const TRAIL = 0.42;
-const HOT = 0.1;
+/** The glowing fresh trace behind the head, and the erased gap ahead of it. */
+const FRESH_PX = 70;
+const GAP_PX = 14;
+/** Columns are kept every STEP_PX; plenty for a line this simple. */
+const STEP_PX = 2;
 /** How far either side of the digits still counts as "passing through". */
 const REACH_PX = 6;
 
@@ -29,13 +33,16 @@ export interface MonitorHandle {
   cancel(): void;
 }
 
+/** Seconds into the song while it is audibly playing; null when it is not. */
+export type SongClock = () => number | null;
+
 function node<K extends keyof SVGElementTagNameMap>(tag: K, className: string): SVGElementTagNameMap[K] {
   const el = document.createElementNS(NS, tag);
   el.setAttribute('class', className);
   return el;
 }
 
-/** The skeleton render.ts puts in the figure; the path is drawn on mount. */
+/** The skeleton render.ts puts in the figure; the trace is drawn on mount. */
 export function monitorLayer(): SVGSVGElement {
   const svg = node('svg', 'ecg');
   svg.setAttribute('aria-hidden', 'true');
@@ -44,88 +51,116 @@ export function monitorLayer(): SVGSVGElement {
   // The radius as an attribute: the CSS `r` property is not in every engine.
   const head = node('circle', 'ecg__head');
   head.setAttribute('r', '4.5');
-  svg.append(node('path', 'ecg__base'), node('path', 'ecg__trail'), node('path', 'ecg__hot'), head);
+  svg.append(node('path', 'ecg__old'), node('path', 'ecg__fresh'), head);
   return svg;
 }
 
-/** A rhythm strip `w` × `h` pixels, beats evenly spaced, baseline centred. */
-function strip(w: number, h: number): string {
-  const mid = h / 2;
-  const amp = mid - 3;
-  const gap = w / BEATS_PER_SWEEP;
-  const parts = [`M 0 ${mid}`];
-  // The first beat lands a little way in, so the sweep never opens on a spike.
-  for (let x = gap * 0.55; x < w + gap; x += gap) {
-    const u = gap / 10;
-    const at = (dx: number, dy: number): string => `${(x + dx * u).toFixed(1)} ${(mid + dy * amp).toFixed(1)}`;
-    parts.push(
-      `L ${at(-3.2, 0)}`,
-      `Q ${at(-2.5, -0.28)} ${at(-1.8, 0)}`, // P
-      `L ${at(-0.5, 0)}`,
-      `L ${at(-0.25, 0.14)}`, // Q
-      `L ${at(0.1, -1)}`, // R
-      `L ${at(0.5, 0.42)}`, // S
-      `L ${at(0.8, 0)}`,
-      `L ${at(1.6, 0)}`,
-      `Q ${at(2.5, -0.38)} ${at(3.4, 0)}` // T
-    );
+/**
+ * The spike, as a function of seconds since the beat: a small dip, the tall
+ * sharp rise, a dip below the line, and back. Flat everywhere else — no
+ * humps before or after. Positive is down, in units of the half-height.
+ */
+function spike(dt: number): number {
+  const shape: [number, number][] = [
+    [0, 0],
+    [0.025, 0.16],
+    [0.06, -1],
+    [0.095, 0.45],
+    [0.13, 0],
+  ];
+  if (dt <= 0 || dt >= 0.13) return 0;
+  for (let i = 1; i < shape.length; i += 1) {
+    const [t1, y1] = shape[i] as [number, number];
+    const [t0, y0] = shape[i - 1] as [number, number];
+    if (dt <= t1) return y0 + ((y1 - y0) * (dt - t0)) / (t1 - t0);
   }
-  parts.push(`L ${w} ${mid}`);
-  return parts.join(' ');
+  return 0;
 }
 
-export function mountMonitor(svg: SVGSVGElement): MonitorHandle {
-  const base = svg.querySelector<SVGPathElement>('.ecg__base');
-  const trail = svg.querySelector<SVGPathElement>('.ecg__trail');
-  const hot = svg.querySelector<SVGPathElement>('.ecg__hot');
+/** The latest strong beat of the song at or before `t`, or null before the first. */
+function lastSongBeat(t: number): number | null {
+  let lo = 0;
+  let hi = SCORE_BEATS.length - 1;
+  if (hi < 0 || t < (SCORE_BEATS[0] ?? 0)) return null;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if ((SCORE_BEATS[mid] ?? 0) <= t) lo = mid;
+    else hi = mid - 1;
+  }
+  return SCORE_BEATS[lo] ?? null;
+}
+
+/** Seconds since the last beat, on the song's beats or on the free-running pulse. */
+function sinceBeat(song: number | null, wall: number): number {
+  if (song !== null) {
+    const beat = lastSongBeat(song);
+    if (beat !== null) return song - beat;
+  }
+  return wall % SCORE_BEAT_SECONDS;
+}
+
+const LUB_DUB: Keyframe[] = [
+  { transform: 'scale(1)' },
+  { transform: 'scale(1.09)', offset: 0.12 },
+  { transform: 'scale(1)', offset: 0.3 },
+  { transform: 'scale(1.05)', offset: 0.42 },
+  { transform: 'scale(1)', offset: 0.7 },
+  { transform: 'scale(1)' },
+];
+
+export function mountMonitor(svg: SVGSVGElement, songTime: SongClock): MonitorHandle {
+  const old = svg.querySelector<SVGPathElement>('.ecg__old');
+  const fresh = svg.querySelector<SVGPathElement>('.ecg__fresh');
   const head = svg.querySelector<SVGCircleElement>('.ecg__head');
   const figure = svg.closest<HTMLElement>('.figure__value');
   const digits = figure?.querySelector<HTMLElement>('.figure__ghost') ?? figure;
-  if (!base || !trail || !hot || !head || !figure || !digits) return { cancel() {} };
+  const number = figure?.querySelector<HTMLElement>('.figure__live');
+  if (!old || !fresh || !head || !figure || !digits || !number) return { cancel() {} };
 
   let width = 0;
-  let length = 0;
-  /** Path length at evenly spaced x, so the head moves at constant speed across. */
-  let table: number[] = [];
+  let mid = 0;
+  let amp = 0;
+  /** One y per column, as a multiple of `amp` from the centre line. */
+  let trace = new Float32Array(0);
 
-  const draw = (): void => {
+  const size = (): boolean => {
     // The laid-out size, not getBoundingClientRect: that one includes the
     // figure's landing zoom, and clientWidth is 0 on an <svg> in some engines.
     const style = getComputedStyle(svg);
     const w = Number.parseFloat(style.width);
     const h = Number.parseFloat(style.height);
-    if (w === 0 || h === 0 || w === width) return;
+    if (!(w > 0 && h > 0)) return false;
+    if (w !== width) trace = new Float32Array(Math.ceil(w / STEP_PX) + 1);
     width = w;
+    mid = h / 2;
+    amp = mid - 3;
     svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
-    const d = strip(w, h);
-    for (const path of [base, trail, hot]) path.setAttribute('d', d);
-    length = base.getTotalLength();
+    return true;
+  };
 
-    table = [];
-    const samples = 400;
-    let at = 0;
-    for (let i = 0; i <= samples; i += 1) {
-      const x = (i / samples) * w;
-      while (at < length && base.getPointAtLength(at).x < x) at += 2;
-      table.push(Math.min(at, length));
+  const line = (from: number, to: number): string => {
+    const a = Math.max(0, Math.floor(from / STEP_PX));
+    const b = Math.min(trace.length - 1, Math.ceil(to / STEP_PX));
+    if (b <= a) return '';
+    const points: string[] = [];
+    for (let i = a; i <= b; i += 1) {
+      points.push(`${i * STEP_PX} ${(mid + (trace[i] ?? 0) * amp).toFixed(1)}`);
     }
+    return `M ${points.join(' L ')}`;
   };
 
-  const lengthAtX = (x: number): number => {
-    const f = (Math.min(Math.max(x / width, 0), 1) * (table.length - 1));
-    const i = Math.floor(f);
-    const a = table[i] ?? 0;
-    const b = table[Math.min(i + 1, table.length - 1)] ?? a;
-    return a + (b - a) * (f - i);
-  };
-
-  draw();
-  const watch = new ResizeObserver(() => draw());
+  size();
+  const watch = new ResizeObserver(() => size());
   watch.observe(svg);
 
   if (currentMotion() === 'off') {
-    // Still: the whole strip, drawn once, nothing sweeping.
+    // Still: a strip already written, one spike a beat, nothing sweeping.
     svg.dataset.still = '';
+    const speed = Math.min(Math.max(width * SPEED.perWidth, SPEED.min), SPEED.max);
+    for (let i = 0; i < trace.length; i += 1) {
+      trace[i] = spike(((i * STEP_PX) / speed + 0.3) % SCORE_BEAT_SECONDS);
+    }
+    old.setAttribute('d', line(0, width));
     return {
       cancel() {
         watch.disconnect();
@@ -136,33 +171,53 @@ export function mountMonitor(svg: SVGSVGElement): MonitorHandle {
 
   let frame = 0;
   let begun = 0;
-
-  const paint = (tail: SVGPathElement, at: number, span: number): void => {
-    const from = Math.max(at - span, 0);
-    tail.style.strokeDasharray = `0 ${from} ${at - from} ${length * 2}`;
-  };
+  let headX = 0;
+  let lastWall = 0;
+  let lastPhase: number | null = null;
 
   const step = (now: number): void => {
     if (begun === 0) begun = now;
-    const t = now - begun - START_DELAY_MS;
-    if (t >= 0 && length > 0) {
-      const x = ((t % SWEEP_MS) / SWEEP_MS) * width;
-      const at = lengthAtX(x);
-      paint(trail, at, lengthAtX(x) - lengthAtX(x - width * TRAIL));
-      paint(hot, at, lengthAtX(x) - lengthAtX(x - width * HOT));
-      const point = base.getPointAtLength(at);
-      head.setAttribute('cx', String(point.x));
-      head.setAttribute('cy', String(point.y));
+    const elapsed = now - begun - START_DELAY_MS;
+    if (elapsed >= 0 && width > 0) {
+      const wall = elapsed / 1000;
+      const song = songTime();
+      const speed = Math.min(Math.max(width * SPEED.perWidth, SPEED.min), SPEED.max);
+      const dt = Math.min(wall - lastWall, 0.1);
+
+      // Write every column the head crossed since the last frame, each at its
+      // own moment, so a spike keeps its shape however the frames fall.
+      const from = headX;
+      headX += dt * speed;
+      for (let x = from; x < headX; x += STEP_PX) {
+        const back = (headX - x) / speed;
+        const at = sinceBeat(song === null ? null : song - back, wall - back);
+        const col = Math.floor((x % width) / STEP_PX);
+        trace[col] = spike(at);
+      }
+      if (headX >= width) headX -= width;
+      lastWall = wall;
+
+      // The number beats on each new beat: the moment the time since the last
+      // beat drops back towards zero.
+      const phase = sinceBeat(song, wall);
+      if (lastPhase !== null && phase < lastPhase) {
+        number.animate(LUB_DUB, { duration: 760, easing: 'ease-out' });
+      }
+      lastPhase = phase;
+
+      old.setAttribute('d', `${line(0, headX - FRESH_PX)} ${line(headX + GAP_PX, width)}`);
+      fresh.setAttribute('d', line(headX - FRESH_PX, headX));
+      const y = mid + (trace[Math.floor(headX / STEP_PX)] ?? 0) * amp;
+      head.setAttribute('cx', String(headX));
+      head.setAttribute('cy', String(y));
       svg.dataset.running = '';
 
-      // Is the write head inside the digits? Measured against the ghost,
-      // which holds the number's real width.
+      // Inside the digits? Measured against the ghost, which holds the
+      // number's real width, in the same (transformed) space as the head.
       const s = svg.getBoundingClientRect();
       const n = digits.getBoundingClientRect();
-      const scale = s.width / width || 1;
-      const headX = s.left + x * scale;
-      const inside = headX >= n.left - REACH_PX && headX <= n.right + REACH_PX;
-      if (inside) figure.dataset.lit = '';
+      const px = s.left + headX * (s.width / width || 1);
+      if (px >= n.left - REACH_PX && px <= n.right + REACH_PX) figure.dataset.lit = '';
       else delete figure.dataset.lit;
     }
     frame = requestAnimationFrame(step);

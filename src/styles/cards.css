@@ -983,9 +983,9 @@
 }
 
 /* --- The quiet card: a heart monitor through the figure ------------------
-   Drawn and swept by src/monitor.ts. The trace sits behind the digits, full
-   width, on the number's centre line; the digits light up as the sweep goes
-   through them.
+   Written live by src/monitor.ts. The trace sits behind the digits, full
+   width, on the number's centre line; the digits beat with the heart and
+   light up as the sweep goes through them.
 --------------------------------------------------------------------------- */
 
 .ecg {
@@ -1006,24 +1006,15 @@
   stroke-linejoin: round;
 }
 
-.ecg__base {
+.ecg__old {
   stroke: var(--track);
   stroke-width: 1.5px;
 }
 
-.ecg__trail,
-.ecg__hot {
+.ecg__fresh {
   stroke: var(--accent);
-  stroke-dasharray: 0 1;
-}
-
-.ecg__trail {
-  stroke-width: 2px;
-  opacity: 0.45;
-}
-
-.ecg__hot {
-  stroke-width: 3px;
+  stroke-width: 2.5px;
+  filter: drop-shadow(0 0 4px var(--accent));
 }
 
 .ecg__head {
@@ -1037,7 +1028,7 @@
 }
 
 /* Motion off: the whole strip, lit, nothing sweeping. */
-.ecg[data-still] .ecg__base {
+.ecg[data-still] .ecg__old {
   stroke: var(--accent);
   opacity: 0.7;
 }

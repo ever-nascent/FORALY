@@ -201,7 +201,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     }
 
     const trace = entering.querySelector<SVGSVGElement>('[data-monitor]');
-    if (trace) monitor = mountMonitor(trace);
+    if (trace) monitor = mountMonitor(trace, () => score?.time() ?? null);
 
     if (wanted !== 0 && armed) disarm();
 
