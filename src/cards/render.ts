@@ -1,5 +1,6 @@
 import { formatInteger, formatValue } from '../format';
 import { GREETING_NIGHT, themeFor, tonesFor, type Theme } from '../palette';
+import { decorate } from '../gimmicks';
 import { monitorLayer } from '../monitor';
 import { shapeLayer } from '../shapes';
 import type { Card, FigureCard, GreetingCard, OpeningCard, SplitCard, WordCard } from './types';
@@ -351,7 +352,8 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
     const foot = el('div', 'card__foot');
     foot.append(el('hr', 'rule'));
     foot.append(el('p', 'caption', card.caption));
-    if ('footnote' in card && card.footnote) {
+    // A chat-style quote carries its date in the message header instead.
+    if ('footnote' in card && card.footnote && card.gimmick !== 'chat') {
       foot.append(el('p', 'footnote', card.footnote));
     }
     if (card.kind === 'quote') {
@@ -361,6 +363,7 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
   }
 
   root.append(stack);
+  decorate(root, card);
   return root;
 }
 

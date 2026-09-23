@@ -2,6 +2,8 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/cards.css';
 import './styles/print.css';
+// After print, so a plate shows each gimmick in its final state.
+import './styles/gimmicks.css';
 
 import { loadScore } from './audio';
 import { createDeck } from './deck';

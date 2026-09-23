@@ -24,6 +24,7 @@
     {
       "kind": "figure",
       "theme": "voltage",
+      "gimmick": "buzz",
       "value": 21549,
       "format": "integer",
       "unit": "messages",
@@ -33,6 +34,7 @@
     {
       "kind": "split",
       "theme": "coral",
+      "gimmick": "tug",
       "format": "integer",
       "sides": [
         {
@@ -49,15 +51,16 @@
     {
       "kind": "figure",
       "theme": "acid",
+      "gimmick": "typo",
       "value": 154589,
       "format": "integer",
       "unit": "words",
-      "countUp": true,
       "caption": "Typos included."
     },
     {
       "kind": "split",
       "theme": "fuchsia",
+      "gimmick": "balloons",
       "format": "integer",
       "sides": [
         {
@@ -75,6 +78,7 @@
     {
       "kind": "figure",
       "theme": "teal",
+      "gimmick": "dial",
       "value": 540,
       "format": "clock",
       "context": "The hour we talk in most.",
@@ -111,15 +115,27 @@
     {
       "kind": "figure",
       "theme": "marigold",
+      "gimmick": "giggle",
       "value": 364,
       "format": "integer",
       "countUp": true,
       "context": "Times one of us typed a laugh.",
-      "caption": "Half of these were pity laughs."
+      "caption": "Half of these were pity laughs.",
+      "laughs": [
+        "lol",
+        "lmao",
+        "lmfao",
+        "haha",
+        "hehe",
+        "heh",
+        "hah",
+        "ahaha"
+      ]
     },
     {
       "kind": "quote",
       "theme": "bone",
+      "gimmick": "chat",
       "text": "Hey Velvet! I'm hosting a tournament and I'm inviting all of my mutuals to see if they'd be interested in joining! It'll be hosted from June 5th to June 19th. If you'd like to know more details, let me know!",
       "author": "Zechariah",
       "timestamp": "2026-05-23T14:09:29.7800000-07:00",
@@ -129,6 +145,7 @@
     {
       "kind": "figure",
       "theme": "night",
+      "gimmick": "flipclock",
       "value": 359,
       "format": "clock",
       "context": "The latest we ever stayed up talking.",
@@ -138,6 +155,7 @@
     {
       "kind": "figure",
       "theme": "crimson",
+      "gimmick": "stream",
       "value": 476,
       "format": "integer",
       "unit": "messages",

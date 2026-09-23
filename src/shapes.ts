@@ -294,6 +294,10 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
     case 'calendar':
       return [];
 
+    // A card whose gimmick is the whole picture: badges, a dial, a stream.
+    case 'plain':
+      return [];
+
     // Her last line: a heart that draws itself, fills, and then beats — with
     // a few small ones drifting up past it.
     case 'heart': {

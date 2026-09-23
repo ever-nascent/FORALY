@@ -17,9 +17,34 @@ export interface Meta {
   people: { her: string; him: string };
 }
 
+/**
+ * A card's own trick — the one thing it does that no other card does. Each
+ * is tied to what the card says; see src/gimmicks.ts.
+ *   buzz       the number vibrates like a phone, notification badges pop
+ *   tug        a tug-of-war rope under a split, pulled toward the winner
+ *   typo       the number is typed out, with a typo fixed on the way
+ *   balloons   each side of a split in a speech balloon sized by its share
+ *   dial       a 24-hour dial round a clock figure, swept to the hour
+ *   giggle     the number shakes with laughter, laughs pop out around it
+ *   chat       a quote arrives as a message: typing, then the message
+ *   flipclock  a clock figure rolls forward through the night to its time
+ *   stream     chat bubbles stream up behind the number, never stopping
+ */
+export type Gimmick =
+  | 'buzz'
+  | 'tug'
+  | 'typo'
+  | 'balloons'
+  | 'dial'
+  | 'giggle'
+  | 'chat'
+  | 'flipclock'
+  | 'stream';
+
 interface Base {
   /** The one short line of copy. Sentence case, no exclamation marks. */
   caption: string;
+  gimmick?: Gimmick;
   /**
    * Pins this card to a specific place in the colour arc — see themeFor() in
    * palette.ts — so reordering cards in the deck can't scramble which shape
@@ -62,6 +87,8 @@ export interface FigureCard extends Base {
   calendar?: { start: string; end: string };
   /** Runs a heart-monitor trace through the middle of the figure. */
   monitor?: boolean;
+  /** The words that popped out for the `giggle` gimmick — the laughs counted. */
+  laughs?: string[];
 }
 
 /** Two figures, hers and his. */

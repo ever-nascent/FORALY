@@ -71,6 +71,10 @@ function validate({ meta, cards }) {
         `${where}: format must be "integer" or "clock", not "${card.format}"`
       );
     }
+    if (card.gimmick !== undefined) {
+      const gimmicks = ['buzz', 'tug', 'typo', 'balloons', 'dial', 'giggle', 'chat', 'flipclock', 'stream'];
+      require(gimmicks.includes(card.gimmick), `${where}: unknown gimmick "${card.gimmick}"`);
+    }
     if (card.countUp) {
       require(card.format === 'integer', `${where}: countUp only works on integers`);
     }

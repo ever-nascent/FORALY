@@ -1,0 +1,726 @@
+/* ---------------------------------------------------------------------------
+   Gimmicks. Each card's one trick — see src/gimmicks.ts for what each is and
+   the markup it adds. Everything here runs only on a live card, starts from
+   the resting pose it will loop back to, and holds still when motion is off.
+--------------------------------------------------------------------------- */
+
+/* --- buzz: the phone that will not stop going off ------------------------ */
+
+.badges,
+.laughs {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.badge {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: grid;
+  place-items: center;
+  min-width: 1.9em;
+  height: 1.9em;
+  padding: 0 0.55em;
+  border-radius: 999px;
+  /* The notification badge's own red and white, not a palette colour: it
+     has to read as the thing on a phone's home screen. */
+  /* impeccable-disable-next-line design-system-color */
+  background: #ff3b30;
+  /* impeccable-disable-next-line design-system-color */
+  color: #fff;
+  font: 700 clamp(0.8rem, 3.4vw, 1.05rem) / 1 var(--face-text);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 0.3em 0.8em rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes badge-pop {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* A bump on every buzz, in step with the number. */
+@keyframes badge-bump {
+  0%,
+  14%,
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+  }
+  4% {
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+  9% {
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+}
+
+/* Bzz-bzz, then quiet, over and over: two short bursts a cycle. */
+@keyframes buzz {
+  0%,
+  22%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  2%,
+  6%,
+  14%,
+  18% {
+    transform: translate(-4px, 1px) rotate(-1.2deg);
+  }
+  4%,
+  8%,
+  16%,
+  20% {
+    transform: translate(4px, -1px) rotate(1.2deg);
+  }
+  10% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.card[data-live] .badge {
+  animation:
+    badge-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 500ms + var(--i) * 260ms) both,
+    badge-bump 2.6s linear calc(var(--delay-land) + var(--dur-count) + 200ms) infinite;
+}
+
+.card[data-live][data-gimmick='buzz'] .figure__value {
+  animation: buzz 2.6s linear calc(var(--delay-land) + var(--dur-count) + 200ms) infinite;
+}
+
+/* --- tug: who is pulling harder ------------------------------------------ */
+
+.tug {
+  position: relative;
+  width: 100%;
+  height: 2rem;
+  margin-top: 1.25rem;
+}
+
+.tug__track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0.6rem;
+  overflow: hidden;
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+
+/* Three times the track's width, so it can slide either way and still fill it. */
+.tug__rope {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -100%;
+  width: 300%;
+  background: repeating-linear-gradient(-55deg, var(--ink) 0 5px, var(--quiet) 5px 10px);
+  opacity: 0.85;
+}
+
+.tug__mid {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--ink);
+  opacity: 0.45;
+  transform: translateX(-50%);
+}
+
+/* The knot tied at the rope's middle — the thing that moves. */
+.tug__marker {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.95rem;
+  height: 1.9rem;
+  border: 3px solid var(--ink);
+  border-radius: 0.3rem;
+  background: var(--ground);
+  transform: translate(-50%, -50%);
+}
+
+@keyframes tug-strain {
+  from {
+    transform: translate(-54%, -50%);
+  }
+  to {
+    transform: translate(-46%, -50%);
+  }
+}
+
+/* A tug back the wrong way first, then hauled over — the easing overshoots
+   on both ends. */
+.card[data-live] .tug__marker {
+  left: calc(50% + var(--pull));
+  transition: left 1.8s cubic-bezier(0.5, -0.45, 0.3, 1.35) var(--delay-land);
+  animation: tug-strain 0.8s ease-in-out calc(var(--delay-land) + 1.9s) infinite alternate;
+}
+
+.card[data-live] .tug__rope {
+  transform: translateX(var(--pull-rope));
+  transition: transform 1.8s cubic-bezier(0.5, -0.45, 0.3, 1.35) var(--delay-land);
+}
+
+/* --- balloons: who has the bigger mouth ---------------------------------- */
+
+.card[data-gimmick='balloons'] .split__seam {
+  visibility: hidden;
+}
+
+.card[data-gimmick='balloons'] .split__side {
+  position: relative;
+  isolation: isolate;
+  padding: 1.1rem 0.5rem 0.95rem;
+}
+
+.card[data-gimmick='balloons'] .split__side::before {
+  content: '';
+  position: absolute;
+  inset: -0.2rem -0.45rem;
+  z-index: -1;
+  border: 2px solid var(--edge);
+  border-radius: 1.6rem;
+  background: var(--shape-b);
+  opacity: 0;
+  scale: 0.3;
+}
+
+/* Clear of the balloons, which spill past their boxes as they inflate. */
+.card[data-gimmick='balloons'] [data-split-wrap] > .footnote {
+  margin-top: 1.4rem;
+}
+
+/* A chat bubble's flat corner, pointing to whoever is talking. */
+.card[data-gimmick='balloons'] .split__side:first-child::before {
+  border-bottom-left-radius: 0.35rem;
+}
+
+.card[data-gimmick='balloons'] .split__side:last-child::before {
+  border-bottom-right-radius: 0.35rem;
+}
+
+@keyframes balloon-wobble {
+  from {
+    rotate: -1.6deg;
+  }
+  to {
+    rotate: 2deg;
+  }
+}
+
+.card[data-live][data-gimmick='balloons'] .split__side::before {
+  opacity: 1;
+  scale: var(--balloon);
+  transition:
+    scale 1.7s cubic-bezier(0.34, 1.56, 0.64, 1) var(--delay-land),
+    opacity 300ms var(--ease-out) var(--delay-land);
+}
+
+.card[data-live][data-gimmick='balloons'] .split__side[data-bigger]::before {
+  animation: balloon-wobble 1.7s ease-in-out calc(var(--delay-land) + 1.8s) infinite alternate;
+}
+
+/* --- typo: typed out, with a mistake on the way -------------------------- */
+
+.card[data-gimmick='typo'] .figure__live {
+  text-align: left;
+  white-space: nowrap;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.055em;
+  height: 0.78em;
+  margin-left: 0.05em;
+  border-radius: 0.02em;
+  background: var(--ink);
+  vertical-align: -0.02em;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.caret[data-idle] {
+  animation: caret-blink 1.05s steps(1, end) infinite;
+}
+
+/* --- dial: the whole day, and the hour it lands on ----------------------- */
+
+.dial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: 1.38em;
+  height: 1.38em;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Room above and below, so the ring clears the unit and the line under it. */
+.card[data-gimmick='dial'] .figure__value {
+  margin-block: 0.3em;
+}
+
+.dial__track {
+  fill: none;
+  stroke: var(--track);
+  stroke-width: 1.2;
+}
+
+.dial__tick {
+  stroke: var(--faint);
+  stroke-width: 0.5;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+.dial__tick--major {
+  stroke-width: 1;
+  opacity: 1;
+}
+
+.dial__fill {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  transform: rotate(-90deg);
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+.dial__hand {
+  transform: rotate(0deg);
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+.dial__tip {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 2px var(--accent));
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes dial-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.7);
+    opacity: 0.65;
+  }
+}
+
+.card[data-live] .dial__fill {
+  stroke-dashoffset: var(--to);
+  transition: stroke-dashoffset 1.9s cubic-bezier(0.65, 0, 0.35, 1) var(--delay-land);
+}
+
+.card[data-live] .dial__hand {
+  transform: rotate(var(--deg));
+  transition: transform 1.9s cubic-bezier(0.65, 0, 0.35, 1) var(--delay-land);
+}
+
+.card[data-live] .dial__tip {
+  animation: dial-pulse 1.6s ease-in-out calc(var(--delay-land) + 2s) infinite;
+}
+
+/* --- giggle: laughing too hard to sit still ------------------------------ */
+
+.laugh {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  font: 800 calc(var(--size) * clamp(1rem, 4.6vw, 1.6rem)) / 1 var(--face-text);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  white-space: nowrap;
+  opacity: 0;
+  translate: -50% -50%;
+  rotate: var(--r);
+}
+
+@keyframes laugh-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  10% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 0.9;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.9);
+  }
+}
+
+/* Bursts of shaking, then a breath, like laughing at something twice. */
+@keyframes giggle {
+  0%,
+  34%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  4% {
+    transform: rotate(-3deg) translateY(-4px);
+  }
+  8% {
+    transform: rotate(3deg) translateY(-1px);
+  }
+  12% {
+    transform: rotate(-2.5deg) translateY(-4px);
+  }
+  16% {
+    transform: rotate(2deg) translateY(-1px);
+  }
+  20% {
+    transform: rotate(-1.5deg) translateY(-3px);
+  }
+  26% {
+    transform: rotate(1deg) translateY(0);
+  }
+}
+
+.card[data-live] .laugh {
+  animation: laugh-pop 3.2s var(--ease-out) calc(var(--delay-land) + 600ms + var(--i) * 370ms) infinite;
+}
+
+.card[data-live][data-gimmick='giggle'] .figure__value {
+  transform-origin: 50% 80%;
+  animation: giggle 1.7s ease-in-out calc(var(--delay-land) + var(--dur-count)) infinite;
+}
+
+/* --- chat: the first message, arriving ----------------------------------- */
+
+.dm {
+  display: grid;
+  width: min(100%, 27rem);
+  text-align: left;
+}
+
+.dm__typing,
+.dm__message {
+  grid-area: 1 / 1;
+}
+
+.dm__typing {
+  display: flex;
+  align-items: center;
+  align-self: start;
+  gap: 0.6rem;
+  font-size: var(--step-small);
+  font-weight: 600;
+  color: var(--faint);
+  opacity: 0;
+}
+
+.dm__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--ground);
+  font: 700 1.1rem / 1 var(--face-text);
+}
+
+.dm__dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.dm__dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--faint);
+  animation: dm-dot 1s ease-in-out infinite;
+}
+
+.dm__dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+.dm__dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+
+@keyframes dm-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.dm__message {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.8rem;
+  opacity: 0;
+}
+
+.dm__body {
+  min-width: 0;
+}
+
+.dm__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.55rem;
+  margin-bottom: 0.3rem;
+}
+
+.dm__name {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.dm__time {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--faint);
+}
+
+.dm .quote,
+.dm .quote--long {
+  max-width: none;
+  font-size: clamp(1.05rem, 4.6vw, 1.45rem);
+}
+
+@keyframes dm-typing {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  10%,
+  86% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dm-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card[data-live] .dm__typing {
+  animation: dm-typing 2s var(--ease-out) var(--delay-land) both;
+}
+
+.card[data-live] .dm__message {
+  animation: dm-arrive 480ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 2s) both;
+}
+
+/* The message arrives whole, as a message does. */
+.card[data-live] .dm .quote__text {
+  animation: none;
+}
+
+.card[data-live][data-gimmick='chat'] .card__foot {
+  animation-delay: calc(var(--delay-land) + 2.5s);
+}
+
+/* --- flipclock: the night going by ---------------------------------------- */
+
+.dawn {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* First light, not a palette colour: gold at the horizon, a blush above it. */
+  /* impeccable-disable-next-line design-system-color */
+  background: linear-gradient(to top, rgba(232, 184, 75, 0.34), rgba(214, 110, 90, 0.14) 30%, transparent 62%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.card[data-live] .dawn {
+  opacity: 1;
+  transition: opacity 2.8s ease-in var(--delay-land);
+}
+
+/* --- stream: nobody stops typing ----------------------------------------- */
+
+.stream {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+  mask-image: linear-gradient(transparent, #000 18%, #000 82%, transparent);
+}
+
+.stream__col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+/* Spaced with a margin, not a gap, so the two copies are exactly half the
+   column each and the loop has no seam. */
+.bub {
+  display: block;
+  width: var(--w);
+  height: calc(1.05rem * var(--lines) + 0.9rem);
+  margin-bottom: 0.9rem;
+  border-radius: 1.1rem 1.1rem 1.1rem 0.3rem;
+  background: var(--shape-b);
+}
+
+.bub[data-side='right'] {
+  align-self: flex-end;
+  border-radius: 1.1rem 1.1rem 0.3rem 1.1rem;
+  background: var(--track);
+}
+
+@keyframes stream-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+.card[data-live] .stream {
+  /* Behind the words, never competing with them. */
+  opacity: 0.55;
+  transition: opacity 600ms var(--ease-out) var(--delay-land);
+}
+
+.card[data-live] .stream__col {
+  animation: stream-up 7s linear infinite;
+}
+
+/* --- Still ---------------------------------------------------------------
+   Everything arrives in its final place and holds: the badges, laughs and
+   bubbles are there, the rope is already pulled, the balloons already full,
+   the dial already swept, and nothing buzzes, giggles or scrolls.
+--------------------------------------------------------------------------- */
+
+:root[data-motion='off'] .card[data-live] .badge,
+:root[data-motion='off'] .card[data-live] .laugh,
+:root[data-motion='off'] .card[data-live] .dm__message {
+  animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+:root[data-motion='off'] .card[data-live][data-gimmick] .figure__value,
+:root[data-motion='off'] .card[data-live] .tug__marker,
+:root[data-motion='off'] .card[data-live] .split__side::before,
+:root[data-motion='off'] .card[data-live] .dial__tip,
+:root[data-motion='off'] .card[data-live] .stream__col {
+  animation: none;
+}
+
+:root[data-motion='off'] .card[data-live] .tug__marker,
+:root[data-motion='off'] .card[data-live] .tug__rope,
+:root[data-motion='off'] .card[data-live] .split__side::before,
+:root[data-motion='off'] .card[data-live] .dial__fill,
+:root[data-motion='off'] .card[data-live] .dial__hand,
+:root[data-motion='off'] .card[data-live] .dawn,
+:root[data-motion='off'] .card[data-live] .stream {
+  transition: none;
+}
+
+:root[data-motion='off'] .dm__typing,
+:root[data-motion='off'] .caret {
+  display: none;
+}
+
+:root[data-motion='off'] .card[data-live][data-gimmick='chat'] .card__foot {
+  animation-delay: var(--delay-land);
+}
+
+/* --- Print: every plate in its final state -------------------------------- */
+
+@media print {
+  .badge,
+  .laugh {
+    opacity: 1;
+  }
+
+  .dm__typing,
+  .caret,
+  .stream {
+    display: none;
+  }
+
+  .dm__message,
+  .dawn {
+    opacity: 1;
+  }
+
+  .tug__marker {
+    left: calc(50% + var(--pull));
+  }
+
+  .card[data-gimmick='balloons'] .split__side::before {
+    opacity: 1;
+    scale: var(--balloon);
+  }
+
+  .dial__fill {
+    stroke-dashoffset: var(--to);
+  }
+
+  .dial__hand {
+    transform: rotate(var(--deg));
+  }
+}

@@ -2,6 +2,7 @@ import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
 import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
+import { mountGimmick, type GimmickHandle } from './gimmicks';
 import { mountMonitor, type MonitorHandle } from './monitor';
 import { wireGreeting } from './greeting';
 import type { Card } from './cards/types';
@@ -101,6 +102,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   let counting: CountHandle[] = [];
   let elapsed: ElapsedHandle | null = null;
   let monitor: MonitorHandle | null = null;
+  let gimmick: GimmickHandle | null = null;
   let score: Score | null = null;
   let woken = false;
   /**
@@ -144,6 +146,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     elapsed = null;
     monitor?.cancel();
     monitor = null;
+    gimmick?.cancel();
+    gimmick = null;
 
     const leaving = nodes[index];
     if (leaving) {
@@ -202,6 +206,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
     const trace = entering.querySelector<SVGSVGElement>('[data-monitor]');
     if (trace) monitor = mountMonitor(trace, () => score?.time() ?? null);
+    // Called back mid-exit, a card keeps what its gimmick already settled on.
+    if (!returning) gimmick = mountGimmick(entering, card);
 
     if (wanted !== 0 && armed) disarm();
 

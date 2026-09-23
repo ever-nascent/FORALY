@@ -284,6 +284,7 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'voltage',
+        gimmick: 'buzz',
         value: rows.length,
         format: 'integer',
         unit: 'messages',
@@ -293,6 +294,7 @@ function build(messages, config) {
       {
         kind: 'split',
         theme: 'coral',
+        gimmick: 'tug',
         format: 'integer',
         sides: [
           { label: herName, value: counts[her] },
@@ -303,10 +305,10 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'acid',
+        gimmick: 'typo',
         value: totalWords,
         format: 'integer',
         unit: 'words',
-        countUp: true,
         caption: 'Typos included.',
       },
       {
@@ -314,6 +316,7 @@ function build(messages, config) {
         // Its own theme now — sound waves aimed one way, not the rays
         // borrowed from "laughs" this used to repeat.
         theme: 'fuchsia',
+        gimmick: 'balloons',
         format: 'integer',
         sides: [
           { label: herName, value: wordCounts[her] },
@@ -327,6 +330,7 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'teal',
+        gimmick: 'dial',
         value: peakHour * 60,
         format: 'clock',
         context: 'The hour we talk in most.',
@@ -360,6 +364,8 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'marigold',
+        gimmick: 'giggle',
+        laughs: config.laughPatterns,
         value: laughs,
         format: 'integer',
         countUp: true,
@@ -369,6 +375,7 @@ function build(messages, config) {
       {
         kind: 'quote',
         theme: 'bone',
+        gimmick: 'chat',
         text: first.content,
         author: first.authorId === her ? herName : himName,
         timestamp: messages.find((m) => m.id === first.id).timestamp,
@@ -378,6 +385,7 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'night',
+        gimmick: 'flipclock',
         value: latest.minuteOfDay,
         format: 'clock',
         context: 'The latest we ever stayed up talking.',
@@ -387,6 +395,7 @@ function build(messages, config) {
       {
         kind: 'figure',
         theme: 'crimson',
+        gimmick: 'stream',
         value: longestSession.count,
         format: 'integer',
         unit: 'messages',
