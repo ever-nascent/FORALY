@@ -83,10 +83,15 @@
     font-size: 6.5mm;
   }
 
-  /* The travelling pulse has nowhere to be on paper; the trace it runs
-     along prints whole. */
-  .shape[data-motion='trace'] {
+  /* The sweep has nowhere to be on paper; the strip prints whole and lit. */
+  .ecg__trail,
+  .ecg__hot,
+  .ecg__head {
     display: none;
+  }
+
+  .ecg__base {
+    stroke: var(--accent);
   }
 
   /* The counting figures print at their final value, not mid-count. */

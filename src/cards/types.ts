@@ -60,6 +60,8 @@ export interface FigureCard extends Base {
    * (ISO dates, inclusive) lit — the streak card, shown as the days it was.
    */
   calendar?: { start: string; end: string };
+  /** Runs a heart-monitor trace through the middle of the figure. */
+  monitor?: boolean;
 }
 
 /** Two figures, hers and his. */

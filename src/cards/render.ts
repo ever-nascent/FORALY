@@ -1,5 +1,6 @@
 import { formatInteger, formatValue } from '../format';
 import { GREETING_NIGHT, themeFor, tonesFor, type Theme } from '../palette';
+import { monitorLayer } from '../monitor';
 import { shapeLayer } from '../shapes';
 import type { Card, FigureCard, GreetingCard, OpeningCard, SplitCard, WordCard } from './types';
 
@@ -34,9 +35,9 @@ function figureValue(text: string, countTo?: number): HTMLElement {
 function renderFigure(card: FigureCard): HTMLElement {
   const { text, suffix } = formatValue(card.value, card.format);
   const figure = el('p', 'figure');
-  figure.append(
-    figureValue(text, card.countUp && card.format === 'integer' ? card.value : undefined)
-  );
+  const value = figureValue(text, card.countUp && card.format === 'integer' ? card.value : undefined);
+  if (card.monitor) value.prepend(monitorLayer());
+  figure.append(value);
   const unit = suffix ?? card.unit;
   if (unit) figure.append(el('span', 'figure__unit', unit));
   // A <span>, not a <p>: `figure` is itself a <p>, and a nested <p> would

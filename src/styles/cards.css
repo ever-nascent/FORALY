@@ -982,57 +982,78 @@
     cal-shimmer 3.2s ease-in-out calc(var(--delay-land) + 2600ms + var(--d) * 30ms) infinite;
 }
 
-/* --- The quiet card: a monitor trace -------------------------------------- */
+/* --- The quiet card: a heart monitor through the figure ------------------
+   Drawn and swept by src/monitor.ts. The trace sits behind the digits, full
+   width, on the number's centre line; the digits light up as the sweep goes
+   through them.
+--------------------------------------------------------------------------- */
 
-.shape[data-motion='traceBase'] {
-  stroke-width: 0.35;
-  stroke-dasharray: 1;
+.ecg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: 100vw;
+  height: 0.62em;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  pointer-events: none;
 }
 
-.shape[data-motion='trace'] {
+.ecg path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ecg__base {
+  stroke: var(--track);
+  stroke-width: 1.5px;
+}
+
+.ecg__trail,
+.ecg__hot {
   stroke: var(--accent);
-  stroke-width: 0.75;
-  stroke-dasharray: 0.14 1;
+  stroke-dasharray: 0 1;
 }
 
-@keyframes trace-draw {
-  from {
-    opacity: 1;
-    stroke-dashoffset: 1;
-  }
-  to {
-    opacity: 1;
-    stroke-dashoffset: 0;
-  }
+.ecg__trail {
+  stroke-width: 2px;
+  opacity: 0.45;
 }
 
-@keyframes trace-show {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 1;
-  }
+.ecg__hot {
+  stroke-width: 3px;
 }
 
-/* One bright pulse, entering at the left edge and leaving at the right. */
-@keyframes trace-run {
-  from {
-    stroke-dashoffset: 0.14;
-  }
-  to {
-    stroke-dashoffset: -1;
-  }
+.ecg__head {
+  fill: var(--ink);
+  opacity: 0;
+  filter: drop-shadow(0 0 6px var(--accent));
 }
 
-.card[data-live] .shape[data-motion='traceBase'] {
-  animation: trace-draw 1.6s var(--ease-in-out) var(--delay-land) both;
+.ecg[data-running] .ecg__head {
+  opacity: 1;
 }
 
-.card[data-live] .shape[data-motion='trace'] {
-  animation:
-    trace-show 1ms linear calc(var(--delay-land) + 1.4s) both,
-    trace-run 3.4s linear calc(var(--delay-land) + 1.4s) infinite;
+/* Motion off: the whole strip, lit, nothing sweeping. */
+.ecg[data-still] .ecg__base {
+  stroke: var(--accent);
+  opacity: 0.7;
+}
+
+.figure__value:has(.ecg) .figure__live {
+  transition:
+    color 520ms var(--ease-out),
+    text-shadow 520ms var(--ease-out);
+}
+
+.figure__value[data-lit] .figure__live {
+  color: var(--accent);
+  text-shadow:
+    0 0 0.12em var(--accent),
+    0 0 0.4em var(--accent);
+  transition-duration: 90ms;
 }
 
 /* --- The last card: a heart that draws itself, fills, and beats ----------- */
@@ -1159,10 +1180,6 @@
 :root[data-motion='off'] .card[data-live] .cal__day[data-on]::after,
 :root[data-motion='off'] .card[data-live] .quote__word {
   animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
-}
-
-:root[data-motion='off'] .shape[data-motion='trace'] {
-  display: none;
 }
 
 /* Still, restated here because it has to beat every ambient rule above and the

@@ -2,6 +2,7 @@ import { countUp, type CountHandle } from './countup';
 import { describe, renderCard } from './cards/render';
 import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
+import { mountMonitor, type MonitorHandle } from './monitor';
 import { wireGreeting } from './greeting';
 import type { Card } from './cards/types';
 import type { Score } from './audio';
@@ -99,6 +100,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   let index = -1;
   let counting: CountHandle[] = [];
   let elapsed: ElapsedHandle | null = null;
+  let monitor: MonitorHandle | null = null;
   let score: Score | null = null;
   let woken = false;
   /**
@@ -140,6 +142,8 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     counting = [];
     elapsed?.cancel();
     elapsed = null;
+    monitor?.cancel();
+    monitor = null;
 
     const leaving = nodes[index];
     if (leaving) {
@@ -195,6 +199,9 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     if (elapsedEl?.dataset.elapsedSince) {
       elapsed = mountElapsed(elapsedEl, elapsedEl.dataset.elapsedSince);
     }
+
+    const trace = entering.querySelector<SVGSVGElement>('[data-monitor]');
+    if (trace) monitor = mountMonitor(trace);
 
     if (wanted !== 0 && armed) disarm();
 

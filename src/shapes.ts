@@ -32,8 +32,6 @@ type Motion =
   | 'twinkle'
   | 'draw'
   | 'fill'
-  | 'trace'
-  | 'traceBase'
   | 'rise';
 
 type Attrs = Record<string, string | number>;
@@ -121,9 +119,6 @@ function heart(cx: number, cy: number, w: number): string {
   );
 }
 
-/** A long flat trace with one heartbeat in it, left of centre-right. */
-const FLATLINE =
-  'M -4 72 L 46 72 L 48.5 72 L 50.5 64 L 53 82 L 55.5 60 L 57.5 74 L 59 72 L 104 72';
 
 function build(kind: ShapeKind, uid: string): SVGElement[] {
   switch (kind) {
@@ -289,19 +284,10 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
         )
       );
 
-    // The quiet one: a monitor trace that runs flat for a long, long time and
-    // then gives one heartbeat — the silence, and then one of them came back.
-    // The faint line draws itself across once; a bright pulse runs along it
-    // after that, over and over, through the flat stretch and the beat.
+    // The quiet one: the heart monitor running through the figure is the
+    // picture (src/monitor.ts), so the ground carries only its own light.
     case 'sparse':
-      return [
-        part('path', { d: FLATLINE, fill: 'none', pathLength: 1 }, 'line', 0, {
-          motion: 'traceBase',
-        }),
-        part('path', { d: FLATLINE, fill: 'none', pathLength: 1 }, 'line', 1, {
-          motion: 'trace',
-        }),
-      ];
+      return [];
 
     // The streak: the calendar in front of it is the picture, so the ground
     // carries only its own drifting light.
