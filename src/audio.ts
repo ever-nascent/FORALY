@@ -100,8 +100,10 @@ export async function loadScore(): Promise<Score | null> {
     const from = audio.volume;
     const at = performance.now();
     const step = (now: number): void => {
-      const t = ms <= 0 ? 1 : Math.min((now - at) / ms, 1);
-      audio.volume = from + (to - from) * t;
+      // A frame's timestamp can sit a hair before `at`, which would push t
+      // negative and the volume below zero — an exception, not a quiet note.
+      const t = ms <= 0 ? 1 : Math.min(Math.max((now - at) / ms, 0), 1);
+      audio.volume = Math.min(Math.max(from + (to - from) * t, 0), 1);
       if (t < 1) ramp = requestAnimationFrame(step);
     };
     ramp = requestAnimationFrame(step);
