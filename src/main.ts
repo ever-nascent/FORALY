@@ -43,6 +43,7 @@ async function start(): Promise<void> {
     prev: need<HTMLButtonElement>('#prev'),
     next: need<HTMLButtonElement>('#next'),
     sound: need<HTMLButtonElement>('#sound'),
+    begin: need<HTMLElement>('#begin'),
   });
 
   // The score is optional and never gates the sequence. If public/score.mp3 is

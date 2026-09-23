@@ -206,6 +206,45 @@ blockquote {
 }
 
 /* ---------------------------------------------------------------------------
+   The one prompt in the piece. Shown only on the opening card, only when the
+   browser refused to start the score on its own, and gone with the tap that
+   starts it.
+--------------------------------------------------------------------------- */
+
+.begin {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1.6rem + var(--floor));
+  z-index: 4;
+  font-size: var(--step-small);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--faint);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(-50%, 6px, 0);
+  transition:
+    opacity 420ms var(--ease-out),
+    transform 420ms var(--ease-out);
+}
+
+.begin[data-shown='true'] {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0);
+  animation: begin-breathe 2.4s var(--ease-in-out) 600ms infinite alternate;
+}
+
+@keyframes begin-breathe {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.45;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Controls. The sound toggle is always there because audio that starts on its
    own needs a way to stop it. Back and next are for keyboard and assistive
    tech and stay invisible until they take focus.

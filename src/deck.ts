@@ -11,6 +11,8 @@ export interface DeckElements {
   prev: HTMLButtonElement;
   next: HTMLButtonElement;
   sound: HTMLButtonElement;
+  /** Shown on the opening card when the browser wants a tap before sound. */
+  begin: HTMLElement;
 }
 
 /** How far a card travels. The outgoing one moves a fraction of the incoming
@@ -56,6 +58,17 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   let counting: CountHandle | null = null;
   let score: Score | null = null;
   let woken = false;
+  /**
+   * True while the opening card is waiting on the tap that starts the score.
+   * That tap starts the music and stays put, so the song fades in over the
+   * opening card rather than over the second one.
+   */
+  let armed = false;
+
+  const disarm = (): void => {
+    armed = false;
+    delete els.begin.dataset.shown;
+  };
 
   /**
    * A card keeps its animations (`data-live`) for as long as it is on screen:
@@ -131,6 +144,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
       );
     }
 
+    if (wanted !== 0 && armed) disarm();
     index = wanted;
     for (const [i, seg] of segments.entries()) seg.dataset.done = String(i <= index);
     els.live.textContent = describe(card);
@@ -139,13 +153,23 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     score?.dip();
   }
 
-  const forward = (): void => show(index + 1, 1);
-  const back = (): void => show(index - 1, -1);
-
-  // Browsers will not start audio without a gesture; the first one starts it.
-  const wake = (): void => {
+  /** Browsers will not start audio without a gesture; the first one starts it.
+   *  Returns true when that gesture was spent starting the score. */
+  const wake = (): boolean => {
     woken = true;
     score?.start();
+    if (!armed) return false;
+    disarm();
+    return true;
+  };
+
+  const forward = (): void => {
+    if (wake()) return;
+    show(index + 1, 1);
+  };
+  const back = (): void => {
+    wake();
+    show(index - 1, -1);
   };
 
   els.next.addEventListener('click', forward);
@@ -153,6 +177,11 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
   els.sound.addEventListener('click', () => {
     if (!score) return;
+    // Waiting on the first tap, the score is on but silent; this tap is it.
+    if (armed) {
+      wake();
+      return;
+    }
     woken = true;
     els.sound.setAttribute('aria-pressed', String(score.toggle()));
   });
@@ -160,7 +189,6 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   window.addEventListener('keydown', (event) => {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const onControl = event.target instanceof HTMLButtonElement;
-    wake();
     // A held key would otherwise race through the whole sequence.
     if (event.repeat) {
       if (!onControl) event.preventDefault();
@@ -187,13 +215,16 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
         break;
       case 'Home':
         event.preventDefault();
+        wake();
         show(0, -1);
         break;
       case 'End':
         event.preventDefault();
+        wake();
         show(cards.length - 1, 1);
         break;
       default:
+        wake();
     }
   });
 
@@ -210,14 +241,18 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     const dy = event.clientY - origin.y;
     const elapsed = event.timeStamp - origin.at;
     origin = null;
-    wake();
 
     if (Math.abs(dx) > SWIPE_PX && Math.abs(dx) > Math.abs(dy)) {
       if (dx < 0) forward();
       else back();
       return;
     }
-    if (Math.abs(dx) < TAP_PX && Math.abs(dy) < TAP_PX && elapsed < TAP_MS) forward();
+    if (Math.abs(dx) < TAP_PX && Math.abs(dy) < TAP_PX && elapsed < TAP_MS) {
+      forward();
+      return;
+    }
+    // Neither a tap nor a swipe, but still a gesture: enough to start the score.
+    wake();
   });
 
   els.stage.addEventListener('pointercancel', () => {
@@ -233,7 +268,17 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
       els.sound.dataset.available = 'true';
       els.sound.setAttribute('aria-pressed', String(ready.muted));
       // If she has already tapped by the time the file lands, start it now.
-      if (woken) ready.start();
+      if (woken) {
+        ready.start();
+        return;
+      }
+      // Otherwise try to start it straight away. Where the browser wants a
+      // gesture first, ask for one tap on the opening card.
+      void ready.autoplay().then((playing) => {
+        if (playing || woken || index !== 0) return;
+        armed = true;
+        els.begin.dataset.shown = 'true';
+      });
     },
   };
 }

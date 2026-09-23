@@ -3,8 +3,12 @@
  * file out and every one of these functions is a no-op and the control never
  * appears. Nothing about the sequence depends on it.
  *
- * Browsers will not start audio without a gesture, so the first tap starts it
- * and it fades up rather than cutting in.
+ * It tries to start the moment it is ready. Most browsers refuse sound before
+ * a gesture; when they do, the deck asks for one tap on the opening card, and
+ * that tap starts it. Either way it fades up rather than cutting in.
+ *
+ * The volume runs through a Web Audio gain node rather than the element's own
+ * `volume`, which iOS ignores outright — there the fade would be a hard cut.
  */
 
 const SRC = '/score.mp3';
@@ -18,7 +22,12 @@ const STORE_KEY = 'three-months:muted';
 const PROBE_MS = 4000;
 
 export interface Score {
-  /** Called on the first gesture; safe to call again. */
+  /**
+   * Tries to start without a gesture. Resolves true if the score is playing,
+   * or is muted by her own choice — false if the browser wants a tap first.
+   */
+  autoplay(): Promise<boolean>;
+  /** Called from a gesture; safe to call again. */
   start(): void;
   /** A short dip and recover on each card change. */
   dip(): void;
@@ -94,7 +103,52 @@ export async function loadScore(): Promise<Score | null> {
   let started = false;
   let ramp = 0;
 
+  // The gain node, where the platform has one. Built lazily: until it exists
+  // the element plays straight out at its own volume.
+  type Ctor = typeof AudioContext;
+  const Context: Ctor | undefined =
+    window.AudioContext ?? (window as unknown as { webkitAudioContext?: Ctor }).webkitAudioContext;
+  let ctx: AudioContext | null = null;
+  let gain: GainNode | null = null;
+
+  const graph = (): void => {
+    if (ctx || !Context) return;
+    try {
+      const context = new Context();
+      const node = context.createGain();
+      node.gain.value = 0;
+      context.createMediaElementSource(audio).connect(node).connect(context.destination);
+      audio.volume = 1;
+      ctx = context;
+      gain = node;
+    } catch {
+      ctx = null;
+      gain = null;
+    }
+  };
+
+  /** Must be called inside a gesture the first time; harmless otherwise. */
+  const wakeGraph = (): void => {
+    if (ctx && ctx.state !== 'running') void ctx.resume().catch(() => {});
+  };
+
+  const setNow = (value: number): void => {
+    if (ctx && gain) {
+      gain.gain.cancelScheduledValues(ctx.currentTime);
+      gain.gain.setValueAtTime(value, ctx.currentTime);
+    } else {
+      audio.volume = value;
+    }
+  };
+
   const rampTo = (to: number, ms: number): void => {
+    if (ctx && gain) {
+      const now = ctx.currentTime;
+      gain.gain.cancelScheduledValues(now);
+      gain.gain.setValueAtTime(gain.gain.value, now);
+      gain.gain.linearRampToValueAtTime(to, now + Math.max(ms, 1) / 1000);
+      return;
+    }
     cancelAnimationFrame(ramp);
     const from = audio.volume;
     const at = performance.now();
@@ -110,16 +164,46 @@ export async function loadScore(): Promise<Score | null> {
 
   const play = (): void => {
     void audio.play().catch(() => {
-      // Autoplay refused. The next gesture will try again.
+      // Refused. The next gesture will try again.
       started = false;
     });
   };
 
+  const settle = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+
   return {
+    async autoplay() {
+      if (muted || started) return true;
+      graph();
+      setNow(0);
+      const playing = await audio.play().then(
+        () => true,
+        () => false
+      );
+      if (ctx) {
+        // The element can be allowed to play while the context that carries
+        // its sound is still held silent; that is not playing either.
+        wakeGraph();
+        await settle(60);
+      }
+      if (!playing || (ctx && ctx.state !== 'running')) {
+        audio.pause();
+        return false;
+      }
+      if (started) return true;
+      started = true;
+      rampTo(TARGET, FADE_MS);
+      return true;
+    },
     start() {
+      graph();
+      wakeGraph();
       if (started || muted) return;
       started = true;
-      audio.volume = 0;
+      setNow(0);
       play();
       rampTo(TARGET, FADE_MS);
     },
@@ -139,6 +223,8 @@ export async function loadScore(): Promise<Score | null> {
           if (muted) audio.pause();
         }, 340);
       } else {
+        graph();
+        wakeGraph();
         started = true;
         play();
         rampTo(TARGET, 700);
