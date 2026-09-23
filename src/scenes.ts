@@ -89,6 +89,19 @@ export function greetingScene(): HTMLElement {
   }
   scene.append(clouds);
 
+  // Birds for the morning: a small flock crossing the sky, each flapping on
+  // its own time. The outer span flies; the drawing inside it flaps.
+  const birds = el('div', 'gscene__birds');
+  for (let i = 0; i < 5; i += 1) {
+    const bird = el('span', 'gbird');
+    bird.style.setProperty('--i', String(i));
+    const shape = svg('svg', { viewBox: '0 0 24 10', class: 'gbird__wings' });
+    shape.append(svg('path', { d: 'M 1 6 Q 6 0 12 6 Q 18 0 23 6' }));
+    bird.append(shape);
+    birds.append(bird);
+  }
+  scene.append(birds);
+
   const wheel = el('div', 'gwheel');
   wheel.append(el('span', 'gwheel__rim'), el('span', 'gmoon'), el('span', 'gsun'));
   scene.append(wheel);

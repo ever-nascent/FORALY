@@ -165,20 +165,47 @@ function keyboard(root: HTMLElement): void {
   root.prepend(board);
 }
 
-/** Bars in a voice note's waveform, per side. */
-const WAVE_BARS = 22;
+/**
+ * The dictionary page behind the words-each card: the words that matter,
+ * with what they mean here. Written for this piece, not quoted from the
+ * conversation.
+ */
+const ENTRIES: [string, string, string, string][] = [
+  ['love', '/lʌv/', 'n.', 'the reason the phone is never down for long.'],
+  ['loyalty', '/ˈlɔɪ.əl.ti/', 'n.', 'staying, especially when leaving would be easier.'],
+  ['trust', '/trʌst/', 'n.', 'handing someone your heart and not checking on it.'],
+  ['talk', '/tɔːk/', 'v.', 'what we do instead of sleeping.'],
+  ['devotion', '/dɪˈvəʊ.ʃən/', 'n.', 'choosing the same person every morning.'],
+  ['patience', '/ˈpeɪ.ʃəns/', 'n.', 'waiting through “typing…” without complaint.'],
+  ['laughter', '/ˈlɑːf.tər/', 'n.', 'the sound of 364 messages.'],
+  ['home', '/həʊm/', 'n.', 'not a place; a person.'],
+  ['honesty', '/ˈɒn.ɪ.sti/', 'n.', 'saying the hard thing gently.'],
+  ['forever', '/fəˈrev.ər/', 'adv.', 'the plan.'],
+];
 
-/** A voice note's waveform across the middle of the card, one half each. */
-function waveform(): HTMLElement {
-  const wave = el('div', 'wave');
-  wave.setAttribute('aria-hidden', 'true');
-  for (const side of [0, 1]) {
-    const half = el('div', 'wave__half');
-    half.dataset.side = String(side);
-    for (let i = 0; i < WAVE_BARS; i += 1) half.append(el('span', 'wave__bar'));
-    wave.append(half);
+/** A dictionary page: headword, pronunciation, part of speech, definition.
+ *  A highlighter sweeps each headword in turn (CSS). */
+function dictionary(): HTMLElement {
+  const page = el('div', 'dict');
+  page.setAttribute('aria-hidden', 'true');
+  // A dictionary page's running head: the first and last words on it.
+  const sorted = ENTRIES.map(([word]) => word).sort();
+  const head = el('p', 'dict__head');
+  head.append(el('span', undefined, sorted[0] ?? ''), el('span', undefined, sorted[sorted.length - 1] ?? ''));
+  page.append(head);
+  for (const [i, [word, sound, part, meaning]] of ENTRIES.entries()) {
+    const entry = el('p', 'dict__entry');
+    entry.style.setProperty('--i', String(i));
+    entry.style.setProperty('--n', String(ENTRIES.length));
+    entry.append(
+      el('span', 'dict__word', word),
+      el('span', 'dict__sound', ` ${sound} `),
+      el('span', 'dict__part', `${part} `),
+      el('span', 'dict__meaning', meaning)
+    );
+    page.append(entry);
   }
-  return wave;
+  return page;
 }
 
 /** Where the chatter bubbles rise from, one layer per side. */
@@ -337,7 +364,7 @@ export function decorate(root: HTMLElement, card: Card): void {
       break;
     case 'chatter':
       chatterLayer(head);
-      root.prepend(waveform());
+      root.prepend(dictionary());
       break;
     case 'dial':
       if (card.kind === 'figure' && value) dial(value, card);
@@ -485,7 +512,7 @@ function mountTypo(root: HTMLElement): GimmickHandle {
       node.data += key;
       pieces[piece]?.live.animate([{ transform: 'translateY(0.015em)' }, { transform: 'none' }], 90);
     }
-    const wait = key === 'pause' ? 560 : key === null ? 95 : 95 + rand() * 85;
+    const wait = key === 'pause' ? 520 : key === null ? 80 : 75 + rand() * 65;
     timer = window.setTimeout(tick, wait);
   };
   timer = window.setTimeout(tick, START_MS);
@@ -741,11 +768,6 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
   const rates = card.sides.map((side) => Math.max(0.6, 3 * (side.value / most) ** 6));
   const owed = [0, 0];
   const lanes = [0, 2];
-  const halves = [...root.querySelectorAll<HTMLElement>('.wave__half')].map((half) => [
-    ...half.querySelectorAll<HTMLElement>('.wave__bar'),
-  ]);
-  // The quieter side's bars reach a share of the louder side's.
-  const louder = card.sides.map((side) => Math.max(0.35, (side.value / most) ** 2));
   const rand = seeded(118);
   let said = 0;
   const onBeat = beatWatcher(songTime);
@@ -778,17 +800,6 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
     if (begun === 0) begun = now;
     const wall = (now - begun) / 1000;
     if (onBeat(wall) && wall * 1000 > START_MS) {
-      // The waveform pumps: each side as loud as its share, then falls back.
-      for (const [i, half] of halves.entries()) {
-        const loud = i === 0 ? louder[0] : louder[1];
-        for (const bar of half) {
-          const peak = (loud ?? 1) * (0.3 + rand() * 0.7);
-          bar.style.transform = `scaleY(${peak.toFixed(3)})`;
-          window.setTimeout(() => {
-            bar.style.transform = `scaleY(${(peak * 0.28).toFixed(3)})`;
-          }, 260);
-        }
-      }
       for (const [i, layer] of layers.entries()) {
         owed[i] = (owed[i] ?? 0) + (rates[i] ?? 0);
         let n = 0;
@@ -938,9 +949,49 @@ function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
   };
 }
 
+/** How long each day of the streak takes to light, in ms; the calendar's
+ *  CSS takes it from the element render.ts sets it on, and the figure
+ *  counts up in step with it. */
+export const CAL_STEP_MS = 40;
+
+/** When the first day of the streak lights: the landing delay plus 300ms,
+ *  as in cards.css. */
+const CAL_START_MS = 170 + 300;
+
+/** The streak's figure counts up a day at a time as each day lights. */
+function mountCalendar(root: HTMLElement, card: FigureCard): GimmickHandle {
+  const live = root.querySelector<HTMLElement>('.figure__live');
+  const final = String(card.value);
+  const settle = (): void => {
+    if (live) live.textContent = final;
+  };
+  if (!live || currentMotion() === 'off') {
+    settle();
+    return { cancel: settle };
+  }
+  live.textContent = '0';
+  let frame = 0;
+  let begun = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = now;
+    const lit = Math.floor((now - begun - CAL_START_MS) / CAL_STEP_MS) + 1;
+    const shown = Math.max(0, Math.min(card.value, lit));
+    live.textContent = String(shown);
+    if (shown < card.value) frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+      settle();
+    },
+  };
+}
+
 /** Starts a card's timed gimmick, if it has one. */
 export function mountGimmick(root: HTMLElement, card: Card, songTime: SongClock): GimmickHandle | null {
   if (card.kind === 'closing') return mountWarm(root, songTime);
+  if (card.kind === 'figure' && card.calendar) return mountCalendar(root, card);
   if (!('gimmick' in card)) return null;
   if (card.gimmick === 'giggle') return mountGiggle(root, songTime);
   if (card.gimmick === 'chat') return mountChat(root);

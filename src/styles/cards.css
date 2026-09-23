@@ -1110,8 +1110,9 @@
 
 .card[data-live] .cal__day[data-on]::after {
   animation:
-    cal-light 420ms var(--ease-out) calc(var(--delay-land) + 300ms + var(--d) * 16ms) both,
-    cal-shimmer 3.2s ease-in-out calc(var(--delay-land) + 2600ms + var(--d) * 30ms) infinite;
+    cal-light 420ms var(--ease-out) calc(var(--delay-land) + 300ms + var(--d) * var(--cal-step, 16ms)) both,
+    cal-shimmer 3.2s ease-in-out
+      calc(var(--delay-land) + 900ms + var(--cal-days, 107) * var(--cal-step, 16ms) + var(--d) * 30ms) infinite;
 }
 
 /* --- The quiet card: a heart monitor through the figure ------------------

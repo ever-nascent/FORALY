@@ -338,7 +338,7 @@ function build(messages, config) {
         value: totalWords,
         format: 'integer',
         unit: 'words',
-        caption: "— typo's included",
+        caption: "typo's included",
       },
       {
         kind: 'split',

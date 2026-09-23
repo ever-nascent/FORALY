@@ -399,48 +399,103 @@
   animation: alarm-buzz 2.2s linear 120ms infinite;
 }
 
-/* --- chatter's waveform: a voice note, loudest on the bigger mouth -------- */
+/* --- chatter's dictionary page ------------------------------------------- */
 
-.wave {
+/* A page of entries behind the two numbers, faint enough to read past, with
+   a highlighter sweeping each headword in turn. */
+.dict {
   position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
+  inset: calc(3.2rem + var(--ceiling)) var(--gutter) calc(4rem + var(--floor));
   z-index: 0;
-  display: flex;
-  justify-content: center;
-  gap: 5%;
-  height: 34vh;
-  padding: 0 var(--gutter);
-  transform: translateY(-58%);
-  pointer-events: none;
+  columns: 2 15rem;
+  column-gap: 2.2rem;
+  column-rule: 1px solid var(--track);
+  color: var(--ink);
+  font-size: clamp(0.72rem, 2.9vw, 0.95rem);
+  line-height: 1.35;
   opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
 
-.wave__half {
+.dict__head {
   display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 3px;
-  max-width: 24rem;
+  justify-content: space-between;
+  column-span: all;
+  margin: 0 0 0.9em;
+  padding-bottom: 0.35em;
+  border-bottom: 1px solid var(--track);
+  font-family: var(--face-display);
+  font-size: 1.15em;
+  letter-spacing: 0.04em;
 }
 
-.wave__bar {
-  flex: 1;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--shape-b);
-  transform: scaleY(0.12);
-  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+.dict__entry {
+  margin: 0 0 1.05em;
+  break-inside: avoid;
+  text-align: left;
 }
 
-.wave__half[data-side='0'] .wave__bar {
-  background: var(--track);
+.dict__word {
+  position: relative;
+  font-family: var(--face-display);
+  font-size: 1.45em;
+  letter-spacing: -0.01em;
 }
 
-.card[data-live] .wave {
-  opacity: 1;
-  transition: opacity 600ms var(--ease-out) var(--delay-land);
+/* The highlighter stroke, drawn under the word. */
+.dict__word::before {
+  content: '';
+  position: absolute;
+  inset: 0.28em -0.15em 0.02em;
+  z-index: -1;
+  border-radius: 0.15em;
+  background: var(--ink);
+  opacity: 0;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+.dict__sound,
+.dict__part {
+  font-style: italic;
+  color: var(--quiet);
+}
+
+@keyframes dict-highlight {
+  0% {
+    opacity: 0.55;
+    transform: scaleX(0);
+  }
+  3% {
+    opacity: 0.55;
+    transform: scaleX(1);
+  }
+  9% {
+    opacity: 0.55;
+    transform: scaleX(1);
+  }
+  12%,
+  100% {
+    opacity: 0;
+    transform: scaleX(1);
+  }
+}
+
+.card[data-live] .dict {
+  opacity: 0.22;
+  transition: opacity 700ms var(--ease-out) var(--delay-land);
+}
+
+.card[data-live] .dict__word::before {
+  animation: dict-highlight calc(var(--n) * 2.4s) var(--ease-out) calc(var(--delay-land) + 600ms + var(--i) * 2.4s)
+    infinite;
+}
+
+:root[data-motion='off'] .card[data-live] .dict__word::before {
+  animation: none;
 }
 
 /* --- typo: the unit and caption type out too ------------------------------ */

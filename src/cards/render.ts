@@ -1,6 +1,6 @@
 import { formatInteger, formatValue } from '../format';
 import { GREETING_NIGHT, themeFor, tonesFor, type Theme } from '../palette';
-import { decorate } from '../gimmicks';
+import { CAL_STEP_MS, decorate } from '../gimmicks';
 import { monitorLayer } from '../monitor';
 import { greetingScene, warmScene } from '../scenes';
 import { shapeLayer } from '../shapes';
@@ -69,6 +69,8 @@ function renderCalendar(range: { start: string; end: string }): HTMLElement {
   const to = utc(range.end);
   const cal = el('div', 'cal');
   cal.setAttribute('aria-hidden', 'true');
+  cal.style.setProperty('--cal-step', `${CAL_STEP_MS}ms`);
+  cal.style.setProperty('--cal-days', String(Math.round((to - from) / DAY_MS) + 1));
 
   const first = new Date(from);
   const last = new Date(to);

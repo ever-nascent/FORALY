@@ -136,6 +136,81 @@
   opacity: 1;
 }
 
+/* --- Morning birds --------------------------------------------------------- */
+
+.gscene__birds {
+  position: absolute;
+  inset: 0 0 45%;
+  opacity: 0;
+  transition: opacity 1s var(--ease-out);
+}
+
+.card--greeting[data-greeting-state='day'] .gscene__birds {
+  opacity: 1;
+}
+
+/* Each bird: a height, a size and a speed of its own, flying left to right
+   with a gentle rise and fall. */
+.gbird {
+  position: absolute;
+  left: 0;
+  top: calc(10% + var(--i) * 14% - (var(--i) * var(--i)) * 1.6%);
+  width: calc(11vmin - var(--i) * 1vmin);
+  translate: -12vw 0;
+}
+
+@keyframes gbird-fly {
+  0% {
+    translate: -12vw 0;
+  }
+  25% {
+    translate: 22vw -1.5vh;
+  }
+  50% {
+    translate: 50vw 0.8vh;
+  }
+  75% {
+    translate: 80vw -1vh;
+  }
+  100% {
+    translate: 112vw 0;
+  }
+}
+
+.gbird__wings {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-origin: 50% 60%;
+}
+
+.gbird__wings path {
+  fill: none;
+  /* impeccable-disable-next-line design-system-color */
+  stroke: #2f4a63;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes gbird-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(-0.55);
+  }
+}
+
+.card--greeting[data-live][data-greeting-state='day'] .gbird {
+  animation: gbird-fly calc(13s + var(--i) * 2.6s) linear calc(var(--i) * -3.1s) infinite;
+}
+
+.card--greeting[data-live][data-greeting-state='day'] .gbird__wings {
+  animation: gbird-flap calc(0.32s + var(--i) * 0.05s) ease-in-out infinite alternate;
+}
+
 /* A soft cloud from one element and two bumps on top of it. */
 .gcloud {
   position: absolute;
@@ -575,7 +650,9 @@
 :root[data-motion='off'] .card[data-live] .gcloud,
 :root[data-motion='off'] .card--greeting[data-live] .word__letter,
 :root[data-motion='off'] .card[data-live] .warm__love,
-:root[data-motion='off'] .card[data-live] .gshoot {
+:root[data-motion='off'] .card[data-live] .gshoot,
+:root[data-motion='off'] .card--greeting[data-live] .gbird,
+:root[data-motion='off'] .card--greeting[data-live] .gbird__wings {
   animation: none;
 }
 
@@ -589,6 +666,11 @@
 :root[data-motion='off'] .gscene__clouds,
 :root[data-motion='off'] .ghill {
   transition: none;
+}
+
+/* Still: the flock holds where it is, spread across the sky. */
+:root[data-motion='off'] .gbird {
+  translate: calc(12vw + var(--i) * 17vw) 0;
 }
 
 @media print {
