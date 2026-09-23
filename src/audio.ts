@@ -88,10 +88,9 @@ export async function loadScore(): Promise<Score | null> {
   const audio = await buffer();
   if (!audio) return null;
 
-  // Someone who has asked the system for less motion gets the sequence silent
-  // until they ask for sound.
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let muted = remembered() ?? reduced;
+  // On unless she has turned it off herself. A reduced-motion setting says
+  // nothing about sound, and muting on it left the score silent with no clue why.
+  let muted = remembered() ?? false;
   let started = false;
   let ramp = 0;
 

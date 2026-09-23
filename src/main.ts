@@ -14,14 +14,14 @@ function need<T extends Element>(selector: string): T {
 }
 
 /**
- * Someone who has asked their system for less motion gets a still sequence,
- * which is right — but it is indistinguishable from the page being broken.
- * Opening it with ?motion=on turns the movement back on for that person, and
- * settles the question either way.
+ * The motion is the piece, and a still sequence is indistinguishable from a
+ * broken one, so it moves even where the system asks for less: <html> ships
+ * with data-motion="on". Opening it with ?motion=off hands the choice back to
+ * the system's reduced-motion setting.
  */
 function honourMotionOverride(): void {
-  if (new URLSearchParams(location.search).get('motion') === 'on') {
-    document.documentElement.dataset.motion = 'on';
+  if (new URLSearchParams(location.search).get('motion') === 'off') {
+    delete document.documentElement.dataset.motion;
   }
 }
 

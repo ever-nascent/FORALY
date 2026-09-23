@@ -65,19 +65,19 @@ keep the repository private.
 
 ## Motion
 
-If the sequence looks static, the two causes are, in order of likelihood:
+The sequence moves even when the device has Reduce Motion switched on: the
+motion is the piece, and a still sequence looks broken. `<html>` ships with
+`data-motion="on"`, which overrides the reduced-motion styles. Open the page
+with `?motion=off` to hand the choice back to the system setting.
 
-1. **Reduce Motion is switched on** in the operating system or browser. That is
-   respected on purpose — every part still arrives, nothing loops. Open the page
-   with `?motion=on` to turn the movement back on anyway, which also settles the
-   question either way.
-2. **A stylesheet that only works in one engine.** `npm run build` runs
-   `scripts/check-css.mjs`, which fails the build on the constructs that cause
-   this: a custom property supplying an animation *name* inside the `animation`
-   shorthand, a custom property read from inside `@keyframes`, and `color-mix()`.
-   All three work in Chromium and are dropped elsewhere — and a dropped shorthand
-   takes the entrance animation with it, so the page renders and simply never
-   moves. Each rule in that script is there because it shipped broken once.
+If the sequence still looks static, the likely cause is **a stylesheet that
+only works in one engine.** `npm run build` runs `scripts/check-css.mjs`, which
+fails the build on the constructs that cause this: a custom property supplying
+an animation *name* inside the `animation` shorthand, a custom property read
+from inside `@keyframes`, and `color-mix()`. All three work in Chromium and are
+dropped elsewhere — and a dropped shorthand takes the entrance animation with
+it, so the page renders and simply never moves. Each rule in that script is
+there because it shipped broken once.
 
 ## The password gate
 
