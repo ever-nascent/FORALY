@@ -28,6 +28,31 @@
         place-items: center;
         background: #17121c;
       }
+      /* Shown only if the page's script never starts — a file preview that
+         renders HTML without running it, say — so the loader says why it is
+         still there instead of breathing forever. Pure CSS on purpose: it has
+         to work in exactly the case where nothing else does. */
+      .loader__stuck {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 28%;
+        margin: 0;
+        padding: 0 2rem;
+        color: #c9bbd1;
+        font: 500 1rem/1.4 system-ui, -apple-system, sans-serif;
+        text-align: center;
+        opacity: 0;
+        animation: loader-stuck 400ms ease-out 5s forwards;
+      }
+      html[data-js] .loader__stuck {
+        display: none;
+      }
+      @keyframes loader-stuck {
+        to {
+          opacity: 1;
+        }
+      }
     </style>
     <script type="module" src="/src/main.ts"></script>
   </head>
@@ -89,13 +114,13 @@
       </button>
     </div>
 
-    <div id="loader" class="loader"><span class="loader__mark"></span></div>
-
-    <noscript>
-      <p class="noscript">
-        This one needs JavaScript switched on. Everything is already on the page —
-        it just will not turn without it.
+    <div id="loader" class="loader">
+      <span class="loader__mark"></span>
+      <p class="loader__stuck">
+        This needs to open in a web browser. If it came from a file or a message, open it in
+        Safari or Chrome instead.
       </p>
-    </noscript>
+    </div>
+
   </body>
 </html>

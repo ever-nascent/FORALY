@@ -8,6 +8,13 @@ import { createDeck } from './deck';
 import { currentMotion, startMotion, toggleMotion } from './motion';
 import { preload } from './preload';
 
+// The page's script is running: the loader's "open this in a browser" note,
+// which only a script-less preview should ever see, stays hidden.
+document.documentElement.dataset.js = 'on';
+
+/** The script is running but nothing has arrived by now: say so. */
+const STALL_MS = 15_000;
+
 function need<T extends Element>(selector: string): T {
   const node = document.querySelector<T>(selector);
   if (!node) throw new Error(`missing ${selector}`);
@@ -73,4 +80,10 @@ function fail(error: unknown): void {
   loader.replaceChildren(message);
 }
 
-start().catch(fail);
+const stall = window.setTimeout(() => fail(new Error('the sequence did not load in time')), STALL_MS);
+start()
+  .then(() => window.clearTimeout(stall))
+  .catch((error: unknown) => {
+    window.clearTimeout(stall);
+    fail(error);
+  });

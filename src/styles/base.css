@@ -354,15 +354,6 @@ blockquote {
   outline-offset: 2px;
 }
 
-.noscript {
-  position: fixed;
-  inset: auto var(--gutter) calc(var(--gutter) + var(--floor));
-  z-index: 7;
-  max-width: 28rem;
-  color: #fff3e4;
-  font-size: var(--step-caption);
-}
-
 .a11y {
   position: absolute;
   width: 1px;
