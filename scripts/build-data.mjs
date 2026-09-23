@@ -294,7 +294,7 @@ function build(messages, config) {
       {
         kind: 'split',
         theme: 'dusk',
-        gimmick: 'tug',
+        gimmick: 'scale',
         format: 'integer',
         sides: [
           { label: herName, value: counts[her] },

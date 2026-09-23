@@ -72,7 +72,7 @@ function validate({ meta, cards }) {
       );
     }
     if (card.gimmick !== undefined) {
-      const gimmicks = ['buzz', 'tug', 'typo', 'chatter', 'dial', 'giggle', 'chat', 'flipclock', 'stream'];
+      const gimmicks = ['buzz', 'scale', 'typo', 'chatter', 'dial', 'giggle', 'chat', 'flipclock', 'stream'];
       require(gimmicks.includes(card.gimmick), `${where}: unknown gimmick "${card.gimmick}"`);
     }
     if (card.countUp) {

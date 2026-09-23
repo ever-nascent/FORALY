@@ -21,7 +21,7 @@ export interface Meta {
  * A card's own trick — the one thing it does that no other card does. Each
  * is tied to what the card says; see src/gimmicks.ts.
  *   buzz       the number vibrates like a phone, notification badges pop
- *   tug        a tug-of-war rope under a split, pulled toward the winner
+ *   scale      a balance scale under a split, rocking as it counts, then tipping
  *   typo       the number is typed out, with a typo fixed on the way
  *   chatter    speech bubbles pop out of each side on the beat, by its share
  *   dial       a 24-hour dial round a clock figure, swept to the hour
@@ -32,7 +32,7 @@ export interface Meta {
  */
 export type Gimmick =
   | 'buzz'
-  | 'tug'
+  | 'scale'
   | 'typo'
   | 'chatter'
   | 'dial'

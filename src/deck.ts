@@ -28,8 +28,9 @@ const SWIPE_PX = 40;
 const TAP_PX = 10;
 const TAP_MS = 600;
 
-function cssMs(name: string): number {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+/** A timing token, read from `from` so a card can set its own. */
+function cssMs(name: string, from: Element = document.documentElement): number {
+  const raw = getComputedStyle(from).getPropertyValue(name).trim();
   const value = Number.parseFloat(raw);
   if (Number.isNaN(value)) return 0;
   return raw.endsWith('ms') ? value : value * 1000;
@@ -192,7 +193,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     if (liveEls.length > 0 && !returning) {
       let remaining = liveEls.length;
       counting = liveEls.map((liveEl) =>
-        countUp(liveEl, Number(liveEl.dataset.countTo), cssMs('--dur-count'), cssMs('--delay-land'), () => {
+        countUp(liveEl, Number(liveEl.dataset.countTo), cssMs('--dur-count', entering), cssMs('--delay-land'), () => {
           remaining -= 1;
           if (remaining === 0) markRaceWinner(liveEls);
         })

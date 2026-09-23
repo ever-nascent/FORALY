@@ -3,9 +3,9 @@
  * needs when the card is built; the CSS in cards.css does most of the rest.
  * Most are timed from here instead. `typo` types the figure out on its
  * keyboard and fixes a mistake on the way; `flipclock` rolls a clock forward
- * through the night; `dial` ticks round an hour at a time; `buzz`, `tug` and
- * `chatter` move on the song's beat (src/beat.ts), so the phone goes off,
- * the rope gets yanked and the mouths run in time with the music. `mountGimmick` starts
+ * through the night; `dial` ticks round an hour at a time; `buzz`, `scale`
+ * and `chatter` move on the song's beat (src/beat.ts), so the phone goes off,
+ * the scale rocks and the mouths run in time with the music. `mountGimmick` starts
  * those when the card comes up, and hands back a way to stop them.
  *
  * Every string placed here comes from the data or is fixed decoration, and
@@ -77,26 +77,72 @@ function badges(root: HTMLElement): void {
   root.prepend(layer);
 }
 
-/**
- * The rope, pulled toward whoever is ahead. The honest difference between two
- * close totals would move it a hair, so the pull is exaggerated — still
- * pointing the right way, still bigger for a bigger lead.
- */
-function tug(head: HTMLElement, card: SplitCard): void {
+/** How far the scale tips for the heavier side, in degrees. The honest
+ *  difference between two close totals would barely move it, so the tilt is
+ *  exaggerated — still toward the right side, still more for a bigger lead. */
+function scaleTilt(card: SplitCard): number {
   const [a, b] = card.sides;
-  const lead = (b.value - a.value) / Math.max(a.value + b.value, 1);
-  // Kept well inside the rope, so the heaves on the beat have room to swing
-  // it back and forth rather than pinning it at one end.
-  const pull = Math.max(-0.2, Math.min(0.2, lead * 2.2));
-  const rope = el('div', 'tug');
-  rope.setAttribute('aria-hidden', 'true');
-  rope.style.setProperty('--pull', `${(pull * 100).toFixed(2)}%`);
-  rope.style.setProperty('--pull-rope', `${((pull * 100) / 3).toFixed(2)}%`);
-  const track = el('div', 'tug__track');
-  track.append(el('div', 'tug__rope'));
-  rope.append(track, el('span', 'tug__mid'), el('span', 'tug__marker'));
-  const split = head.querySelector('.split');
-  split?.after(rope);
+  const lead = (a.value - b.value) / Math.max(a.value + b.value, 1);
+  // Left side heavier: the beam turns anticlockwise, which is negative here.
+  return -Math.max(-14, Math.min(14, lead * 120));
+}
+
+/** The beam's pivot and half-length, in the scale's own units. */
+const BEAM = { x: 100, y: 22, arm: 78 };
+
+/** A balance scale under the two numbers: a post, a beam, and two pans. */
+function scale(head: HTMLElement, card: SplitCard): void {
+  const tilt = scaleTilt(card);
+  const holder = el('div', 'scale');
+  holder.setAttribute('aria-hidden', 'true');
+  holder.dataset.tilt = String(tilt);
+  const pic = svg('svg', { viewBox: '0 0 200 96', class: 'scale__svg' });
+  pic.append(
+    svg('path', { d: 'M 84 92 L 116 92 L 108 84 L 92 84 Z', class: 'scale__base' }),
+    svg('line', { x1: BEAM.x, y1: BEAM.y, x2: BEAM.x, y2: 86, class: 'scale__post' })
+  );
+  const beam = svg('g', { class: 'scale__beam' });
+  beam.append(
+    svg('line', { x1: BEAM.x - BEAM.arm, y1: BEAM.y, x2: BEAM.x + BEAM.arm, y2: BEAM.y, class: 'scale__bar' })
+  );
+  pic.append(beam);
+  for (const side of [-1, 1]) {
+    const pan = svg('g', { class: 'scale__pan' });
+    pan.dataset.side = String(side);
+    pan.append(
+      svg('path', { d: 'M 0 0 L -17 30 M 0 0 L 17 30', class: 'scale__string' }),
+      svg('path', { d: 'M -22 30 L 22 30 Q 20 42 0 42 Q -20 42 -22 30 Z', class: 'scale__bowl' })
+    );
+    pic.append(pan);
+  }
+  pic.append(svg('circle', { cx: BEAM.x, cy: BEAM.y, r: 3.6, class: 'scale__pivot' }));
+  holder.append(pic);
+  head.querySelector('.split')?.after(holder);
+  poseScale(holder, tilt);
+}
+
+/**
+ * Puts the scale at an angle: the beam turns, each pan hangs straight down
+ * from its end of it, and each number rides up or down with its pan.
+ */
+function poseScale(holder: HTMLElement, degrees: number, sides?: HTMLElement[]): void {
+  const beam = holder.querySelector('.scale__beam');
+  beam?.setAttribute('transform', `rotate(${degrees.toFixed(2)} ${BEAM.x} ${BEAM.y})`);
+  const rad = (degrees * Math.PI) / 180;
+  const drop = Math.sin(rad) * BEAM.arm;
+  for (const pan of holder.querySelectorAll<SVGElement>('.scale__pan')) {
+    const side = Number(pan.dataset.side);
+    const x = BEAM.x + side * Math.cos(rad) * BEAM.arm;
+    const y = BEAM.y + side * drop;
+    pan.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+  }
+  if (!sides) return;
+  // The scale's units to px, so the numbers move exactly as far as the pans.
+  const px = holder.clientWidth / 200;
+  sides.forEach((side, i) => {
+    const dir = i === 0 ? -1 : 1;
+    side.style.translate = `0 ${(dir * drop * px).toFixed(1)}px`;
+  });
 }
 
 /** The keyboard the figure is typed on. Each key knows the character it types. */
@@ -246,8 +292,8 @@ export function decorate(root: HTMLElement, card: Card): void {
     case 'buzz':
       badges(root);
       break;
-    case 'tug':
-      if (card.kind === 'split') tug(head, card);
+    case 'scale':
+      if (card.kind === 'split') scale(head, card);
       break;
     case 'chatter':
       chatterLayer(head);
@@ -462,50 +508,29 @@ function mountBuzz(root: HTMLElement, songTime: SongClock): GimmickHandle {
 }
 
 /**
- * The tug-of-war, as a spring. It plays out in three acts, heaved on the
- * song's beat from alternate ends the whole way:
- *   1. an even fight — the knot sways back and forth across the middle;
- *   2. the winner takes over — the knot climbs steadily toward their side;
- *   3. held — it rests on their side, still swaying, gently now.
- * Both numbers lean with the rope.
+ * The scale, as a spring. While the two totals count up it rocks from side
+ * to side, a push on every beat from one pan and then the other, as if the
+ * numbers were landing on it; when the counting stops it tips toward the
+ * bigger one and settles there, breathing a little on the beat.
  */
-const TUG = {
-  /** When the even fight ends and the climb begins, and how long the climb takes. */
-  climbAt: 3.6,
-  climbFor: 3.4,
-  stiff: 14,
-  damp: 2.4,
-  /** Heave strength in each act: [ahead, behind]. */
-  even: [24, 24],
-  climbing: [30, 16],
-  held: [13, 9],
-} as const;
-
-/** Eased at both ends, steady through the middle. */
-const steady = (t: number): number => {
-  const c = Math.min(Math.max(t, 0), 1);
-  return c < 0.15 ? (c * c) / 0.3 : c > 0.85 ? 1 - ((1 - c) * (1 - c)) / 0.3 : c - 0.075;
-};
-
-function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
-  const tugEl = root.querySelector<HTMLElement>('.tug');
-  const marker = root.querySelector<HTMLElement>('.tug__marker');
-  const rope = root.querySelector<HTMLElement>('.tug__rope');
+function mountScale(root: HTMLElement, songTime: SongClock, countMs: number): GimmickHandle {
+  const holder = root.querySelector<HTMLElement>('.scale');
   const sides = [...root.querySelectorAll<HTMLElement>('.split__side')];
-  if (!tugEl || !marker || !rope || currentMotion() === 'off') return { cancel() {} };
+  if (!holder) return { cancel() {} };
+  const tilt = Number(holder.dataset.tilt) || 0;
+  const settle = (): void => poseScale(holder, tilt, sides);
+  if (currentMotion() === 'off') {
+    settle();
+    return { cancel: settle };
+  }
 
-  const pull = Number.parseFloat(tugEl.style.getPropertyValue('--pull')) || 0;
-  const toward = pull === 0 ? -1 : Math.sign(pull);
-  let x = 0;
+  const STIFF = 16;
+  const DAMP = 2.6;
+  const rockUntil = (START_MS / 2 + countMs) / 1000;
+  let angle = 0;
   let v = 0;
-  let pulls = 0;
+  let pushes = 0;
   const onBeat = beatWatcher(songTime);
-
-  const paint = (): void => {
-    marker.style.left = `calc(50% + ${x.toFixed(2)}%)`;
-    rope.style.transform = `translateX(${(x / 3).toFixed(2)}%)`;
-    for (const side of sides) side.style.rotate = `${(x * 0.12).toFixed(2)}deg`;
-  };
 
   let frame = 0;
   let begun = 0;
@@ -515,19 +540,17 @@ function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
     const wall = (now - begun) / 1000;
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
-    if (wall * 1000 > START_MS / 2) {
-      const climb = (wall - TUG.climbAt) / TUG.climbFor;
-      const target = pull * steady(climb);
-      if (onBeat(wall)) {
-        const [ahead, behind] = climb < 0 ? TUG.even : climb < 1 ? TUG.climbing : TUG.held;
-        const dir = pulls % 2 === 0 ? toward : -toward;
-        v += dir * (dir === toward ? ahead : behind);
-        pulls += 1;
-      }
-      v += (-TUG.stiff * (x - target) - TUG.damp * v) * dt;
-      x = Math.max(-46, Math.min(46, x + v * dt));
+    const counting = wall < rockUntil;
+    if (onBeat(wall)) {
+      // Rocking: even pushes, one side then the other. Settled: a breath.
+      const dir = pushes % 2 === 0 ? 1 : -1;
+      v += dir * (counting ? 34 : 4);
+      pushes += 1;
     }
-    paint();
+    const target = counting ? 0 : tilt;
+    v += (-STIFF * (angle - target) - DAMP * v) * dt;
+    angle = Math.max(-24, Math.min(24, angle + v * dt));
+    poseScale(holder, angle, sides);
     frame = requestAnimationFrame(step);
   };
   frame = requestAnimationFrame(step);
@@ -535,9 +558,7 @@ function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
   return {
     cancel() {
       cancelAnimationFrame(frame);
-      marker.style.left = '';
-      rope.style.transform = '';
-      for (const side of sides) side.style.rotate = '';
+      settle();
     },
   };
 }
@@ -677,7 +698,13 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
 export function mountGimmick(root: HTMLElement, card: Card, songTime: SongClock): GimmickHandle | null {
   if (!('gimmick' in card)) return null;
   if (card.gimmick === 'buzz') return mountBuzz(root, songTime);
-  if (card.gimmick === 'tug') return mountTug(root, songTime);
+  if (card.gimmick === 'scale') {
+    // Either unit: the minifier is free to turn 3400ms into 3.4s.
+    const raw = getComputedStyle(root).getPropertyValue('--dur-count').trim();
+    const value = Number.parseFloat(raw);
+    const ms = Number.isNaN(value) ? 1500 : raw.endsWith('ms') ? value : value * 1000;
+    return mountScale(root, songTime, ms);
+  }
   if (card.gimmick === 'typo') return mountTypo(root);
   if (card.gimmick === 'dial' && card.kind === 'figure') return mountDial(root, card);
   if (card.gimmick === 'chatter' && card.kind === 'split') return mountChatter(root, card, songTime);

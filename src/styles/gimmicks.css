@@ -50,77 +50,70 @@
 
 /* The buzz itself, and each badge's jump, go off on the beat (src/gimmicks.ts). */
 .card[data-live] .badge {
-  animation: badge-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 500ms + var(--i) * 260ms) both;
+  animation: badge-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 120ms + var(--i) * 90ms) both;
 }
 
-/* --- tug: who is pulling harder ------------------------------------------ */
+/* --- scale: who is heavier ---------------------------------------------- */
 
-.tug {
-  position: relative;
+/* Longer counts on the two cards whose gimmick plays out while they count —
+   only while things move; with motion off there is no count at all. */
+:root:not([data-motion='off']) .card[data-gimmick='buzz'],
+:root:not([data-motion='off']) .card[data-gimmick='scale'] {
+  --dur-count: 3400ms;
+}
+
+/* src/gimmicks.ts poses the beam, hangs the pans and moves each number with
+   its pan; this is only the drawing. */
+.scale {
   width: 100%;
-  height: 2rem;
-  margin-top: 1.25rem;
+  max-width: 34rem;
+  margin-top: 0.5rem;
 }
 
-.tug__track {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 0.6rem;
-  overflow: hidden;
-  border-radius: 999px;
-  transform: translateY(-50%);
+.scale__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
 }
 
-/* Three times the track's width, so it can slide either way and still fill it. */
-.tug__rope {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: -100%;
-  width: 300%;
-  /* A twist of the card's own cream and blush. */
-  background: repeating-linear-gradient(-55deg, var(--ink) 0 5px, var(--accent) 5px 10px);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+.scale__post,
+.scale__bar,
+.scale__string {
+  fill: none;
+  stroke: var(--quiet);
+  stroke-linecap: round;
 }
 
-.tug__mid {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 50%;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--ink);
-  opacity: 0.45;
-  transform: translateX(-50%);
+.scale__post {
+  stroke-width: 2.4;
 }
 
-/* The knot tied at the rope's middle — the thing that moves. */
-.tug__marker {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0.95rem;
-  height: 1.9rem;
-  border: 3px solid var(--ink);
-  border-radius: 0.3rem;
-  /* The dusk card's deep mauve — the one dark mark on a pale rope. */
-  /* impeccable-disable-next-line design-system-color */
-  background: #8e5a6e;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  transform: translate(-50%, -50%);
+.scale__bar {
+  stroke-width: 2.8;
 }
 
-/* Where the knot rests with motion off, and on a printed plate. While the
-   card is up, src/gimmicks.ts swings it back and forth on the beat. */
-.card[data-live] .tug__marker {
-  left: calc(50% + var(--pull));
+.scale__string {
+  stroke-width: 0.9;
+  opacity: 0.8;
 }
 
-.card[data-live] .tug__rope {
-  transform: translateX(var(--pull-rope));
+.scale__base {
+  fill: var(--quiet);
+}
+
+.scale__bowl {
+  fill: var(--shape-a);
+  stroke: var(--accent);
+  stroke-width: 1.4;
+}
+
+.scale__pivot {
+  fill: var(--accent);
+}
+
+.card[data-gimmick='scale'] .split__side {
+  will-change: translate;
 }
 
 /* --- chatter: who has the bigger mouth ----------------------------------- */
@@ -691,10 +684,6 @@
   .dm__message,
   .dawn {
     opacity: 1;
-  }
-
-  .tug__marker {
-    left: calc(50% + var(--pull));
   }
 
   .keys {
