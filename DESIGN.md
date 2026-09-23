@@ -45,7 +45,7 @@ colors:
   dusk-ink: "#f6ece6"
   dusk-quiet: "#d9c9d4"
   dusk-faint: "#c3b3c1"
-  dusk-accent: "#e2c28b"
+  dusk-accent: "#e3b5b8"
   teal-ground: "#0b3b3c"
   teal-glow: "#265151"
   teal-ink: "#ff8a6b"

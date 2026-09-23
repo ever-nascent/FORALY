@@ -434,11 +434,31 @@ function mountBuzz(root: HTMLElement, songTime: SongClock): GimmickHandle {
 }
 
 /**
- * The tug-of-war, as a spring: the knot is pulled toward the winner's side,
- * and on every beat one side or the other heaves — alternately, the winner a
- * little harder — so it swings back and forth the way a real one does and
- * never quite settles. Both numbers lean with the rope.
+ * The tug-of-war, as a spring. It plays out in three acts, heaved on the
+ * song's beat from alternate ends the whole way:
+ *   1. an even fight — the knot sways back and forth across the middle;
+ *   2. the winner takes over — the knot climbs steadily toward their side;
+ *   3. held — it rests on their side, still swaying, gently now.
+ * Both numbers lean with the rope.
  */
+const TUG = {
+  /** When the even fight ends and the climb begins, and how long the climb takes. */
+  climbAt: 3.6,
+  climbFor: 3.4,
+  stiff: 14,
+  damp: 2.4,
+  /** Heave strength in each act: [ahead, behind]. */
+  even: [24, 24],
+  climbing: [30, 16],
+  held: [13, 9],
+} as const;
+
+/** Eased at both ends, steady through the middle. */
+const steady = (t: number): number => {
+  const c = Math.min(Math.max(t, 0), 1);
+  return c < 0.15 ? (c * c) / 0.3 : c > 0.85 ? 1 - ((1 - c) * (1 - c)) / 0.3 : c - 0.075;
+};
+
 function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
   const tugEl = root.querySelector<HTMLElement>('.tug');
   const marker = root.querySelector<HTMLElement>('.tug__marker');
@@ -446,11 +466,8 @@ function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
   const sides = [...root.querySelectorAll<HTMLElement>('.split__side')];
   if (!tugEl || !marker || !rope || currentMotion() === 'off') return { cancel() {} };
 
-  const target = Number.parseFloat(tugEl.style.getPropertyValue('--pull')) || 0;
-  const toward = target === 0 ? -1 : Math.sign(target);
-  const STIFF = 14;
-  const DAMP = 2.2;
-  const HEAVE = 26;
+  const pull = Number.parseFloat(tugEl.style.getPropertyValue('--pull')) || 0;
+  const toward = pull === 0 ? -1 : Math.sign(pull);
   let x = 0;
   let v = 0;
   let pulls = 0;
@@ -471,13 +488,15 @@ function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     if (wall * 1000 > START_MS / 2) {
+      const climb = (wall - TUG.climbAt) / TUG.climbFor;
+      const target = pull * steady(climb);
       if (onBeat(wall)) {
-        // Heave from alternate ends; the one ahead pulls a little harder.
+        const [ahead, behind] = climb < 0 ? TUG.even : climb < 1 ? TUG.climbing : TUG.held;
         const dir = pulls % 2 === 0 ? toward : -toward;
-        v += dir * (dir === toward ? HEAVE * 1.15 : HEAVE * 0.85);
+        v += dir * (dir === toward ? ahead : behind);
         pulls += 1;
       }
-      v += (-STIFF * (x - target) - DAMP * v) * dt;
+      v += (-TUG.stiff * (x - target) - TUG.damp * v) * dt;
       x = Math.max(-46, Math.min(46, x + v * dt));
     }
     paint();
