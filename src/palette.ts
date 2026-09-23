@@ -112,7 +112,7 @@ export const THEMES: Theme[] = [
   // this array is really a lookup table by name more than a cycled arc.
   // Added after `rose` rather than resorting the list to keep it first —
   // CLOSING below finds it by name, not position, so this is safe.
-  { name: 'fuchsia',  ground: '#a81863', glow: '#c02a72', ink: '#fff3e4', quiet: '#f4d9ea', faint: '#f0cade', accent: '#eafd6b', shape: 'megaphone', align: 'center' },
+  { name: 'fuchsia',  ground: '#a81863', glow: '#c02a72', ink: '#fff3e4', quiet: '#f4d9ea', faint: '#f0cade', accent: '#eafd6b', shape: 'plain', align: 'center' },
 ];
 
 /**

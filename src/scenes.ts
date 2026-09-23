@@ -59,8 +59,8 @@ export function greetingScene(): HTMLElement {
   const stars = svg('svg', { class: 'gscene__stars', viewBox: '0 0 100 100', preserveAspectRatio: 'xMidYMid slice' });
   const spots: [number, number, number, boolean][] = [
     [10, 9, 1.9, true], [27, 5, 1.1, false], [44, 12, 1.4, false], [63, 7, 2.2, true], [81, 11, 1.2, false],
-    [93, 21, 1.6, true], [6, 26, 1.2, false], [20, 20, 0.9, false], [36, 24, 2.4, true], [55, 22, 1, false],
-    [72, 27, 1.5, false], [88, 33, 1, false], [14, 38, 1.5, true], [48, 33, 1.1, false], [66, 40, 1.8, true],
+    [93, 21, 1.6, true], [6, 26, 1.2, false], [20, 20, 0.9, false], [36, 24, 2.4, true], [70, 17, 1, false],
+    [72, 27, 1.5, false], [88, 33, 1, false], [14, 38, 1.5, true], [24, 33, 1.1, false], [66, 40, 1.8, true],
     [30, 43, 1, false], [84, 47, 1.3, false], [4, 50, 1, false],
   ];
   for (const [i, [x, y, s, sparkle]] of spots.entries()) {
@@ -71,6 +71,15 @@ export function greetingScene(): HTMLElement {
     stars.append(at);
   }
   scene.append(stars);
+
+  // Shooting stars, now and then, each on its own long interval.
+  const shooting = el('div', 'gscene__shooting');
+  for (let i = 0; i < 3; i += 1) {
+    const streak = el('span', 'gshoot');
+    streak.style.setProperty('--i', String(i));
+    shooting.append(streak);
+  }
+  scene.append(shooting);
 
   const clouds = el('div', 'gscene__clouds');
   for (let i = 0; i < 3; i += 1) {
@@ -94,13 +103,14 @@ export function greetingScene(): HTMLElement {
 }
 
 /**
- * A comedy club: a brick wall, one spotlight on the figure, a mic on its
- * stand to one side, and the audience in silhouette along the bottom — the
- * heads bob with laughter on the beat (src/gimmicks.ts).
+ * A comedy club: a brick wall, one spotlight on the figure, a stage with the
+ * mic on its stand in the middle of it, and the audience in silhouette in
+ * rows of chairs along the bottom — the heads bob with laughter on the beat
+ * (src/gimmicks.ts).
  */
 export function clubScene(): HTMLElement {
   const scene = hidden(el('div', 'club'));
-  scene.append(el('div', 'club__bricks'), el('div', 'club__spot'));
+  scene.append(el('div', 'club__bricks'), el('div', 'club__spot'), el('div', 'club__stage'));
 
   const mic = svg('svg', { class: 'club__mic', viewBox: '0 0 40 120' });
   mic.append(
@@ -115,9 +125,12 @@ export function clubScene(): HTMLElement {
   for (const [row, count] of [[0, 7], [1, 6]] as const) {
     const line = el('div', `club__row club__row--${row}`);
     for (let i = 0; i < count; i += 1) {
+      // A seat for each of them: its back shows in front of their shoulders.
+      const seat = el('span', 'club__seat');
       const person = el('span', 'club__person');
       person.style.setProperty('--i', String(i + row * 7));
-      line.append(person);
+      seat.append(person, el('span', 'club__chair'));
+      line.append(seat);
     }
     crowd.append(line);
   }

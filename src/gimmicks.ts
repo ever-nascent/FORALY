@@ -165,6 +165,22 @@ function keyboard(root: HTMLElement): void {
   root.prepend(board);
 }
 
+/** Bars in a voice note's waveform, per side. */
+const WAVE_BARS = 22;
+
+/** A voice note's waveform across the middle of the card, one half each. */
+function waveform(): HTMLElement {
+  const wave = el('div', 'wave');
+  wave.setAttribute('aria-hidden', 'true');
+  for (const side of [0, 1]) {
+    const half = el('div', 'wave__half');
+    half.dataset.side = String(side);
+    for (let i = 0; i < WAVE_BARS; i += 1) half.append(el('span', 'wave__bar'));
+    wave.append(half);
+  }
+  return wave;
+}
+
 /** Where the chatter bubbles rise from, one layer per side. */
 function chatterLayer(head: HTMLElement): void {
   for (const side of head.querySelectorAll<HTMLElement>('.split__side')) {
@@ -174,31 +190,54 @@ function chatterLayer(head: HTMLElement): void {
   }
 }
 
-/** A 24-hour dial round the figure, swept from midnight to the hour. */
+/**
+ * An alarm clock round the figure: a face with the twelve hours, two hands,
+ * twin bells with a hammer between them, and two feet. The hands tick round
+ * to the hour (mountDial); when they get there, it rings.
+ */
 function dial(value: HTMLElement, card: FigureCard): void {
   const hours = card.value / 60;
-  const ring = svg('svg', { viewBox: '0 0 100 100', class: 'dial', 'aria-hidden': 'true' });
-  ring.append(svg('circle', { cx: 50, cy: 50, r: 44, class: 'dial__track', pathLength: 24 }));
-  for (let h = 0; h < 24; h += 1) {
-    const major = h % 6 === 0;
-    const tick = svg('line', {
-      x1: 50,
-      y1: major ? 2.5 : 3.5,
-      x2: 50,
-      y2: major ? 9 : 7,
-      class: major ? 'dial__tick dial__tick--major' : 'dial__tick',
-      transform: `rotate(${h * 15} 50 50)`,
-    });
-    ring.append(tick);
+  const clock = svg('svg', { viewBox: '0 0 100 100', class: 'dial', 'aria-hidden': 'true' });
+  // Bells, hammer and feet sit outside the face and draw first, behind it.
+  for (const side of [-1, 1]) {
+    const bell = svg('g', { class: 'dial__bell', transform: `rotate(${side * 38} 50 50)` });
+    bell.append(
+      svg('path', { d: 'M 38 -6 Q 50 -16 62 -6 L 62 -2 L 38 -2 Z', class: 'dial__bellcap' }),
+      svg('line', { x1: 50, y1: -2, x2: 50, y2: 4, class: 'dial__stem' })
+    );
+    clock.append(bell);
+    clock.append(svg('line', { x1: 50 + side * 28, y1: 88, x2: 50 + side * 38, y2: 101, class: 'dial__foot' }));
+    // The little lines that flash out beside each bell while it rings.
+    const buzz = svg('g', { class: 'dial__buzz' });
+    buzz.append(
+      svg('line', { x1: 50 + side * 36, y1: -8, x2: 50 + side * 44, y2: -14 }),
+      svg('line', { x1: 50 + side * 40, y1: -1, x2: 50 + side * 49, y2: -3 })
+    );
+    clock.append(buzz);
   }
-  const fill = svg('circle', { cx: 50, cy: 50, r: 44, class: 'dial__fill', pathLength: 24 });
-  fill.style.setProperty('--to', String(24 - hours));
-  ring.append(fill);
-  const hand = svg('g', { class: 'dial__hand' });
-  hand.style.setProperty('--deg', `${hours * 15}deg`);
-  hand.append(svg('circle', { cx: 50, cy: 6, r: 3.2, class: 'dial__tip' }));
-  ring.append(hand);
-  value.prepend(ring);
+  clock.append(svg('line', { x1: 50, y1: 6, x2: 50, y2: -4, class: 'dial__stem' }));
+  clock.append(svg('circle', { cx: 50, cy: -5, r: 3, class: 'dial__hammer' }));
+  clock.append(svg('circle', { cx: 50, cy: 50, r: 44, class: 'dial__face' }));
+  for (let h = 0; h < 12; h += 1) {
+    const major = h % 3 === 0;
+    clock.append(
+      svg('line', {
+        x1: 50,
+        y1: major ? 9 : 10,
+        x2: 50,
+        y2: major ? 16 : 14,
+        class: major ? 'dial__tick dial__tick--major' : 'dial__tick',
+        transform: `rotate(${h * 30} 50 50)`,
+      })
+    );
+  }
+  const minute = svg('g', { class: 'dial__minute' });
+  minute.append(svg('line', { x1: 50, y1: 50, x2: 50, y2: 14 }));
+  const hour = svg('g', { class: 'dial__hand' });
+  hour.style.setProperty('--deg', `${(hours % 12) * 30}deg`);
+  hour.append(svg('line', { x1: 50, y1: 50, x2: 50, y2: 26 }));
+  clock.append(minute, hour, svg('circle', { cx: 50, cy: 50, r: 3, class: 'dial__pin' }));
+  value.prepend(clock);
 }
 
 /** The laughs themselves, popping out round the figure. */
@@ -298,6 +337,7 @@ export function decorate(root: HTMLElement, card: Card): void {
       break;
     case 'chatter':
       chatterLayer(head);
+      root.prepend(waveform());
       break;
     case 'dial':
       if (card.kind === 'figure' && value) dial(value, card);
@@ -317,6 +357,13 @@ export function decorate(root: HTMLElement, card: Card): void {
       break;
     case 'typo':
       keyboard(root);
+      // The unit and the caption type out too; each keeps its final text,
+      // hidden, to hold the space, with the typed copy laid over it.
+      for (const holder of root.querySelectorAll<HTMLElement>('.figure__unit, .caption')) {
+        const full = holder.textContent ?? '';
+        holder.dataset.typed = '';
+        holder.replaceChildren(el('span', 'typo-ghost', full), el('span', 'typo-live', full));
+      }
       break;
   }
 }
@@ -326,70 +373,119 @@ export function decorate(root: HTMLElement, card: Card): void {
 /** Wait for the figure's landing before starting. */
 const START_MS = 420;
 
+/** A slip: two neighbouring characters typed the wrong way round at `at`,
+ *  and `overrun` more typed after them before it is noticed. */
+interface Slip {
+  at: number;
+  overrun: number;
+}
+
+/** Keystrokes for `text` with its slips: a character, null for backspace,
+ *  or 'pause' for the beat where the mistake is seen. */
+function keystrokes(text: string, slips: Slip[]): (string | null)[] {
+  const keys: (string | null)[] = [];
+  const ordered = [...slips].sort((a, b) => a.at - b.at);
+  let i = 0;
+  for (const slip of ordered) {
+    for (; i < slip.at; i += 1) keys.push(text[i] ?? '');
+    const wrong = [text[slip.at + 1] ?? '', text[slip.at] ?? '', ...text.slice(slip.at + 2, slip.at + 2 + slip.overrun)];
+    keys.push(...wrong, 'pause', ...wrong.map(() => null));
+  }
+  for (; i < text.length; i += 1) keys.push(text[i] ?? '');
+  return keys;
+}
+
+/** Where to slip in a piece of text: swapping the first letter of `inside`
+ *  with the next one, or the last swappable pair of digits for a number. */
+function slipIn(text: string, inside: string, overrun: number): Slip | null {
+  const start = text.indexOf(inside);
+  if (start >= 0 && inside.length > 2) return { at: start + 1, overrun };
+  for (let k = text.length - 2; k >= 0; k -= 1) {
+    const [c, d] = [text[k] ?? '', text[k + 1] ?? ''];
+    if (/\d/.test(c) && /\d/.test(d) && c !== d) return { at: k, overrun };
+  }
+  return null;
+}
+
 /**
- * Types the figure out a key at a time. Near the end, two neighbouring digits
- * go in the wrong way round, sit there a beat, get backspaced, and go in
- * right — "Typos included."
+ * Types the whole line out on the keyboard — the figure, then "words", then
+ * the caption — a key at a time, with the caret moving along. It slips more
+ * than once: letters go in the wrong way round, sometimes a couple more get
+ * typed before it notices, and it backspaces and tries again. Each piece
+ * keeps its final size reserved, so nothing on the card moves while it types.
  */
 function mountTypo(root: HTMLElement): GimmickHandle {
-  const live = root.querySelector<HTMLElement>('.figure__live');
-  const ghost = root.querySelector<HTMLElement>('.figure__ghost');
-  const final = ghost?.textContent ?? '';
-  if (!live || !final) return { cancel() {} };
+  const figure = root.querySelector<HTMLElement>('.figure__live');
+  const figureText = root.querySelector<HTMLElement>('.figure__ghost')?.textContent ?? '';
+  const pieces: { live: HTMLElement; text: string; slips: Slip[] }[] = [];
+  if (figure && figureText) {
+    const slip = slipIn(figureText, '', 0);
+    pieces.push({ live: figure, text: figureText, slips: slip ? [slip] : [] });
+  }
+  for (const holder of root.querySelectorAll<HTMLElement>('[data-typed]')) {
+    const live = holder.querySelector<HTMLElement>('.typo-live');
+    const text = holder.querySelector('.typo-ghost')?.textContent ?? '';
+    if (!live || !text) continue;
+    const slips = [slipIn(text, 'words', 1), slipIn(text, 'typo', 0), slipIn(text, 'included', 2)].filter(
+      (x): x is Slip => x !== null && text.slice(x.at - 1).length > 2 && /[a-z]/i.test(text)
+    );
+    pieces.push({ live, text, slips });
+  }
+  const finish = (): void => {
+    for (const piece of pieces) piece.live.textContent = piece.text;
+  };
+  if (pieces.length === 0 || currentMotion() === 'off') {
+    finish();
+    return { cancel: finish };
+  }
 
-  const text = el('span', 'typed');
   const caret = el('span', 'caret');
   caret.setAttribute('aria-hidden', 'true');
-  live.replaceChildren(text, caret);
+  const shown = pieces.map(() => document.createTextNode(''));
+  pieces.forEach((piece, n) => piece.live.replaceChildren(shown[n] as Text));
 
-  if (currentMotion() === 'off') {
-    text.textContent = final;
-    return {
-      cancel() {
-        live.textContent = final;
-      },
-    };
-  }
-
-  // Keystrokes: a character to add, or null for a backspace.
-  const keys: (string | null)[] = [];
-  let swap = -1;
-  // The last pair that can be swapped: a slip near the end reads as a slip.
-  for (let i = final.length - 2; i >= 0; i -= 1) {
-    const [c, d] = [final[i] ?? '', final[i + 1] ?? ''];
-    if (/\d/.test(c) && /\d/.test(d) && c !== d) {
-      swap = i;
-      break;
-    }
-  }
-  for (let i = 0; i < final.length; i += 1) {
-    if (i === swap) {
-      keys.push(final[i + 1] ?? '', final[i] ?? '', 'pause', null, null);
-    }
-    keys.push(final[i] ?? '');
-  }
-
-  const rand = seeded(154);
-  let timer = 0;
-  let at = 0;
   const press = (k: string): void => {
-    const cap = root.querySelector<HTMLElement>(`.key[data-key="${k === ',' ? ',' : k}"]`);
+    const key = k === null ? '⌫' : k.toLowerCase();
+    const cap = [...root.querySelectorAll<HTMLElement>('.key')].find((c) => c.dataset.key === key);
     if (!cap) return;
     cap.dataset.down = '';
     window.setTimeout(() => delete cap.dataset.down, 130);
   };
+
+  const rand = seeded(154);
+  let piece = 0;
+  let at = 0;
+  let keys = keystrokes(pieces[0]?.text ?? '', pieces[0]?.slips ?? []);
+  pieces[0]?.live.append(caret);
+  let timer = 0;
+
   const tick = (): void => {
     const key = keys[at];
     at += 1;
     if (key === undefined) {
-      caret.dataset.idle = '';
+      // On to the next piece, the caret with it; or done.
+      piece += 1;
+      const next = pieces[piece];
+      if (!next) {
+        caret.dataset.idle = '';
+        return;
+      }
+      keys = keystrokes(next.text, next.slips);
+      at = 0;
+      next.live.append(caret);
+      timer = window.setTimeout(tick, 380);
       return;
     }
-    if (key !== 'pause') press(key ?? '⌫');
-    if (key === null) text.textContent = (text.textContent ?? '').slice(0, -1);
-    else if (key !== 'pause') text.textContent = (text.textContent ?? '') + key;
-    if (key !== 'pause') live.animate([{ transform: 'translateY(0.015em)' }, { transform: 'none' }], 90);
-    const wait = key === 'pause' ? 520 : key === null ? 110 : 110 + rand() * 90;
+    const node = shown[piece] as Text;
+    if (key === null) {
+      press('⌫');
+      node.data = node.data.slice(0, -1);
+    } else if (key !== 'pause') {
+      press(key === ' ' ? ' ' : key);
+      node.data += key;
+      pieces[piece]?.live.animate([{ transform: 'translateY(0.015em)' }, { transform: 'none' }], 90);
+    }
+    const wait = key === 'pause' ? 560 : key === null ? 95 : 95 + rand() * 85;
     timer = window.setTimeout(tick, wait);
   };
   timer = window.setTimeout(tick, START_MS);
@@ -397,7 +493,8 @@ function mountTypo(root: HTMLElement): GimmickHandle {
   return {
     cancel() {
       window.clearTimeout(timer);
-      live.textContent = final;
+      caret.remove();
+      finish();
     },
   };
 }
@@ -569,47 +666,50 @@ function mountScale(root: HTMLElement, songTime: SongClock, countMs: number): Gi
  * midnight, the figure counts the hours with it, and it stops on the hour.
  */
 function mountDial(root: HTMLElement, card: FigureCard): GimmickHandle {
-  const fill = root.querySelector<SVGElement>('.dial__fill');
   const hand = root.querySelector<SVGElement>('.dial__hand');
+  const minute = root.querySelector<SVGElement>('.dial__minute');
   const live = root.querySelector<HTMLElement>('.figure__live');
   const unit = root.querySelector<HTMLElement>('.figure__unit');
   const hours = Math.round(card.value / 60);
   const final = formatClock(card.value);
   const settle = (): void => {
-    for (const part of [fill, hand]) part?.style.removeProperty('transition');
-    fill?.style.setProperty('--to', String(24 - card.value / 60));
-    hand?.style.setProperty('--deg', `${(card.value / 60) * 15}deg`);
+    for (const part of [hand, minute]) part?.style.removeProperty('transition');
+    hand?.style.setProperty('--deg', `${((card.value / 60) % 12) * 30}deg`);
+    minute?.style.setProperty('--deg', '0deg');
     if (live) live.textContent = final.text;
     if (unit) unit.textContent = final.suffix ?? '';
+    delete root.dataset.ticking;
   };
-  if (!fill || !hand || !live || currentMotion() === 'off') {
+  if (!hand || !minute || !live || currentMotion() === 'off') {
     settle();
     return { cancel: settle };
   }
 
   const show = (h: number): void => {
-    fill.style.setProperty('--to', String(24 - h));
-    hand.style.setProperty('--deg', `${h * 15}deg`);
+    hand.style.setProperty('--deg', `${h * 30}deg`);
+    // The minute hand goes all the way round for every hour the hour hand moves.
+    minute.style.setProperty('--deg', `${h * 360}deg`);
     const t = formatClock(h * 60);
     live.textContent = t.text;
     if (unit) unit.textContent = t.suffix ?? '';
   };
 
   // Start at midnight without sweeping back there.
-  for (const part of [fill, hand]) part.style.transition = 'none';
+  for (const part of [hand, minute]) part.style.transition = 'none';
   show(0);
-  void fill.getBoundingClientRect();
-  for (const part of [fill, hand]) part.style.removeProperty('transition');
+  void hand.getBoundingClientRect();
+  for (const part of [hand, minute]) part.style.removeProperty('transition');
   root.dataset.ticking = '';
 
   let h = 0;
   let timer = 0;
-  const TICK_MS = 230;
+  const TICK_MS = 260;
   const tick = (): void => {
     h += 1;
     show(h);
     live.animate([{ transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 180, easing: 'ease-out' });
     if (h < hours) timer = window.setTimeout(tick, TICK_MS);
+    // It is there: the alarm goes off (the ring is CSS, on a loop).
     else delete root.dataset.ticking;
   };
   timer = window.setTimeout(tick, START_MS + 200);
@@ -617,7 +717,6 @@ function mountDial(root: HTMLElement, card: FigureCard): GimmickHandle {
   return {
     cancel() {
       window.clearTimeout(timer);
-      delete root.dataset.ticking;
       settle();
     },
   };
@@ -642,6 +741,11 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
   const rates = card.sides.map((side) => Math.max(0.6, 3 * (side.value / most) ** 6));
   const owed = [0, 0];
   const lanes = [0, 2];
+  const halves = [...root.querySelectorAll<HTMLElement>('.wave__half')].map((half) => [
+    ...half.querySelectorAll<HTMLElement>('.wave__bar'),
+  ]);
+  // The quieter side's bars reach a share of the louder side's.
+  const louder = card.sides.map((side) => Math.max(0.35, (side.value / most) ** 2));
   const rand = seeded(118);
   let said = 0;
   const onBeat = beatWatcher(songTime);
@@ -674,6 +778,17 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
     if (begun === 0) begun = now;
     const wall = (now - begun) / 1000;
     if (onBeat(wall) && wall * 1000 > START_MS) {
+      // The waveform pumps: each side as loud as its share, then falls back.
+      for (const [i, half] of halves.entries()) {
+        const loud = i === 0 ? louder[0] : louder[1];
+        for (const bar of half) {
+          const peak = (loud ?? 1) * (0.3 + rand() * 0.7);
+          bar.style.transform = `scaleY(${peak.toFixed(3)})`;
+          window.setTimeout(() => {
+            bar.style.transform = `scaleY(${(peak * 0.28).toFixed(3)})`;
+          }, 260);
+        }
+      }
       for (const [i, layer] of layers.entries()) {
         owed[i] = (owed[i] ?? 0) + (rates[i] ?? 0);
         let n = 0;

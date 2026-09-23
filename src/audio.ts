@@ -13,7 +13,8 @@
 
 
 const SRC = '/score.mp3';
-const TARGET = 0.55;
+/** Background, not foreground: low enough to sit under her reading. */
+const TARGET = 0.36;
 const FADE_MS = 1800;
 /** How far the score dips when she advances, so the music answers the tap. */
 const DIP = 0.62;
@@ -120,7 +121,13 @@ export async function loadScore(): Promise<Score | null> {
       const context = new Context();
       const node = context.createGain();
       node.gain.value = 0;
-      context.createMediaElementSource(audio).connect(node).connect(context.destination);
+      // A gentle roll-off of the top end, so the score sits softly behind
+      // the cards rather than bright in front of them.
+      const soften = context.createBiquadFilter();
+      soften.type = 'lowpass';
+      soften.frequency.value = 5200;
+      soften.Q.value = 0.5;
+      context.createMediaElementSource(audio).connect(soften).connect(node).connect(context.destination);
       audio.volume = 1;
       ctx = context;
       gain = node;

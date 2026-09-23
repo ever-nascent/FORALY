@@ -246,7 +246,7 @@
   transition: opacity 500ms var(--ease-out) var(--delay-land);
 }
 
-/* --- dial: the whole day, and the hour it lands on ----------------------- */
+/* --- dial: an alarm clock that goes off at the hour ---------------------- */
 
 .dial {
   position: absolute;
@@ -260,81 +260,211 @@
   pointer-events: none;
 }
 
-/* Room above and below, so the ring clears the unit and the line under it. */
+/* Room above for the bells and below for the feet. */
 .card[data-gimmick='dial'] .figure__value {
-  margin-block: 0.3em;
+  margin-block: 0.42em 0.36em;
 }
 
-.dial__track {
-  fill: none;
-  stroke: var(--track);
-  stroke-width: 1.2;
+.dial__face {
+  fill: var(--shape-b);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.dial__bellcap,
+.dial__hammer {
+  fill: var(--accent);
+}
+
+.dial__stem,
+.dial__foot {
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
 }
 
 .dial__tick {
   stroke: var(--faint);
-  stroke-width: 0.5;
+  stroke-width: 1;
   stroke-linecap: round;
   opacity: 0.7;
 }
 
 .dial__tick--major {
-  stroke-width: 1;
+  stroke-width: 2;
   opacity: 1;
 }
 
-.dial__fill {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 2.6;
+.dial__hand line,
+.dial__minute line {
+  stroke: var(--quiet);
   stroke-linecap: round;
-  stroke-dasharray: 24;
-  stroke-dashoffset: 24;
-  transform: rotate(-90deg);
-  transform-box: view-box;
-  transform-origin: 50px 50px;
 }
 
-.dial__hand {
-  transform: rotate(0deg);
-  transform-box: view-box;
-  transform-origin: 50px 50px;
+.dial__hand line {
+  stroke-width: 3.4;
 }
 
-.dial__tip {
+.dial__minute line {
+  stroke-width: 1.8;
+}
+
+.dial__pin {
   fill: var(--accent);
-  filter: drop-shadow(0 0 2px var(--accent));
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
-@keyframes dial-pulse {
+.dial__hand,
+.dial__minute {
+  transform: rotate(var(--deg, 0deg));
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+}
+
+/* Each hour is one tick, snapping on with a small overshoot, the minute hand
+   spinning once round each time (src/gimmicks.ts steps --deg). */
+.card[data-live] .dial__hand,
+.card[data-live] .dial__minute {
+  transition: transform 220ms cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+.dial__buzz line {
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0;
+}
+
+/* Ringing: it hops and shakes, rests a moment, and goes again. */
+@keyframes alarm-ring {
   0%,
+  46%,
   100% {
-    transform: scale(1);
+    transform: translateY(0) rotate(0deg);
+  }
+  3% {
+    transform: translateY(-7%) rotate(-7deg);
+  }
+  7% {
+    transform: translateY(-5%) rotate(7deg);
+  }
+  11% {
+    transform: translateY(-8%) rotate(-7deg);
+  }
+  15% {
+    transform: translateY(-4%) rotate(6deg);
+  }
+  19% {
+    transform: translateY(-7%) rotate(-6deg);
+  }
+  23% {
+    transform: translateY(-3%) rotate(5deg);
+  }
+  27% {
+    transform: translateY(-6%) rotate(-4deg);
+  }
+  32% {
+    transform: translateY(-2%) rotate(3deg);
+  }
+  38% {
+    transform: translateY(0) rotate(-1deg);
+  }
+}
+
+@keyframes alarm-buzz {
+  0%,
+  40%,
+  100% {
+    opacity: 0;
+  }
+  4%,
+  12%,
+  20%,
+  28% {
     opacity: 1;
   }
-  50% {
-    transform: scale(1.7);
-    opacity: 0.65;
+  8%,
+  16%,
+  24%,
+  32% {
+    opacity: 0.2;
   }
 }
 
-/* Each hour is one tick, snapping on with a small overshoot, like a clock's
-   hand; src/gimmicks.ts steps --to and --deg an hour at a time. */
-.card[data-live] .dial__fill {
-  stroke-dashoffset: var(--to);
-  transition: stroke-dashoffset 190ms cubic-bezier(0.34, 1.8, 0.64, 1);
+.card[data-live][data-gimmick='dial']:not([data-ticking]) .figure__value {
+  transform-origin: 50% 90%;
+  animation: alarm-ring 2.2s ease-in-out 120ms infinite;
 }
 
-.card[data-live] .dial__hand {
-  transform: rotate(var(--deg));
-  transition: transform 190ms cubic-bezier(0.34, 1.8, 0.64, 1);
+.card[data-live][data-gimmick='dial']:not([data-ticking]) .dial__buzz line {
+  animation: alarm-buzz 2.2s linear 120ms infinite;
 }
 
-/* The tip pulses once it has arrived. */
-.card[data-live]:not([data-ticking]) .dial__tip {
-  animation: dial-pulse 1.6s ease-in-out 200ms infinite;
+/* --- chatter's waveform: a voice note, loudest on the bigger mouth -------- */
+
+.wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  z-index: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5%;
+  height: 34vh;
+  padding: 0 var(--gutter);
+  transform: translateY(-58%);
+  pointer-events: none;
+  opacity: 0;
+}
+
+.wave__half {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 3px;
+  max-width: 24rem;
+}
+
+.wave__bar {
+  flex: 1;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--shape-b);
+  transform: scaleY(0.12);
+  transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.wave__half[data-side='0'] .wave__bar {
+  background: var(--track);
+}
+
+.card[data-live] .wave {
+  opacity: 1;
+  transition: opacity 600ms var(--ease-out) var(--delay-land);
+}
+
+/* --- typo: the unit and caption type out too ------------------------------ */
+
+[data-typed] {
+  position: relative;
+  width: fit-content;
+  justify-self: center;
+}
+
+.typo-ghost {
+  visibility: hidden;
+}
+
+.typo-live {
+  position: absolute;
+  inset: 0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.typo-live .caret {
+  height: 1em;
+  vertical-align: -0.15em;
 }
 
 /* --- giggle: laughing too hard to sit still ------------------------------ */
@@ -658,7 +788,7 @@
 
 /* --- Still ---------------------------------------------------------------
    Everything arrives in its final place and holds: the badges, laughs and
-   bubbles are there, the rope is already pulled, the dial already swept, the
+   bubbles are there, the scale already tipped, the clock at the hour, the
    keyboard at rest, and nothing buzzes, giggles, chatters or scrolls.
 --------------------------------------------------------------------------- */
 
@@ -669,17 +799,20 @@
 }
 
 :root[data-motion='off'] .card[data-live][data-gimmick] .figure__value,
-:root[data-motion='off'] .card[data-live] .dial__tip,
 :root[data-motion='off'] .card[data-live] .stream__col {
   animation: none;
 }
 
-:root[data-motion='off'] .card[data-live] .dial__fill,
 :root[data-motion='off'] .card[data-live] .dial__hand,
+:root[data-motion='off'] .card[data-live] .dial__minute,
 :root[data-motion='off'] .card[data-live] .dawn,
 :root[data-motion='off'] .card[data-live] .keys,
 :root[data-motion='off'] .card[data-live] .stream {
   transition: none;
+}
+
+:root[data-motion='off'] .card[data-live] .dial__buzz line {
+  animation: none;
 }
 
 :root[data-motion='off'] .dm__typing,
@@ -716,10 +849,6 @@
 
   .chatter {
     display: none;
-  }
-
-  .dial__fill {
-    stroke-dashoffset: var(--to);
   }
 
   .dial__hand {

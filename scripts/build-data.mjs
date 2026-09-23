@@ -329,7 +329,7 @@ function build(messages, config) {
           { label: herName, value: counts[her] },
           { label: himName, value: counts[him] },
         ],
-        caption: sheWroteMore ? "Somebody's a little obsessed." : "Somebody's me. It's me.",
+        caption: sheWroteMore ? "And you say you're bad at texting" : "Somebody's me. It's me.",
       },
       {
         kind: 'figure',
@@ -338,7 +338,7 @@ function build(messages, config) {
         value: totalWords,
         format: 'integer',
         unit: 'words',
-        caption: 'Typos included.',
+        caption: "— typo's included",
       },
       {
         kind: 'split',
@@ -373,7 +373,7 @@ function build(messages, config) {
         unit: streak === 1 ? 'day' : 'days',
         calendar: { start: streakStart, end: streakEnd },
         context: 'Days in a row without a gap.',
-        caption: "Can't get enough of me? Eh?",
+        caption: "Time flies when you're in love, doesn't it.",
       },
       {
         kind: 'greeting',

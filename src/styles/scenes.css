@@ -78,6 +78,53 @@
   animation: gstar-twinkle calc(2.2s + var(--i) * 0.23s) ease-in-out calc(var(--i) * -0.61s) infinite;
 }
 
+.gscene__shooting {
+  position: absolute;
+  inset: 0 0 45%;
+  transition: opacity 900ms var(--ease-out);
+}
+
+.card--greeting[data-greeting-state='day'] .gscene__shooting {
+  opacity: 0;
+}
+
+/* A streak with a bright head and a fading tail, travelling along its own
+   length down to the left, then gone for a long while. */
+.gshoot {
+  position: absolute;
+  top: calc(6% + var(--i) * 17%);
+  right: calc(4% + var(--i) * 21%);
+  width: 22vmin;
+  height: 2px;
+  border-radius: 2px;
+  /* impeccable-disable-next-line design-system-color */
+  background: linear-gradient(to right, #fff7d6, rgba(255, 247, 214, 0));
+  opacity: 0;
+  transform: rotate(-32deg) translateX(0);
+}
+
+@keyframes gshoot-fly {
+  0% {
+    opacity: 0;
+    transform: rotate(-32deg) translateX(0);
+  }
+  1.5% {
+    opacity: 1;
+  }
+  7% {
+    opacity: 0;
+    transform: rotate(-32deg) translateX(-55vmin);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-32deg) translateX(-55vmin);
+  }
+}
+
+.card[data-live] .gshoot {
+  animation: gshoot-fly calc(7s + var(--i) * 3.4s) ease-in calc(1.2s + var(--i) * 2.3s) infinite;
+}
+
 .gscene__clouds {
   position: absolute;
   inset: 0 0 40%;
@@ -291,12 +338,27 @@
   transition: opacity 700ms var(--ease-out) var(--delay-land);
 }
 
+/* The stage: a raised platform across the room, its front edge catching
+   the light. */
+.club__stage {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 19%;
+  height: 7%;
+  /* impeccable-disable-next-line design-system-color */
+  background: linear-gradient(to bottom, #3a2328 0, #3a2328 14%, #24151a 14%, #1a0f13);
+  box-shadow: 0 -2px 0 rgba(255, 214, 150, 0.22);
+}
+
+/* The mic, in the middle of the stage, standing on it. */
 .club__mic {
   position: absolute;
-  right: 9%;
-  bottom: 17%;
-  width: clamp(2.6rem, 11vw, 5rem);
+  left: 50%;
+  bottom: 26%;
+  width: clamp(2rem, 7vw, 3.6rem);
   height: auto;
+  translate: -50% 0;
 }
 
 /* impeccable-disable-next-line design-system-color */
@@ -336,9 +398,11 @@
   bottom: -6%;
 }
 
-/* A head and shoulders in silhouette. */
+/* A head and shoulders in silhouette. Block-level: inside its seat it is
+   no longer a flex item, and an inline box would ignore its size. */
 .club__person {
   position: relative;
+  display: block;
   width: clamp(3.4rem, 15vw, 7rem);
   height: clamp(4.2rem, 18vw, 8.5rem);
 }
@@ -378,8 +442,53 @@
   background: #0b0609;
 }
 
-.club__row--1 .club__person:nth-child(odd) {
+.club__row--1 .club__seat:nth-child(odd) {
   translate: 30% 0;
+}
+
+.club__seat {
+  position: relative;
+  display: block;
+}
+
+/* The chair back, seen from behind, in front of their shoulders, and its
+   legs. */
+.club__chair {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -6%;
+  height: 42%;
+  border-radius: 0.5rem 0.5rem 0.15rem 0.15rem;
+  /* impeccable-disable-next-line design-system-color */
+  background: #2c1a20;
+  box-shadow: inset 0 2px 0 rgba(255, 214, 150, 0.1);
+}
+
+.club__chair::before,
+.club__chair::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  width: 7%;
+  height: 40%;
+  /* impeccable-disable-next-line design-system-color */
+  background: #2c1a20;
+}
+
+.club__chair::before {
+  left: 12%;
+}
+
+.club__chair::after {
+  right: 12%;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.club__row--1 .club__chair,
+.club__row--1 .club__chair::before,
+.club__row--1 .club__chair::after {
+  background: #22141a;
 }
 
 /* --- The last card: warmth ------------------------------------------------ */
@@ -465,7 +574,8 @@
 :root[data-motion='off'] .card[data-live] .gstar,
 :root[data-motion='off'] .card[data-live] .gcloud,
 :root[data-motion='off'] .card--greeting[data-live] .word__letter,
-:root[data-motion='off'] .card[data-live] .warm__love {
+:root[data-motion='off'] .card[data-live] .warm__love,
+:root[data-motion='off'] .card[data-live] .gshoot {
   animation: none;
 }
 
