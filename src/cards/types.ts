@@ -124,6 +124,8 @@ export interface ClosingCard {
   kind: 'closing';
   text: string;
   author: string;
+  /** Every short "I love you" from the conversation, drifting up behind it. */
+  loves?: string[];
 }
 
 /** One side of GreetingCard — the word, its count, and what to say about it. */

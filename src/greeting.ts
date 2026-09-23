@@ -1,8 +1,10 @@
 /**
  * The one interactive card. A button flips it between two states — goodnight
- * by night, good morning by day — swapping the word, its count, the caption,
- * the shape and the whole palette together, on a brief fade through black
- * rather than a hard cut.
+ * by night, good morning by day. The picture is a pop-up book's night-and-day
+ * wheel (src/scenes.ts): the button turns it half a revolution, so the moon
+ * sets behind the hill as the sun comes up, while the skies crossfade and
+ * the colours shift with it (src/styles/scenes.css). The word, count and
+ * caption swap on a short fade of their own.
  *
  * Wired once, right after the card is built (see deck.ts), not on every
  * visit the way the count-ups and the first-message coda are: this is a
@@ -12,7 +14,6 @@
 import { paint, wordBlock } from './cards/render';
 import { fit } from './fit';
 import { GREETING_DAY, GREETING_NIGHT } from './palette';
-import { shapeLayer } from './shapes';
 import type { GreetingCard, GreetingSide } from './cards/types';
 
 function cssMs(name: string): number {
@@ -24,7 +25,7 @@ function cssMs(name: string): number {
 
 type Phase = 'night' | 'day';
 
-export function wireGreeting(root: HTMLElement, card: GreetingCard, index: number): void {
+export function wireGreeting(root: HTMLElement, card: GreetingCard): void {
   const shapesHolder = root.querySelector<HTMLElement>('[data-greeting-shapes]');
   const stack = root.querySelector<HTMLElement>('.card__stack');
   const wordHolder = root.querySelector<HTMLElement>('[data-greeting-word]');
@@ -40,7 +41,6 @@ export function wireGreeting(root: HTMLElement, card: GreetingCard, index: numbe
     const theme = next === 'night' ? GREETING_NIGHT : GREETING_DAY;
     paint(root, theme);
     root.dataset.greetingState = next;
-    shapesHolder.replaceChildren(shapeLayer(theme.shape, `${index}-${next}`));
     wordHolder.replaceChildren(wordBlock(side.word, side.value, side.unit));
     // fit() runs once at deck startup, over every [data-fit] element that
     // exists then — this word didn't exist yet, so its --fit-em would
@@ -68,26 +68,17 @@ export function wireGreeting(root: HTMLElement, card: GreetingCard, index: numbe
     const side = next === 'night' ? card.night : card.day;
     const dur = cssMs('--dur-greeting');
 
+    // The wheel, the skies and the colours turn at once, from the state
+    // attribute; only the words wait for the stack's fade to swap.
+    root.dataset.greetingState = next;
     if (dur <= 0) {
       apply(next, side);
       return;
     }
-
-    // Fade the shapes and the stack out, swap everything while they're
-    // hidden, fade back in — a transition, not an instant snap, without
-    // trying to animate a colour value directly (fragile across engines;
-    // this codebase has shipped that bug once already, see check-css.mjs).
-    // Never the card root itself: it sits in front of the previous card,
-    // which is still visible, only pushed aside, and fading the root would
-    // show it through.
-    shapesHolder.classList.add('greeting-fade');
     stack.classList.add('greeting-fade');
     window.setTimeout(() => {
       apply(next, side);
-      // Force a reflow so the class removal below re-triggers the transition
-      // instead of being coalesced with the addition above into a no-op.
-      void shapesHolder.offsetWidth;
-      shapesHolder.classList.remove('greeting-fade');
+      void stack.offsetWidth;
       stack.classList.remove('greeting-fade');
     }, dur / 2);
   });

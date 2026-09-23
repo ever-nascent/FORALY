@@ -2,6 +2,7 @@ import { formatInteger, formatValue } from '../format';
 import { GREETING_NIGHT, themeFor, tonesFor, type Theme } from '../palette';
 import { decorate } from '../gimmicks';
 import { monitorLayer } from '../monitor';
+import { greetingScene, warmScene } from '../scenes';
 import { shapeLayer } from '../shapes';
 import type { Card, FigureCard, GreetingCard, OpeningCard, SplitCard, WordCard } from './types';
 
@@ -298,7 +299,7 @@ function renderGreetingCard(card: GreetingCard, index: number, total: number): H
 
   const shapesHolder = el('div', undefined);
   shapesHolder.dataset.greetingShapes = '';
-  shapesHolder.append(shapeLayer(GREETING_NIGHT.shape, `${index}-night`));
+  shapesHolder.append(greetingScene());
   root.append(shapesHolder);
 
   const stack = el('div', 'card__stack');
@@ -340,6 +341,7 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
   root.setAttribute('aria-label', `${index + 1} of ${total}`);
   root.inert = true;
   paint(root, theme);
+  if (card.kind === 'closing') root.append(warmScene(card.loves ?? []));
   root.append(shapeLayer(theme.shape, String(index)));
 
   const stack = el('div', 'card__stack');
@@ -356,7 +358,9 @@ export function renderCard(card: Card, index: number, total: number): HTMLElemen
     if ('footnote' in card && card.footnote && card.gimmick !== 'chat') {
       foot.append(el('p', 'footnote', card.footnote));
     }
-    if (card.kind === 'quote') {
+    // The chat-style first message is enough on its own; the coda that
+    // counts the time since in ever-smaller units is for a plain quote.
+    if (card.kind === 'quote' && card.gimmick !== 'chat') {
       foot.append(elapsedSince(card.timestamp));
     }
     stack.append(foot);

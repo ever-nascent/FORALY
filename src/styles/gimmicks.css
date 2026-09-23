@@ -545,11 +545,30 @@
 }
 
 .card[data-live] .dm__typing {
-  animation: dm-typing 2s var(--ease-out) var(--delay-land) both;
+  animation: dm-typing 1.7s var(--ease-out) var(--delay-land) both;
 }
 
+/* The message's header arrives, and then its words type in (src/gimmicks.ts). */
 .card[data-live] .dm__message {
-  animation: dm-arrive 480ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 2s) both;
+  animation: dm-arrive 480ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 1.6s) both;
+}
+
+.dm .quote__text {
+  position: relative;
+}
+
+.dm__ghost {
+  visibility: hidden;
+}
+
+.dm__typed {
+  position: absolute;
+  inset: 0;
+}
+
+.dm__caret {
+  height: 1em;
+  vertical-align: -0.15em;
 }
 
 /* The message arrives whole, as a message does. */

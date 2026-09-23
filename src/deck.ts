@@ -85,7 +85,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   for (const [i, card] of cards.entries()) {
     if (card.kind !== 'greeting') continue;
     const node = nodes[i];
-    if (node) wireGreeting(node, card, i);
+    if (node) wireGreeting(node, card);
   }
 
   const segments = cards.map(() => {

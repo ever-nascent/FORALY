@@ -303,6 +303,7 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
     case 'heart': {
       const rising: [number, number, number][] = [
         [34, 90, 3.2], [45, 94, 2.4], [55, 91, 3.6], [64, 95, 2.6], [40, 97, 2.2], [60, 99, 3],
+        [28, 96, 2.8], [70, 92, 3.4], [50, 98, 2], [38, 93, 3.8], [58, 96, 2.3], [66, 99, 3.1],
       ];
       return [
         // Sat a little low, so its widest part — just under the lobes — is

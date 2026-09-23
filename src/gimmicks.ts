@@ -14,6 +14,7 @@
 
 import { beatWatcher, type SongClock } from './beat';
 import { formatClock } from './format';
+import { clubScene } from './scenes';
 import { currentMotion } from './motion';
 import type { Card, FigureCard, QuoteCard, SplitCard } from './cards/types';
 
@@ -243,6 +244,13 @@ function chat(head: HTMLElement, card: QuoteCard): void {
   body.append(meta, quote);
   message.append(el('span', 'dm__avatar', initial), body);
 
+  // The full message, invisible, holds the space; the typed copy sits on top.
+  const text = quote.querySelector<HTMLElement>('.quote__text');
+  if (text) {
+    const full = text.textContent ?? '';
+    text.replaceChildren(el('span', 'dm__ghost', full), el('span', 'dm__typed', full));
+  }
+
   dm.append(typing, message);
   head.append(dm);
 }
@@ -296,6 +304,7 @@ export function decorate(root: HTMLElement, card: Card): void {
       break;
     case 'giggle':
       if (card.kind === 'figure') laughs(root, card);
+      root.prepend(clubScene());
       break;
     case 'chat':
       if (card.kind === 'quote') chat(head, card);
@@ -686,9 +695,140 @@ function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): 
   };
 }
 
+/** The audience laughs on the beat: a few heads bob each time. */
+function mountGiggle(root: HTMLElement, songTime: SongClock): GimmickHandle {
+  const people = [...root.querySelectorAll<HTMLElement>('.club__person')];
+  if (people.length === 0 || currentMotion() === 'off') return { cancel() {} };
+  const rand = seeded(9);
+  const onBeat = beatWatcher(songTime);
+  let frame = 0;
+  let begun = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = now;
+    const wall = (now - begun) / 1000;
+    if (onBeat(wall)) {
+      for (const person of people) {
+        if (rand() > 0.55) continue;
+        const lift = 4 + rand() * 7;
+        person.animate(
+          [
+            { transform: 'translateY(0) rotate(0deg)' },
+            { transform: `translateY(-${lift}px) rotate(${(rand() - 0.5) * 8}deg)`, offset: 0.35 },
+            { transform: 'translateY(0) rotate(0deg)' },
+          ],
+          { duration: 420 + rand() * 200, delay: rand() * 120, easing: 'ease-out' }
+        );
+      }
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+    },
+  };
+}
+
+/** How long the typing indicator shows before the message starts arriving. */
+const CHAT_TYPING_MS = 1500;
+
+/** The first message types itself out, a character at a time, with a caret. */
+function mountChat(root: HTMLElement): GimmickHandle {
+  const typed = root.querySelector<HTMLElement>('.dm__typed');
+  const full = root.querySelector<HTMLElement>('.dm__ghost')?.textContent ?? '';
+  if (!typed || !full) return { cancel() {} };
+  const settle = (): void => {
+    typed.textContent = full;
+  };
+  if (currentMotion() === 'off') {
+    settle();
+    return { cancel: settle };
+  }
+  const caret = el('span', 'caret dm__caret');
+  caret.setAttribute('aria-hidden', 'true');
+  const shown = document.createTextNode('');
+  typed.replaceChildren(shown, caret);
+
+  const rand = seeded(23);
+  let at = 0;
+  let timer = 0;
+  const tick = (): void => {
+    at += 1;
+    shown.data = full.slice(0, at);
+    if (at >= full.length) {
+      caret.dataset.idle = '';
+      window.setTimeout(() => caret.remove(), 1600);
+      return;
+    }
+    const ch = full[at - 1] ?? '';
+    // A beat longer after punctuation, the way someone actually types.
+    const wait = /[.!?]/.test(ch) ? 260 : ch === ',' ? 140 : 14 + rand() * 22;
+    timer = window.setTimeout(tick, wait);
+  };
+  timer = window.setTimeout(tick, START_MS + CHAT_TYPING_MS);
+  return {
+    cancel() {
+      window.clearTimeout(timer);
+      settle();
+    },
+  };
+}
+
+/**
+ * The last card beats with the song: on each beat the heart gives a lub-dub
+ * and the warm glow behind it swells.
+ */
+function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
+  const hearts = [...root.querySelectorAll<SVGElement>('.shape[data-motion="fill"], .shape[data-motion="draw"]')];
+  const glow = root.querySelector<HTMLElement>('.warm__glow');
+  if (currentMotion() === 'off') return { cancel() {} };
+  const onBeat = beatWatcher(songTime);
+  let frame = 0;
+  let begun = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = now;
+    const wall = (now - begun) / 1000;
+    // Wait for the heart to finish drawing itself before it starts to beat.
+    if (onBeat(wall) && wall > 2.2) {
+      for (const heart of hearts) {
+        heart.animate(
+          [
+            { scale: '1' },
+            { scale: '1.07', offset: 0.14 },
+            { scale: '1', offset: 0.3 },
+            { scale: '1.04', offset: 0.44 },
+            { scale: '1', offset: 0.7 },
+            { scale: '1' },
+          ],
+          { duration: 760, easing: 'ease-out' }
+        );
+      }
+      glow?.animate(
+        [
+          { opacity: 0.75, scale: '1' },
+          { opacity: 1, scale: '1.08', offset: 0.2 },
+          { opacity: 0.75, scale: '1' },
+        ],
+        { duration: 820, easing: 'ease-out' }
+      );
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+    },
+  };
+}
+
 /** Starts a card's timed gimmick, if it has one. */
 export function mountGimmick(root: HTMLElement, card: Card, songTime: SongClock): GimmickHandle | null {
+  if (card.kind === 'closing') return mountWarm(root, songTime);
   if (!('gimmick' in card)) return null;
+  if (card.gimmick === 'giggle') return mountGiggle(root, songTime);
+  if (card.gimmick === 'chat') return mountChat(root);
   if (card.gimmick === 'buzz') return mountBuzz(root, songTime);
   if (card.gimmick === 'scale') {
     // Either unit: the minifier is free to turn 3400ms into 3.4s.

@@ -125,6 +125,35 @@ function plainText(content) {
 }
 
 /** A word is a run of letters, numbers or apostrophes. Links and mentions are not words. */
+/** Longest "I love you" message worth floating up the last card, in characters. */
+const LOVE_MAX_CHARS = 90;
+/** How many of them the last card carries, spread across the whole range. */
+const LOVE_LIMIT = 40;
+
+/**
+ * Every short message from either of them that says "I love you" (or "i love
+ * u", "love you so much", …), minus exact repeats, in the order they were
+ * sent — thinned evenly across the months if there are more than fit. The
+ * closing line itself is left out; it is already the card.
+ */
+function lovesFrom(rows, closing) {
+  const seen = new Set();
+  const found = [];
+  for (const row of rows) {
+    if (row.id === closing.id) continue;
+    const text = plainText(row.content).replace(/\s+/g, ' ').trim();
+    if (!text || text.length > LOVE_MAX_CHARS) continue;
+    if (!/\blove\s+(you|u|ya)\b/i.test(text)) continue;
+    const key = text.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    found.push(text);
+  }
+  if (found.length <= LOVE_LIMIT) return found;
+  const step = found.length / LOVE_LIMIT;
+  return Array.from({ length: LOVE_LIMIT }, (_, i) => found[Math.floor(i * step)]);
+}
+
 function words(content) {
   return plainText(content).match(/[\p{L}\p{N}][\p{L}\p{N}']*/gu) ?? [];
 }
@@ -422,6 +451,7 @@ function build(messages, config) {
         kind: 'closing',
         text: closing.content,
         author: herName,
+        loves: lovesFrom(rows, closing),
       },
     ],
   };

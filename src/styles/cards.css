@@ -1257,20 +1257,18 @@
   }
 }
 
+/* It draws and fills here; the beat itself comes on the song's heartbeat
+   (mountWarm in src/gimmicks.ts). */
 .card[data-live] .shape[data-motion='draw'] {
-  animation:
-    heart-draw 1.8s var(--ease-in-out) var(--delay-land) both,
-    heart-beat 1.7s ease-in-out calc(var(--delay-land) + 2.4s) infinite;
+  animation: heart-draw 1.8s var(--ease-in-out) var(--delay-land) both;
 }
 
 .card[data-live] .shape[data-motion='fill'] {
-  animation:
-    heart-fill 1.2s var(--ease-out) calc(var(--delay-land) + 1.3s) both,
-    heart-beat 1.7s ease-in-out calc(var(--delay-land) + 2.4s) infinite;
+  animation: heart-fill 1.2s var(--ease-out) calc(var(--delay-land) + 1.3s) both;
 }
 
 .card[data-live] .shape[data-motion='rise'] {
-  animation: heart-rise 6s var(--ease-in-out) calc(var(--delay-land) + 2s + var(--i) * 1.1s) infinite;
+  animation: heart-rise 6s var(--ease-in-out) calc(var(--delay-land) + 1.6s + var(--i) * 0.5s) infinite;
 }
 
 /* Her line, a word at a time, as if she were saying it. */

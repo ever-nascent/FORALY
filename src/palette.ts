@@ -99,12 +99,15 @@ export const THEMES: Theme[] = [
   { name: 'teal',     ground: '#0b3b3c', glow: '#265151', ink: '#ff8a6b', quiet: '#bfd8d6', faint: '#b4cfcd', accent: '#ff8a6b', shape: 'plain',  align: 'center' },
   { name: 'cobalt',   ground: '#1b37c4', glow: '#344dca', ink: '#fff3e4', quiet: '#dce2ff', faint: '#d2daff', accent: '#dfff6b', shape: 'calendar', align: 'start' },
   { name: 'hers',     ground: '#f3d9d7', glow: '#f4dbd9', ink: '#2e1638', quiet: '#61414c', faint: '#6e4a56', accent: '#8a6224', shape: 'blob',   align: 'center' },
-  { name: 'marigold', ground: '#ffb020', glow: '#ffb42b', ink: '#2e1638', quiet: '#4a360d', faint: '#553f18', accent: '#2e1638', shape: 'burst',  align: 'center' },
+  // A comedy club after dark: deep plum-brown walls, warm cream under the
+  // spotlight, marigold for the one bright thing.
+  { name: 'marigold', ground: '#1e1219', glow: '#4a2c33', ink: '#ffe7c2', quiet: '#ecd2b2', faint: '#d9ba98', accent: '#ffb020', shape: 'plain',  align: 'center' },
   { name: 'bone',     ground: '#fff3e4', glow: '#fff4e5', ink: '#17121c', quiet: '#5a5048', faint: '#726557', accent: '#d63b28', shape: 'halo',   align: 'center' },
   { name: 'night',    ground: '#0e0b14', glow: '#29262e', ink: '#e8b84b', quiet: '#b3a48c', faint: '#a4957a', accent: '#e8b84b', shape: 'moon',   align: 'end'    },
   { name: 'crimson',  ground: '#9c0f31', glow: '#a72948', ink: '#ffd9e8', quiet: '#fccedb', faint: '#f9c6d5', accent: '#dfff6b', shape: 'plain',  align: 'center' },
   { name: 'slate',    ground: '#3a4a52', glow: '#505e65', ink: '#fff3e4', quiet: '#d3dcdf', faint: '#cbd6d9', accent: '#ffa98f', shape: 'sparse', align: 'start'  },
-  { name: 'rose',     ground: '#e8a0a8', glow: '#e9a5ac', ink: '#2e1638', quiet: '#4a2630', faint: '#573039', accent: '#5e2f24', shape: 'heart',  align: 'center' },
+  // Deep rose for the heart's outline: warm, where the old brown read cold.
+  { name: 'rose',     ground: '#e8a0a8', glow: '#e9a5ac', ink: '#2e1638', quiet: '#4a2630', faint: '#573039', accent: '#9b2745', shape: 'heart',  align: 'center' },
   // Every card now carries an explicit `theme` pin (see build-data.mjs), so
   // this array is really a lookup table by name more than a cycled arc.
   // Added after `rose` rather than resorting the list to keep it first —
