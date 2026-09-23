@@ -316,7 +316,7 @@ function build(messages, config) {
         // Its own theme now — sound waves aimed one way, not the rays
         // borrowed from "laughs" this used to repeat.
         theme: 'fuchsia',
-        gimmick: 'balloons',
+        gimmick: 'chatter',
         format: 'integer',
         sides: [
           { label: herName, value: wordCounts[her] },

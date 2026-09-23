@@ -23,7 +23,7 @@ export interface Meta {
  *   buzz       the number vibrates like a phone, notification badges pop
  *   tug        a tug-of-war rope under a split, pulled toward the winner
  *   typo       the number is typed out, with a typo fixed on the way
- *   balloons   each side of a split in a speech balloon sized by its share
+ *   chatter    speech bubbles pop out of each side on the beat, by its share
  *   dial       a 24-hour dial round a clock figure, swept to the hour
  *   giggle     the number shakes with laughter, laughs pop out around it
  *   chat       a quote arrives as a message: typing, then the message
@@ -34,7 +34,7 @@ export type Gimmick =
   | 'buzz'
   | 'tug'
   | 'typo'
-  | 'balloons'
+  | 'chatter'
   | 'dial'
   | 'giggle'
   | 'chat'

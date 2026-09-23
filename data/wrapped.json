@@ -60,7 +60,7 @@
     {
       "kind": "split",
       "theme": "fuchsia",
-      "gimmick": "balloons",
+      "gimmick": "chatter",
       "format": "integer",
       "sides": [
         {

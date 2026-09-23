@@ -90,7 +90,7 @@ export function tonesFor(theme: Theme): Tones {
 export const THEMES: Theme[] = [
   { name: 'curtain',  ground: '#17121c', glow: '#312c35', ink: '#fff3e4', quiet: '#c9bbd1', faint: '#a697b0', accent: '#e8b84b', shape: 'rings',  align: 'center' },
   { name: 'voltage',  ground: '#2e1638', glow: '#45304e', ink: '#d9ff5c', quiet: '#c6b4d6', faint: '#b9a8cb', accent: '#d9ff5c', shape: 'plain',  align: 'center' },
-  { name: 'acid',     ground: '#dfff6b', glow: '#e1ff72', ink: '#2e1638', quiet: '#4a2a5c', faint: '#5e3b72', accent: '#2e1638', shape: 'bars',   align: 'end'    },
+  { name: 'acid',     ground: '#dfff6b', glow: '#e1ff72', ink: '#2e1638', quiet: '#4a2a5c', faint: '#5e3b72', accent: '#2e1638', shape: 'plain',  align: 'end'    },
   // Dusk: one evening's colours — navy-plum, cream, blush, dusty rose and
   // mauve — so the tug-of-war reads as one picture rather than competing hues.
   // Blush rather than gold for the accent: gold was too harsh against the rest.

@@ -1,10 +1,11 @@
 /**
  * Each card's own trick. `decorate` adds whatever extra markup a gimmick
  * needs when the card is built; the CSS in cards.css does most of the rest.
- * Four are timed from here instead. `typo` types the figure out and fixes a
- * mistake on the way; `flipclock` rolls a clock forward through the night;
- * `buzz` and `tug` move on the song's beat (src/beat.ts), so the phone goes
- * off and the rope gets yanked in time with the music. `mountGimmick` starts
+ * Most are timed from here instead. `typo` types the figure out on its
+ * keyboard and fixes a mistake on the way; `flipclock` rolls a clock forward
+ * through the night; `dial` ticks round an hour at a time; `buzz`, `tug` and
+ * `chatter` move on the song's beat (src/beat.ts), so the phone goes off,
+ * the rope gets yanked and the mouths run in time with the music. `mountGimmick` starts
  * those when the card comes up, and hands back a way to stop them.
  *
  * Every string placed here comes from the data or is fixed decoration, and
@@ -98,19 +99,38 @@ function tug(head: HTMLElement, card: SplitCard): void {
   split?.after(rope);
 }
 
-/** Each side's balloon, inflated by its share; the bigger mouth wobbles. */
-function balloons(head: HTMLElement, card: SplitCard): void {
-  const [a, b] = card.sides;
-  const most = Math.max(a.value, b.value, 1);
-  const sides = head.querySelectorAll<HTMLElement>('.split__side');
-  for (const [i, side] of [...sides].entries()) {
-    const value = i === 0 ? a.value : b.value;
-    const share = value / most;
-    // Never smaller than the number it holds: the winner over-inflates, the
-    // other stays snug round its own figure.
-    const size = share >= 1 ? 1.16 : 0.92 + 0.08 * share ** 2;
-    side.style.setProperty('--balloon', size.toFixed(3));
-    if (share >= 1 && a.value !== b.value) side.dataset.bigger = '';
+/** The keyboard the figure is typed on. Each key knows the character it types. */
+const KEY_ROWS: string[][] = [
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '⌫'],
+  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.'],
+  [' '],
+];
+
+function keyboard(root: HTMLElement): void {
+  const board = el('div', 'keys');
+  board.setAttribute('aria-hidden', 'true');
+  for (const row of KEY_ROWS) {
+    const line = el('div', 'keys__row');
+    for (const k of row) {
+      const key = el('span', 'key', k === ' ' ? '' : k);
+      key.dataset.key = k;
+      if (k === '⌫') key.dataset.wide = '';
+      if (k === ' ') key.dataset.space = '';
+      line.append(key);
+    }
+    board.append(line);
+  }
+  root.prepend(board);
+}
+
+/** Where the chatter bubbles rise from, one layer per side. */
+function chatterLayer(head: HTMLElement): void {
+  for (const side of head.querySelectorAll<HTMLElement>('.split__side')) {
+    const layer = el('span', 'chatter');
+    layer.setAttribute('aria-hidden', 'true');
+    side.append(layer);
   }
 }
 
@@ -229,8 +249,8 @@ export function decorate(root: HTMLElement, card: Card): void {
     case 'tug':
       if (card.kind === 'split') tug(head, card);
       break;
-    case 'balloons':
-      if (card.kind === 'split') balloons(head, card);
+    case 'chatter':
+      chatterLayer(head);
       break;
     case 'dial':
       if (card.kind === 'figure' && value) dial(value, card);
@@ -248,6 +268,7 @@ export function decorate(root: HTMLElement, card: Card): void {
       dawn(root);
       break;
     case 'typo':
+      keyboard(root);
       break;
   }
 }
@@ -303,6 +324,12 @@ function mountTypo(root: HTMLElement): GimmickHandle {
   const rand = seeded(154);
   let timer = 0;
   let at = 0;
+  const press = (k: string): void => {
+    const cap = root.querySelector<HTMLElement>(`.key[data-key="${k === ',' ? ',' : k}"]`);
+    if (!cap) return;
+    cap.dataset.down = '';
+    window.setTimeout(() => delete cap.dataset.down, 130);
+  };
   const tick = (): void => {
     const key = keys[at];
     at += 1;
@@ -310,6 +337,7 @@ function mountTypo(root: HTMLElement): GimmickHandle {
       caret.dataset.idle = '';
       return;
     }
+    if (key !== 'pause') press(key ?? '⌫');
     if (key === null) text.textContent = (text.textContent ?? '').slice(0, -1);
     else if (key !== 'pause') text.textContent = (text.textContent ?? '') + key;
     if (key !== 'pause') live.animate([{ transform: 'translateY(0.015em)' }, { transform: 'none' }], 90);
@@ -514,12 +542,145 @@ function mountTug(root: HTMLElement, songTime: SongClock): GimmickHandle {
   };
 }
 
+/**
+ * The dial ticks round like a clock: the hand jumps an hour at a time from
+ * midnight, the figure counts the hours with it, and it stops on the hour.
+ */
+function mountDial(root: HTMLElement, card: FigureCard): GimmickHandle {
+  const fill = root.querySelector<SVGElement>('.dial__fill');
+  const hand = root.querySelector<SVGElement>('.dial__hand');
+  const live = root.querySelector<HTMLElement>('.figure__live');
+  const unit = root.querySelector<HTMLElement>('.figure__unit');
+  const hours = Math.round(card.value / 60);
+  const final = formatClock(card.value);
+  const settle = (): void => {
+    for (const part of [fill, hand]) part?.style.removeProperty('transition');
+    fill?.style.setProperty('--to', String(24 - card.value / 60));
+    hand?.style.setProperty('--deg', `${(card.value / 60) * 15}deg`);
+    if (live) live.textContent = final.text;
+    if (unit) unit.textContent = final.suffix ?? '';
+  };
+  if (!fill || !hand || !live || currentMotion() === 'off') {
+    settle();
+    return { cancel: settle };
+  }
+
+  const show = (h: number): void => {
+    fill.style.setProperty('--to', String(24 - h));
+    hand.style.setProperty('--deg', `${h * 15}deg`);
+    const t = formatClock(h * 60);
+    live.textContent = t.text;
+    if (unit) unit.textContent = t.suffix ?? '';
+  };
+
+  // Start at midnight without sweeping back there.
+  for (const part of [fill, hand]) part.style.transition = 'none';
+  show(0);
+  void fill.getBoundingClientRect();
+  for (const part of [fill, hand]) part.style.removeProperty('transition');
+  root.dataset.ticking = '';
+
+  let h = 0;
+  let timer = 0;
+  const TICK_MS = 230;
+  const tick = (): void => {
+    h += 1;
+    show(h);
+    live.animate([{ transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 180, easing: 'ease-out' });
+    if (h < hours) timer = window.setTimeout(tick, TICK_MS);
+    else delete root.dataset.ticking;
+  };
+  timer = window.setTimeout(tick, START_MS + 200);
+
+  return {
+    cancel() {
+      window.clearTimeout(timer);
+      delete root.dataset.ticking;
+      settle();
+    },
+  };
+}
+
+/** Horizontal starting points round the left number, in px — leaning in
+ *  toward the middle so a bubble never runs off the screen's edge. The right
+ *  number uses the same lanes mirrored. */
+const LANES = [-40, 25, 65, -10];
+
+/** Filler, not quotes: what a mouth running sounds like. */
+const CHATTER = ['omg', 'wait', 'anyway', 'ok but', 'listen', 'lol', 'no bc', 'literally', 'hear me out', 'and then', 'blah', 'so'];
+
+/**
+ * Speech bubbles pop out of each side on every beat — as many as that side's
+ * share of the words, exaggerated so the bigger mouth plainly talks more.
+ */
+function mountChatter(root: HTMLElement, card: SplitCard, songTime: SongClock): GimmickHandle {
+  const layers = [...root.querySelectorAll<HTMLElement>('.chatter')];
+  if (layers.length < 2 || currentMotion() === 'off') return { cancel() {} };
+  const most = Math.max(card.sides[0].value, card.sides[1].value, 1);
+  const rates = card.sides.map((side) => Math.max(0.6, 3 * (side.value / most) ** 6));
+  const owed = [0, 0];
+  const lanes = [0, 2];
+  const rand = seeded(118);
+  let said = 0;
+  const onBeat = beatWatcher(songTime);
+
+  const pop = (layer: HTMLElement, i: number, delay: number): void => {
+    const bubble = el('span', 'chat-bubble', CHATTER[said % CHATTER.length]);
+    said += 1;
+    if (i === 1) bubble.dataset.side = 'right';
+    // Each side takes its lanes in turn, so neighbours never start on top of
+    // one another; a little jitter keeps it from looking like a grid.
+    const lane = LANES[(lanes[i] = ((lanes[i] ?? 0) + 1) % LANES.length)] ?? 0;
+    const x = Math.round((i === 0 ? lane : -lane) + (rand() - 0.5) * 14);
+    const rise = 70 + rand() * 90;
+    layer.append(bubble);
+    const run = bubble.animate(
+      [
+        { opacity: 0, transform: `translate(${x}px, 0) scale(0.5)` },
+        { opacity: 1, transform: `translate(${x}px, -${rise * 0.3}px) scale(1)`, offset: 0.18 },
+        { opacity: 1, transform: `translate(${x}px, -${rise * 0.75}px) scale(1)`, offset: 0.7 },
+        { opacity: 0, transform: `translate(${x}px, -${rise}px) scale(0.95)` },
+      ],
+      { duration: 1900, delay, easing: 'ease-out', fill: 'both' }
+    );
+    run.onfinish = () => bubble.remove();
+  };
+
+  let frame = 0;
+  let begun = 0;
+  const step = (now: number): void => {
+    if (begun === 0) begun = now;
+    const wall = (now - begun) / 1000;
+    if (onBeat(wall) && wall * 1000 > START_MS) {
+      for (const [i, layer] of layers.entries()) {
+        owed[i] = (owed[i] ?? 0) + (rates[i] ?? 0);
+        let n = 0;
+        while ((owed[i] ?? 0) >= 1) {
+          owed[i] = (owed[i] ?? 0) - 1;
+          pop(layer, i, n * 230);
+          n += 1;
+        }
+      }
+    }
+    frame = requestAnimationFrame(step);
+  };
+  frame = requestAnimationFrame(step);
+  return {
+    cancel() {
+      cancelAnimationFrame(frame);
+      for (const layer of layers) layer.replaceChildren();
+    },
+  };
+}
+
 /** Starts a card's timed gimmick, if it has one. */
 export function mountGimmick(root: HTMLElement, card: Card, songTime: SongClock): GimmickHandle | null {
   if (!('gimmick' in card)) return null;
   if (card.gimmick === 'buzz') return mountBuzz(root, songTime);
   if (card.gimmick === 'tug') return mountTug(root, songTime);
   if (card.gimmick === 'typo') return mountTypo(root);
+  if (card.gimmick === 'dial' && card.kind === 'figure') return mountDial(root, card);
+  if (card.gimmick === 'chatter' && card.kind === 'split') return mountChatter(root, card, songTime);
   if (card.gimmick === 'flipclock' && card.kind === 'figure') return mountFlipclock(root, card);
   return null;
 }

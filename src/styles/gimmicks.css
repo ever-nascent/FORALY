@@ -123,63 +123,40 @@
   transform: translateX(var(--pull-rope));
 }
 
-/* --- balloons: who has the bigger mouth ---------------------------------- */
+/* --- chatter: who has the bigger mouth ----------------------------------- */
 
-.card[data-gimmick='balloons'] .split__seam {
-  visibility: hidden;
-}
-
-.card[data-gimmick='balloons'] .split__side {
+.card[data-gimmick='chatter'] .split__side {
   position: relative;
-  isolation: isolate;
-  padding: 1.1rem 0.5rem 0.95rem;
 }
 
-.card[data-gimmick='balloons'] .split__side::before {
-  content: '';
+/* The bubbles rise out of the top of each number; src/gimmicks.ts adds them
+   on the beat and they remove themselves once they have faded. */
+.chatter {
   position: absolute;
-  inset: -0.2rem -0.45rem;
-  z-index: -1;
-  border: 2px solid var(--edge);
-  border-radius: 1.6rem;
+  left: 50%;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.chat-bubble {
+  position: absolute;
+  left: 0;
+  bottom: 0.3rem;
+  padding: 0.35em 0.7em 0.4em;
+  translate: -50% 0;
+  border-radius: 1em 1em 1em 0.25em;
   background: var(--shape-b);
+  border: 1.5px solid var(--edge);
+  color: var(--ink);
+  font: 600 clamp(0.72rem, 3vw, 1.15rem) / 1 var(--face-text);
+  white-space: nowrap;
   opacity: 0;
-  scale: 0.3;
 }
 
-/* Clear of the balloons, which spill past their boxes as they inflate. */
-.card[data-gimmick='balloons'] [data-split-wrap] > .footnote {
-  margin-top: 1.4rem;
-}
-
-/* A chat bubble's flat corner, pointing to whoever is talking. */
-.card[data-gimmick='balloons'] .split__side:first-child::before {
-  border-bottom-left-radius: 0.35rem;
-}
-
-.card[data-gimmick='balloons'] .split__side:last-child::before {
-  border-bottom-right-radius: 0.35rem;
-}
-
-@keyframes balloon-wobble {
-  from {
-    rotate: -1.6deg;
-  }
-  to {
-    rotate: 2deg;
-  }
-}
-
-.card[data-live][data-gimmick='balloons'] .split__side::before {
-  opacity: 1;
-  scale: var(--balloon);
-  transition:
-    scale 1.7s cubic-bezier(0.34, 1.56, 0.64, 1) var(--delay-land),
-    opacity 300ms var(--ease-out) var(--delay-land);
-}
-
-.card[data-live][data-gimmick='balloons'] .split__side[data-bigger]::before {
-  animation: balloon-wobble 1.7s ease-in-out calc(var(--delay-land) + 1.8s) infinite alternate;
+.chat-bubble[data-side='right'] {
+  border-radius: 1em 1em 0.25em 1em;
 }
 
 /* --- typo: typed out, with a mistake on the way -------------------------- */
@@ -207,6 +184,68 @@
 
 .caret[data-idle] {
   animation: caret-blink 1.05s steps(1, end) infinite;
+}
+
+/* The keyboard it is typed on, filling the top of the frame above the
+   figure. Keys go down as the figure is typed (src/gimmicks.ts). */
+.keys {
+  position: absolute;
+  top: calc(4.2rem + var(--ceiling));
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  gap: clamp(0.3rem, 1.2vh, 0.55rem);
+  width: min(calc(100% - 2 * var(--gutter)), 38rem);
+  transform: translateX(-50%) perspective(900px) rotateX(16deg);
+  transform-origin: 50% 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.keys__row {
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.25rem, 1.2vw, 0.5rem);
+}
+
+.key {
+  display: grid;
+  flex: 1 1 0;
+  place-items: center;
+  max-width: 3.4rem;
+  height: clamp(2rem, 5.6vh, 3.1rem);
+  border: 2px solid var(--track);
+  border-radius: 0.5rem;
+  box-shadow: 0 3px 0 var(--track);
+  color: var(--faint);
+  font: 600 clamp(0.72rem, 2.8vw, 1rem) / 1 var(--face-text);
+  text-transform: uppercase;
+  transition:
+    transform 70ms ease-out,
+    box-shadow 70ms ease-out,
+    background-color 70ms ease-out;
+}
+
+.key[data-wide] {
+  flex-grow: 1.6;
+  max-width: 5.4rem;
+}
+
+.key[data-space] {
+  flex: 0 0 55%;
+  max-width: none;
+}
+
+.key[data-down] {
+  background: var(--shape-b);
+  box-shadow: 0 0 0 var(--track);
+  color: var(--ink);
+  transform: translateY(3px);
+}
+
+.card[data-live] .keys {
+  opacity: 1;
+  transition: opacity 500ms var(--ease-out) var(--delay-land);
 }
 
 /* --- dial: the whole day, and the hour it lands on ----------------------- */
@@ -283,18 +322,21 @@
   }
 }
 
+/* Each hour is one tick, snapping on with a small overshoot, like a clock's
+   hand; src/gimmicks.ts steps --to and --deg an hour at a time. */
 .card[data-live] .dial__fill {
   stroke-dashoffset: var(--to);
-  transition: stroke-dashoffset 1.9s cubic-bezier(0.65, 0, 0.35, 1) var(--delay-land);
+  transition: stroke-dashoffset 190ms cubic-bezier(0.34, 1.8, 0.64, 1);
 }
 
 .card[data-live] .dial__hand {
   transform: rotate(var(--deg));
-  transition: transform 1.9s cubic-bezier(0.65, 0, 0.35, 1) var(--delay-land);
+  transition: transform 190ms cubic-bezier(0.34, 1.8, 0.64, 1);
 }
 
-.card[data-live] .dial__tip {
-  animation: dial-pulse 1.6s ease-in-out calc(var(--delay-land) + 2s) infinite;
+/* The tip pulses once it has arrived. */
+.card[data-live]:not([data-ticking]) .dial__tip {
+  animation: dial-pulse 1.6s ease-in-out 200ms infinite;
 }
 
 /* --- giggle: laughing too hard to sit still ------------------------------ */
@@ -599,8 +641,8 @@
 
 /* --- Still ---------------------------------------------------------------
    Everything arrives in its final place and holds: the badges, laughs and
-   bubbles are there, the rope is already pulled, the balloons already full,
-   the dial already swept, and nothing buzzes, giggles or scrolls.
+   bubbles are there, the rope is already pulled, the dial already swept, the
+   keyboard at rest, and nothing buzzes, giggles, chatters or scrolls.
 --------------------------------------------------------------------------- */
 
 :root[data-motion='off'] .card[data-live] .badge,
@@ -610,16 +652,15 @@
 }
 
 :root[data-motion='off'] .card[data-live][data-gimmick] .figure__value,
-:root[data-motion='off'] .card[data-live] .split__side::before,
 :root[data-motion='off'] .card[data-live] .dial__tip,
 :root[data-motion='off'] .card[data-live] .stream__col {
   animation: none;
 }
 
-:root[data-motion='off'] .card[data-live] .split__side::before,
 :root[data-motion='off'] .card[data-live] .dial__fill,
 :root[data-motion='off'] .card[data-live] .dial__hand,
 :root[data-motion='off'] .card[data-live] .dawn,
+:root[data-motion='off'] .card[data-live] .keys,
 :root[data-motion='off'] .card[data-live] .stream {
   transition: none;
 }
@@ -656,9 +697,12 @@
     left: calc(50% + var(--pull));
   }
 
-  .card[data-gimmick='balloons'] .split__side::before {
+  .keys {
     opacity: 1;
-    scale: var(--balloon);
+  }
+
+  .chatter {
+    display: none;
   }
 
   .dial__fill {
