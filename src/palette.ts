@@ -112,7 +112,9 @@ export const THEMES: Theme[] = [
   // this array is really a lookup table by name more than a cycled arc.
   // Added after `rose` rather than resorting the list to keep it first —
   // CLOSING below finds it by name, not position, so this is safe.
-  { name: 'fuchsia',  ground: '#a81863', glow: '#c02a72', ink: '#fff3e4', quiet: '#f4d9ea', faint: '#f0cade', accent: '#eafd6b', shape: 'plain', align: 'center' },
+  // An open dictionary: dark ink on cream paper, a leather cover showing at
+  // the edges (the ground), a dictionary's red for the one accent.
+  { name: 'dictionary', ground: '#4a2e24', glow: '#5a3a2e', ink: '#2b1a12', quiet: '#4f3a2b', faint: '#654b39', accent: '#9a2f33', shape: 'plain', align: 'center' },
 ];
 
 /**
@@ -150,7 +152,7 @@ export const GREETING_DAY: Theme = {
 };
 
 // By name, not position — `rose` no longer has to stay the array's last
-// entry for this to find it, so a theme can be added after it (as `fuchsia`
+// entry for this to find it, so a theme can be added after it (as `dictionary`
 // is, below) without silently reassigning the closing card's colour.
 const CLOSING = THEMES.find((theme) => theme.name === 'rose') as Theme;
 

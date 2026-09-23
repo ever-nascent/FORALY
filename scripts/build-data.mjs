@@ -344,7 +344,7 @@ function build(messages, config) {
         kind: 'split',
         // Its own theme now — sound waves aimed one way, not the rays
         // borrowed from "laughs" this used to repeat.
-        theme: 'fuchsia',
+        theme: 'dictionary',
         gimmick: 'chatter',
         format: 'integer',
         sides: [

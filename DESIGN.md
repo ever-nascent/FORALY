@@ -131,7 +131,7 @@ breath of bone for the first message she ever sent, the small hours in gold on
 black, and back to her rose to close. The last card always gets the rose —
 that ending is the point, not a position in a list.
 
-A fourteenth, fuchsia, was added later for the Real Yapper card, which the
+A fourteenth, dictionary (ink on paper, originally fuchsia), was added later for the Real Yapper card, which the
 original thirteen-card arc never accounted for — every card now carries an
 explicit `theme` pin (see Shapes below) rather than one being picked by
 position, so the array is closer to a lookup table by name today than a

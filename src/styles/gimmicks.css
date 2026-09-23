@@ -399,60 +399,138 @@
   animation: alarm-buzz 2.2s linear 120ms infinite;
 }
 
-/* --- chatter's dictionary page ------------------------------------------- */
+/* --- chatter's dictionary: an open book filling the card ----------------- */
 
-/* A page of entries behind the two numbers, faint enough to read past, with
-   a highlighter sweeping each headword in turn. */
-.dict {
+/* The cover shows at the edges as the card's ground; the pages sit on it. */
+.book {
   position: absolute;
-  inset: calc(3.2rem + var(--ceiling)) var(--gutter) calc(4rem + var(--floor));
+  inset: calc(1.7rem + var(--ceiling)) 0.6rem calc(0.9rem + var(--floor));
   z-index: 0;
-  columns: 2 15rem;
-  column-gap: 2.2rem;
-  column-rule: 1px solid var(--track);
-  color: var(--ink);
-  font-size: clamp(0.72rem, 2.9vw, 0.95rem);
-  line-height: 1.35;
-  opacity: 0;
-  overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent);
-  mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
 
-.dict__head {
+/* The page block's edges, stacked to the right and below. */
+.book__edges {
+  position: absolute;
+  inset: 5px 0 0 5px;
+  border-radius: 3px 8px 8px 3px;
+  /* impeccable-disable-next-line design-system-color */
+  background: repeating-linear-gradient(to right, #e7d9bd 0 1px, #f1e6cf 1px 3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.book__page {
+  position: absolute;
+  inset: 0 7px 7px 0;
+  overflow: hidden;
+  padding: 1.6rem 1.1rem 2.2rem 1.5rem;
+  border-radius: 2px 6px 6px 2px;
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    linear-gradient(to right, rgba(60, 35, 20, 0.22), rgba(60, 35, 20, 0) 7%),
+    radial-gradient(ellipse at 60% 40%, #f7eedc, #efe2c8 85%);
+  color: var(--faint);
+  font-size: clamp(0.6rem, 2.45vw, 0.88rem);
+  line-height: 1.32;
+}
+
+/* On a wide screen, a two-page spread with the spine down the middle. */
+@media (min-width: 60rem) {
+  .book__page {
+    padding-inline: 2.4rem;
+    /* impeccable-disable-next-line design-system-color */
+    background:
+      linear-gradient(
+        to right,
+        rgba(60, 35, 20, 0.12),
+        rgba(60, 35, 20, 0) 4%,
+        rgba(60, 35, 20, 0) 46%,
+        rgba(60, 35, 20, 0.24) 50%,
+        rgba(60, 35, 20, 0) 54%,
+        rgba(60, 35, 20, 0) 96%,
+        rgba(60, 35, 20, 0.12)
+      ),
+      radial-gradient(ellipse at 50% 40%, #f7eedc, #efe2c8 85%);
+  }
+
+  /* One column to a page, set larger so the spread reads full. */
+  .book__page {
+    font-size: 1.05rem;
+  }
+
+  .book__columns {
+    columns: 2;
+    column-gap: 4.8rem;
+    column-rule: none;
+  }
+}
+
+.book__head {
   display: flex;
   justify-content: space-between;
-  column-span: all;
-  margin: 0 0 0.9em;
-  padding-bottom: 0.35em;
+  margin: 0 0 0.8em;
+  padding-bottom: 0.3em;
   border-bottom: 1px solid var(--track);
+  color: var(--quiet);
   font-family: var(--face-display);
-  font-size: 1.15em;
+  font-size: 1.2em;
   letter-spacing: 0.04em;
 }
 
+.book__columns {
+  columns: 2;
+  column-gap: 1.2rem;
+  column-rule: 1px solid var(--track);
+  opacity: 0.45;
+}
+
+/* A patch of clean paper behind the numbers and the caption, so they read
+   off the page rather than through it. */
+.card[data-gimmick='chatter'] .card__stack::before {
+  content: '';
+  position: absolute;
+  inset: -12% -8%;
+  z-index: -1;
+  /* impeccable-disable-next-line design-system-color */
+  background: radial-gradient(closest-side, rgba(245, 236, 218, 0.97) 55%, rgba(245, 236, 218, 0));
+  pointer-events: none;
+}
+
+.book__folio {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.7rem;
+  margin: 0;
+  color: var(--quiet);
+  font-family: var(--face-display);
+  text-align: center;
+  opacity: 0.7;
+}
+
 .dict__entry {
-  margin: 0 0 1.05em;
+  margin: 0 0 0.7em;
   break-inside: avoid;
   text-align: left;
 }
 
 .dict__word {
   position: relative;
+  z-index: 0;
+  color: var(--ink);
   font-family: var(--face-display);
-  font-size: 1.45em;
-  letter-spacing: -0.01em;
+  font-size: 1.35em;
 }
 
-/* The highlighter stroke, drawn under the word. */
-.dict__word::before {
+/* A pink highlighter stroke under the word. */
+.dict__word[data-mark]::before {
   content: '';
   position: absolute;
-  inset: 0.28em -0.15em 0.02em;
+  inset: 0.3em -0.15em 0.05em;
   z-index: -1;
   border-radius: 0.15em;
-  background: var(--ink);
+  /* impeccable-disable-next-line design-system-color */
+  background: #f3a3b5;
   opacity: 0;
   transform: scaleX(0);
   transform-origin: 0 50%;
@@ -461,41 +539,54 @@
 .dict__sound,
 .dict__part {
   font-style: italic;
-  color: var(--quiet);
+}
+
+.dict__part {
+  color: var(--accent);
 }
 
 @keyframes dict-highlight {
   0% {
-    opacity: 0.55;
+    opacity: 0.9;
     transform: scaleX(0);
   }
-  3% {
-    opacity: 0.55;
+  4% {
+    opacity: 0.9;
     transform: scaleX(1);
   }
-  9% {
-    opacity: 0.55;
+  13% {
+    opacity: 0.9;
     transform: scaleX(1);
   }
-  12%,
+  17%,
   100% {
     opacity: 0;
     transform: scaleX(1);
   }
 }
 
-.card[data-live] .dict {
-  opacity: 0.22;
-  transition: opacity 700ms var(--ease-out) var(--delay-land);
+.book {
+  opacity: 0;
 }
 
-.card[data-live] .dict__word::before {
+.card[data-live] .book {
+  opacity: 1;
+  transition: opacity 600ms var(--ease-out);
+}
+
+.card[data-live] .dict__word[data-mark]::before {
   animation: dict-highlight calc(var(--n) * 2.4s) var(--ease-out) calc(var(--delay-land) + 600ms + var(--i) * 2.4s)
     infinite;
 }
 
-:root[data-motion='off'] .card[data-live] .dict__word::before {
+:root[data-motion='off'] .card[data-live] .dict__word[data-mark]::before {
   animation: none;
+}
+
+@media print {
+  .book {
+    opacity: 1;
+  }
 }
 
 /* --- typo: the unit and caption type out too ------------------------------ */
@@ -596,149 +687,63 @@
   animation: giggle 1.7s ease-in-out calc(var(--delay-land) + var(--dur-count)) infinite;
 }
 
-/* --- chat: the first message, arriving ----------------------------------- */
+/* --- chat: the first message, delivered by pigeon -------------------------
+   0.15s  the pigeon flies in from the left carrying the envelope
+   1.35s  it lets go: the envelope drops, the pigeon flies off up and right
+   2.0s   the flap opens
+   2.45s  the letter comes out; the envelope falls away behind it
+   3.3s   the message starts writing itself (src/gimmicks.ts)
+   The envelope, paper and pigeon are the picture's own colours. */
 
-.dm {
-  display: grid;
+.post {
+  --env-w: clamp(8.5rem, 16vw, 13rem);
+  --bird-w: clamp(5.2rem, 9vw, 8.5rem);
+  position: relative;
   width: min(100%, 27rem);
+}
+
+.post__letter {
+  position: relative;
+  z-index: 2;
+  padding: 1rem 1.15rem 1.15rem;
+  border-radius: 0.5rem;
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    repeating-linear-gradient(transparent 0 1.6em, rgba(214, 59, 40, 0.08) 1.6em calc(1.6em + 1px)),
+    #fffaf1;
+  box-shadow: 0 0.8rem 2rem rgba(60, 30, 20, 0.18);
+  color: var(--ink);
   text-align: left;
-}
-
-.dm__typing,
-.dm__message {
-  grid-area: 1 / 1;
-}
-
-.dm__typing {
-  display: flex;
-  align-items: center;
-  align-self: start;
-  gap: 0.6rem;
-  font-size: var(--step-small);
-  font-weight: 600;
-  color: var(--faint);
   opacity: 0;
 }
 
-.dm__avatar {
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--ground);
-  font: 700 1.1rem / 1 var(--face-text);
-}
-
-.dm__dots {
-  display: inline-flex;
-  gap: 3px;
-}
-
-.dm__dots i {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--faint);
-  animation: dm-dot 1s ease-in-out infinite;
-}
-
-.dm__dots i:nth-child(2) {
-  animation-delay: 150ms;
-}
-
-.dm__dots i:nth-child(3) {
-  animation-delay: 300ms;
-}
-
-@keyframes dm-dot {
-  0%,
-  60%,
-  100% {
-    opacity: 0.4;
-    transform: translateY(0);
-  }
-  30% {
-    opacity: 1;
-    transform: translateY(-4px);
-  }
-}
-
-.dm__message {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.8rem;
-  opacity: 0;
-}
-
-.dm__body {
-  min-width: 0;
-}
-
-.dm__meta {
+.post__from {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: 0.2rem 0.55rem;
-  margin-bottom: 0.3rem;
+  gap: 0.2rem 0.5rem;
+  margin: 0 0 0.45rem;
 }
 
-.dm__name {
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.dm__time {
+.post__label,
+.post__date {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--faint);
 }
 
-.dm .quote,
-.dm .quote--long {
+.post__name {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.post .quote,
+.post .quote--long {
   max-width: none;
-  font-size: clamp(1.05rem, 4.6vw, 1.45rem);
+  font-size: clamp(1rem, 4.3vw, 1.35rem);
 }
 
-@keyframes dm-typing {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  10%,
-  86% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-}
-
-@keyframes dm-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.card[data-live] .dm__typing {
-  animation: dm-typing 1.7s var(--ease-out) var(--delay-land) both;
-}
-
-/* The message's header arrives, and then its words type in (src/gimmicks.ts). */
-.card[data-live] .dm__message {
-  animation: dm-arrive 480ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--delay-land) + 1.6s) both;
-}
-
-.dm .quote__text {
+.post .quote__text {
   position: relative;
 }
 
@@ -756,13 +761,267 @@
   vertical-align: -0.15em;
 }
 
-/* The message arrives whole, as a message does. */
-.card[data-live] .dm .quote__text {
+.post__env {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: var(--env-w);
+  height: calc(var(--env-w) * 0.66);
+  margin: calc(var(--env-w) * -0.33) 0 0 calc(var(--env-w) * -0.5);
+  border-radius: 4px;
+  /* impeccable-disable-next-line design-system-color */
+  background: #f0dcb7;
+  box-shadow: 0 0.5rem 1.2rem rgba(60, 30, 20, 0.22);
+  perspective: 320px;
+  opacity: 0;
+}
+
+/* The envelope's folded bottom and sides. */
+.post__fold {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* impeccable-disable-next-line design-system-color */
+  background: #e7cc9e;
+  clip-path: polygon(0 100%, 50% 42%, 100% 100%, 100% 0, 50% 58%, 0 0);
+}
+
+.post__flap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 60%;
+  /* impeccable-disable-next-line design-system-color */
+  background: #e0c18c;
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  transform-origin: 50% 0;
+}
+
+/* A wax seal with a heart pressed into it. */
+.post__seal {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  width: calc(var(--env-w) * 0.15);
+  height: calc(var(--env-w) * 0.15);
+  margin: calc(var(--env-w) * -0.075) 0 0 calc(var(--env-w) * -0.075);
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.post__seal::before {
+  content: '\2665';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* impeccable-disable-next-line design-system-color */
+  color: #fbd8cf;
+  font-size: calc(var(--env-w) * 0.09);
+  line-height: 1;
+}
+
+.post__bird {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 3;
+  width: var(--bird-w);
+  margin: calc(var(--env-w) * -0.33 - var(--bird-w) * 0.7) 0 0 calc(var(--bird-w) * -0.5);
+  opacity: 0;
+}
+
+.post__pigeon {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__body {
+  fill: #9aa7b8;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__head,
+.post__tail {
+  fill: #8796aa;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__wing {
+  fill: #6f7e93;
+  transform-box: view-box;
+  transform-origin: 28px 20px;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__beak {
+  fill: #e8a33c;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__eye {
+  fill: #1b1b1b;
+}
+
+/* impeccable-disable-next-line design-system-color */
+.post__leg {
+  stroke: #e8a33c;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+@keyframes post-bird-in {
+  from {
+    opacity: 1;
+    transform: translate(-80vw, -22vh);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -7vh);
+  }
+}
+
+@keyframes post-bird-out {
+  from {
+    opacity: 1;
+    transform: translate(0, -7vh);
+  }
+  80% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translate(85vw, -40vh);
+  }
+}
+
+@keyframes post-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(-0.7);
+  }
+}
+
+@keyframes post-env-in {
+  from {
+    opacity: 1;
+    transform: translate(-80vw, -22vh) rotate(8deg);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, -7vh) rotate(2deg);
+  }
+}
+
+@keyframes post-env-drop {
+  0% {
+    opacity: 1;
+    transform: translate(0, -7vh) rotate(2deg);
+  }
+  78% {
+    opacity: 1;
+    transform: translate(0, 0.6vh) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-4deg);
+  }
+}
+
+@keyframes post-env-away {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) rotate(-4deg);
+  }
+  to {
+    opacity: 0;
+    transform: translate(0, 35%) rotate(-6deg);
+  }
+}
+
+@keyframes post-open {
+  from {
+    transform: rotateX(0deg);
+  }
+  to {
+    transform: rotateX(180deg);
+  }
+}
+
+@keyframes post-letter {
+  from {
+    opacity: 0;
+    transform: translateY(14%) scale(0.45);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.card[data-live] .post__bird {
+  animation:
+    post-bird-in 1.2s cubic-bezier(0.3, 0.6, 0.4, 1) 150ms both,
+    post-bird-out 1.1s cubic-bezier(0.5, 0, 0.8, 0.6) 1.35s forwards;
+}
+
+.card[data-live] .post__wing {
+  animation: post-flap 0.26s ease-in-out infinite alternate;
+}
+
+.card[data-live] .post__env {
+  animation:
+    post-env-in 1.2s cubic-bezier(0.3, 0.6, 0.4, 1) 150ms both,
+    post-env-drop 0.6s cubic-bezier(0.5, 0, 0.75, 0) 1.35s forwards,
+    post-env-away 0.5s var(--ease-in-out) 2.6s forwards;
+}
+
+.card[data-live] .post__flap {
+  animation: post-open 0.45s var(--ease-in-out) 2s forwards;
+}
+
+.card[data-live] .post__letter {
+  animation: post-letter 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) 2.45s both;
+}
+
+/* The message is written in, not wiped in. */
+.card[data-live] .post .quote__text {
   animation: none;
 }
 
 .card[data-live][data-gimmick='chat'] .card__foot {
-  animation-delay: calc(var(--delay-land) + 2.5s);
+  animation-delay: calc(var(--delay-land) + 3.3s);
+}
+
+:root[data-motion='off'] .post__bird,
+:root[data-motion='off'] .post__env {
+  display: none;
+}
+
+:root[data-motion='off'] .card[data-live] .post__letter {
+  animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+:root[data-motion='off'] .card[data-live][data-gimmick='chat'] .card__foot {
+  animation-delay: var(--delay-land);
+}
+
+@media print {
+  .post__bird,
+  .post__env {
+    display: none;
+  }
+
+  .post__letter {
+    opacity: 1;
+  }
 }
 
 /* --- flipclock: the night going by ---------------------------------------- */
@@ -848,8 +1107,7 @@
 --------------------------------------------------------------------------- */
 
 :root[data-motion='off'] .card[data-live] .badge,
-:root[data-motion='off'] .card[data-live] .laugh,
-:root[data-motion='off'] .card[data-live] .dm__message {
+:root[data-motion='off'] .card[data-live] .laugh {
   animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
 }
 
@@ -870,13 +1128,8 @@
   animation: none;
 }
 
-:root[data-motion='off'] .dm__typing,
 :root[data-motion='off'] .caret {
   display: none;
-}
-
-:root[data-motion='off'] .card[data-live][data-gimmick='chat'] .card__foot {
-  animation-delay: var(--delay-land);
 }
 
 /* --- Print: every plate in its final state -------------------------------- */
@@ -887,13 +1140,11 @@
     opacity: 1;
   }
 
-  .dm__typing,
   .caret,
   .stream {
     display: none;
   }
 
-  .dm__message,
   .dawn {
     opacity: 1;
   }

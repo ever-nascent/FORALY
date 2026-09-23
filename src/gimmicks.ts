@@ -166,46 +166,73 @@ function keyboard(root: HTMLElement): void {
 }
 
 /**
- * The dictionary page behind the words-each card: the words that matter,
- * with what they mean here. Written for this piece, not quoted from the
- * conversation.
+ * The words-each card's background: an open dictionary, a full page of
+ * entries set the way a dictionary sets them. The definitions are written
+ * for this piece, not quoted from the conversation. `mark` entries get the
+ * highlighter in turn.
  */
-const ENTRIES: [string, string, string, string][] = [
-  ['love', '/lʌv/', 'n.', 'the reason the phone is never down for long.'],
-  ['loyalty', '/ˈlɔɪ.əl.ti/', 'n.', 'staying, especially when leaving would be easier.'],
-  ['trust', '/trʌst/', 'n.', 'handing someone your heart and not checking on it.'],
-  ['talk', '/tɔːk/', 'v.', 'what we do instead of sleeping.'],
-  ['devotion', '/dɪˈvəʊ.ʃən/', 'n.', 'choosing the same person every morning.'],
-  ['patience', '/ˈpeɪ.ʃəns/', 'n.', 'waiting through “typing…” without complaint.'],
-  ['laughter', '/ˈlɑːf.tər/', 'n.', 'the sound of 364 messages.'],
-  ['home', '/həʊm/', 'n.', 'not a place; a person.'],
+const ENTRIES: [string, string, string, string, boolean?][] = [
+  ['adore', '/əˈdɔːr/', 'v.', 'to love deeply; to find everything they do a little funny.'],
+  ['always', '/ˈɔːl.weɪz/', 'adv.', 'at every time; see also goodnight.'],
+  ['banter', '/ˈbæn.tər/', 'n.', 'teasing exchanged at length and past midnight.'],
+  ['butterflies', '/ˈbʌt.ə.flaɪz/', 'n. pl.', 'the feeling of a name lighting up the screen.'],
+  ['cherish', '/ˈtʃer.ɪʃ/', 'v.', 'to keep something safe because it matters.'],
+  ['company', '/ˈkʌm.pə.ni/', 'n.', 'someone to say nothing with.'],
+  ['darling', '/ˈdɑː.lɪŋ/', 'n.', 'a person much loved; used freely.'],
+  ['devotion', '/dɪˈvəʊ.ʃən/', 'n.', 'choosing the same person every morning.', true],
+  ['forever', '/fəˈrev.ər/', 'adv.', 'the plan.', true],
+  ['goodnight', '/ɡʊdˈnaɪt/', 'interj.', 'the last word, said several times.'],
+  ['home', '/həʊm/', 'n.', 'not a place; a person.', true],
   ['honesty', '/ˈɒn.ɪ.sti/', 'n.', 'saying the hard thing gently.'],
-  ['forever', '/fəˈrev.ər/', 'adv.', 'the plan.'],
+  ['hug', '/hʌɡ/', 'n.', 'what a message is standing in for.'],
+  ['laughter', '/ˈlɑːf.tər/', 'n.', 'the sound of 364 messages.'],
+  ['love', '/lʌv/', 'n.', 'the reason the phone is never down for long.', true],
+  ['lovebird', '/ˈlʌv.bɜːd/', 'n.', 'one of a pair that talks all day.'],
+  ['loyalty', '/ˈlɔɪ.əl.ti/', 'n.', 'staying, especially when leaving would be easier.', true],
+  ['miss', '/mɪs/', 'v.', 'to feel the length of an hour without a reply.'],
+  ['patience', '/ˈpeɪ.ʃəns/', 'n.', 'waiting through “typing…” without complaint.'],
+  ['promise', '/ˈprɒm.ɪs/', 'n.', 'a word given and kept.'],
+  ['smile', '/smaɪl/', 'v.', 'what happens at a notification, involuntarily.'],
+  ['soulmate', '/ˈsəʊl.meɪt/', 'n.', 'the one the rest of this book is about.'],
+  ['talk', '/tɔːk/', 'v.', 'what we do instead of sleeping.'],
+  ['together', '/təˈɡeð.ər/', 'adv.', 'in each other’s company, however far apart.'],
+  ['trust', '/trʌst/', 'n.', 'handing someone your heart and not checking on it.', true],
+  ['us', '/ʌs/', 'pron.', 'the two people this page is about.'],
+  ['yours', '/jɔːz/', 'pron.', 'belonging to you; as in, I’m.'],
 ];
 
-/** A dictionary page: headword, pronunciation, part of speech, definition.
- *  A highlighter sweeps each headword in turn (CSS). */
+/** The open book behind the words-each card: a leather cover at the edges,
+ *  stacked page edges, the spine's shadow, and the page itself. */
 function dictionary(): HTMLElement {
-  const page = el('div', 'dict');
-  page.setAttribute('aria-hidden', 'true');
+  const book = el('div', 'book');
+  book.setAttribute('aria-hidden', 'true');
+  const page = el('div', 'book__page');
   // A dictionary page's running head: the first and last words on it.
-  const sorted = ENTRIES.map(([word]) => word).sort();
-  const head = el('p', 'dict__head');
-  head.append(el('span', undefined, sorted[0] ?? ''), el('span', undefined, sorted[sorted.length - 1] ?? ''));
-  page.append(head);
-  for (const [i, [word, sound, part, meaning]] of ENTRIES.entries()) {
+  const head = el('p', 'book__head');
+  head.append(el('span', undefined, ENTRIES[0]?.[0] ?? ''), el('span', undefined, ENTRIES[ENTRIES.length - 1]?.[0] ?? ''));
+  const columns = el('div', 'book__columns');
+  const marked = ENTRIES.filter((entry) => entry[4]).length;
+  let mark = 0;
+  for (const [word, sound, part, meaning, highlight] of ENTRIES) {
     const entry = el('p', 'dict__entry');
-    entry.style.setProperty('--i', String(i));
-    entry.style.setProperty('--n', String(ENTRIES.length));
+    const headword = el('span', 'dict__word', word);
+    if (highlight) {
+      headword.dataset.mark = '';
+      headword.style.setProperty('--i', String(mark));
+      headword.style.setProperty('--n', String(marked));
+      mark += 1;
+    }
     entry.append(
-      el('span', 'dict__word', word),
+      headword,
       el('span', 'dict__sound', ` ${sound} `),
       el('span', 'dict__part', `${part} `),
       el('span', 'dict__meaning', meaning)
     );
-    page.append(entry);
+    columns.append(entry);
   }
-  return page;
+  page.append(head, columns, el('p', 'book__folio', '214'));
+  book.append(el('div', 'book__edges'), page);
+  return book;
 }
 
 /** Where the chatter bubbles rise from, one layer per side. */
@@ -289,36 +316,53 @@ function laughs(root: HTMLElement, card: FigureCard): void {
   root.prepend(layer);
 }
 
-/** The first message, arriving the way it did: typing, then there it is. */
+/**
+ * The first message, delivered: a pigeon flies in with an envelope, drops
+ * it, the flap opens and the letter comes out, and the message writes itself
+ * onto it (mountChat). The timing is CSS; see "chat" in gimmicks.css.
+ */
 function chat(head: HTMLElement, card: QuoteCard): void {
   const quote = head.querySelector('.quote');
   if (!quote) return;
-  const initial = [...card.author][0]?.toUpperCase() ?? '';
 
-  const dm = el('div', 'dm');
-  const typing = el('div', 'dm__typing');
-  typing.setAttribute('aria-hidden', 'true');
-  const dots = el('span', 'dm__dots');
-  dots.append(el('i'), el('i'), el('i'));
-  typing.append(el('span', 'dm__avatar', initial), el('span', 'dm__who', `${card.author} is typing`), dots);
+  const post = el('div', 'post');
 
-  const message = el('div', 'dm__message');
-  const body = el('div', 'dm__body');
-  const meta = el('div', 'dm__meta');
-  meta.append(el('span', 'dm__name', card.author));
-  if (card.footnote) meta.append(el('span', 'dm__time', card.footnote));
-  body.append(meta, quote);
-  message.append(el('span', 'dm__avatar', initial), body);
-
-  // The full message, invisible, holds the space; the typed copy sits on top.
+  const letter = el('div', 'post__letter');
+  const from = el('p', 'post__from');
+  from.append(el('span', 'post__label', 'From'), el('span', 'post__name', card.author));
+  if (card.footnote) from.append(el('span', 'post__date', card.footnote));
+  letter.append(from, quote);
+  // The full message, invisible, holds the space; the written copy sits on top.
   const text = quote.querySelector<HTMLElement>('.quote__text');
   if (text) {
     const full = text.textContent ?? '';
     text.replaceChildren(el('span', 'dm__ghost', full), el('span', 'dm__typed', full));
   }
 
-  dm.append(typing, message);
-  head.append(dm);
+  const envelope = el('div', 'post__env');
+  envelope.setAttribute('aria-hidden', 'true');
+  const flap = el('span', 'post__flap');
+  flap.append(el('span', 'post__seal'));
+  envelope.append(el('span', 'post__fold'), flap);
+
+  const bird = el('div', 'post__bird');
+  bird.setAttribute('aria-hidden', 'true');
+  const drawing = svg('svg', { viewBox: '0 0 60 42', class: 'post__pigeon' });
+  const wing = svg('path', { d: 'M 17 21 Q 27 1 41 18 Q 30 15 17 21 Z', class: 'post__wing' });
+  drawing.append(
+    svg('path', { d: 'M 8 23 L 0 18 L 2 28 Z', class: 'post__tail' }),
+    svg('ellipse', { cx: 26, cy: 25, rx: 17, ry: 10, class: 'post__body' }),
+    svg('circle', { cx: 44, cy: 17, r: 7, class: 'post__head' }),
+    svg('path', { d: 'M 50 16 L 57 18 L 50 20 Z', class: 'post__beak' }),
+    svg('circle', { cx: 46, cy: 15.5, r: 1.3, class: 'post__eye' }),
+    svg('line', { x1: 24, y1: 34, x2: 22, y2: 41, class: 'post__leg' }),
+    svg('line', { x1: 30, y1: 34, x2: 32, y2: 41, class: 'post__leg' }),
+    wing
+  );
+  bird.append(drawing);
+
+  post.append(letter, envelope, bird);
+  head.append(post);
 }
 
 /** Blank bubbles, both sides, twice over so the loop never shows a seam. */
@@ -856,10 +900,11 @@ function mountGiggle(root: HTMLElement, songTime: SongClock): GimmickHandle {
   };
 }
 
-/** How long the typing indicator shows before the message starts arriving. */
-const CHAT_TYPING_MS = 1500;
+/** How long the delivery takes before the message starts writing itself:
+ *  the flight, the drop, the flap and the letter coming out (gimmicks.css). */
+const CHAT_TYPING_MS = 2900;
 
-/** The first message types itself out, a character at a time, with a caret. */
+/** The first message writes itself onto the letter, a character at a time. */
 function mountChat(root: HTMLElement): GimmickHandle {
   const typed = root.querySelector<HTMLElement>('.dm__typed');
   const full = root.querySelector<HTMLElement>('.dm__ghost')?.textContent ?? '';
