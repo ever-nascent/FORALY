@@ -62,8 +62,8 @@
   --dur-count: 3400ms;
 }
 
-/* src/gimmicks.ts poses the beam, hangs the pans and moves each number with
-   its pan; this is only the drawing. */
+/* src/gimmicks.ts poses the beam and hangs the pans; this is only the
+   drawing. The numbers stay put above it. */
 .scale {
   width: 100%;
   max-width: 34rem;
@@ -112,8 +112,13 @@
   fill: var(--accent);
 }
 
-.card[data-gimmick='scale'] .split__side {
-  will-change: translate;
+/* Smaller than a plain split's figures, so the scale under them carries the
+   card rather than competing with it. */
+.card[data-gimmick='scale'] .split__value {
+  font-size: min(
+    clamp(2.2rem, 12.5vw, 5rem),
+    calc((var(--measure) - 2 * var(--split-gap) - 2px) * 0.98 / 2 / var(--fit-em, 3))
+  );
 }
 
 /* --- chatter: who has the bigger mouth ----------------------------------- */

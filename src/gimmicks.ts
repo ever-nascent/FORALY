@@ -122,10 +122,10 @@ function scale(head: HTMLElement, card: SplitCard): void {
 }
 
 /**
- * Puts the scale at an angle: the beam turns, each pan hangs straight down
- * from its end of it, and each number rides up or down with its pan.
+ * Puts the scale at an angle: the beam turns and each pan hangs straight
+ * down from its end of it. The numbers above stay where they are.
  */
-function poseScale(holder: HTMLElement, degrees: number, sides?: HTMLElement[]): void {
+function poseScale(holder: HTMLElement, degrees: number): void {
   const beam = holder.querySelector('.scale__beam');
   beam?.setAttribute('transform', `rotate(${degrees.toFixed(2)} ${BEAM.x} ${BEAM.y})`);
   const rad = (degrees * Math.PI) / 180;
@@ -136,13 +136,6 @@ function poseScale(holder: HTMLElement, degrees: number, sides?: HTMLElement[]):
     const y = BEAM.y + side * drop;
     pan.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
   }
-  if (!sides) return;
-  // The scale's units to px, so the numbers move exactly as far as the pans.
-  const px = holder.clientWidth / 200;
-  sides.forEach((side, i) => {
-    const dir = i === 0 ? -1 : 1;
-    side.style.translate = `0 ${(dir * drop * px).toFixed(1)}px`;
-  });
 }
 
 /** The keyboard the figure is typed on. Each key knows the character it types. */
@@ -515,10 +508,9 @@ function mountBuzz(root: HTMLElement, songTime: SongClock): GimmickHandle {
  */
 function mountScale(root: HTMLElement, songTime: SongClock, countMs: number): GimmickHandle {
   const holder = root.querySelector<HTMLElement>('.scale');
-  const sides = [...root.querySelectorAll<HTMLElement>('.split__side')];
   if (!holder) return { cancel() {} };
   const tilt = Number(holder.dataset.tilt) || 0;
-  const settle = (): void => poseScale(holder, tilt, sides);
+  const settle = (): void => poseScale(holder, tilt);
   if (currentMotion() === 'off') {
     settle();
     return { cancel: settle };
@@ -550,7 +542,7 @@ function mountScale(root: HTMLElement, songTime: SongClock, countMs: number): Gi
     const target = counting ? 0 : tilt;
     v += (-STIFF * (angle - target) - DAMP * v) * dt;
     angle = Math.max(-24, Math.min(24, angle + v * dt));
-    poseScale(holder, angle, sides);
+    poseScale(holder, angle);
     frame = requestAnimationFrame(step);
   };
   frame = requestAnimationFrame(step);
