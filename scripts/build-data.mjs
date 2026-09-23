@@ -279,8 +279,7 @@ function build(messages, config) {
         theme: 'curtain',
         title: 'Relationship Wrapped',
         dateline: `${longMonthDay(start, config.timezone)} — ${longMonthDay(end, config.timezone)}`,
-        caption:
-          "4 months of us. I know love isn't a competition, but I like to think I'm beating you at it. Let's find out!",
+        caption: "I know love isn't a competition, but one of us has to keep score, right.. ?",
       },
       {
         kind: 'figure',

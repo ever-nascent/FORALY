@@ -405,6 +405,128 @@
   text-wrap: balance;
 }
 
+/* --- The logo -------------------------------------------------------------
+   The title as a mark rather than a headline: the script word, tilted, with
+   the last word on a ribbon under it. It drops in, the ribbon unfurls from
+   its middle, and then the whole thing floats.
+--------------------------------------------------------------------------- */
+
+.logo {
+  display: grid;
+  justify-items: center;
+  font-family: var(--face-text);
+  letter-spacing: normal;
+  transform: rotate(-6deg);
+}
+
+.logo__script {
+  display: block;
+  padding: 0 0.12em;
+  font-family: var(--face-logo);
+  font-weight: 400;
+  font-size: min(clamp(3rem, 17vw, 7.5rem), calc(var(--measure) * 0.92 / var(--fit-em, 5)));
+  line-height: 1.05;
+  color: var(--ink);
+  /* A hard offset shadow in the ribbon's colour: printed, not glowing. */
+  text-shadow: 0.035em 0.05em 0 var(--accent);
+}
+
+.logo__ribbon {
+  position: relative;
+  display: block;
+  margin-top: -0.1em;
+  /* Room for the tails, which hang below the band outside its box. */
+  margin-bottom: 0.7em;
+  font-size: min(clamp(1rem, 4.4vw, 1.9rem), calc(var(--measure) * 0.075));
+}
+
+.logo__band {
+  position: relative;
+  z-index: 1;
+  display: block;
+  /* Less on the right: the letter-spacing already trails the last letter. */
+  padding: 0.3em 0.83em 0.34em 1.15em;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 60%),
+    var(--accent);
+  color: var(--ground);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+
+/* The fold where the band turns under into each tail. */
+.logo__band::before,
+.logo__band::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  width: 0.7em;
+  height: 0.5em;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), var(--accent);
+}
+
+.logo__band::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%);
+}
+
+.logo__band::after {
+  right: 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+/* The two tails, dropped behind the band, each with a notch cut in its end. */
+.logo__tail {
+  position: absolute;
+  top: 0.5em;
+  z-index: 0;
+  width: 2em;
+  height: 100%;
+  background: linear-gradient(rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.26)), var(--accent);
+}
+
+.logo__tail--left {
+  left: -1.3em;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 34% 50%);
+}
+
+.logo__tail--right {
+  right: -1.3em;
+  clip-path: polygon(0 0, 100% 0, 66% 50%, 100% 100%, 0 100%);
+}
+
+@keyframes logo-in {
+  from {
+    opacity: 0;
+    transform: rotate(-16deg) translateY(22px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-6deg) translateY(0) scale(1);
+  }
+}
+
+/* Starts where the drop-in ends, so the hand-off never jumps. */
+@keyframes logo-float {
+  from {
+    transform: rotate(-6deg) translateY(0) scale(1);
+  }
+  to {
+    transform: rotate(-4deg) translateY(-9px) scale(1);
+  }
+}
+
+@keyframes ribbon-unfurl {
+  from {
+    clip-path: inset(-60% 50% -60% 50%);
+  }
+  to {
+    clip-path: inset(-60% -30% -60% -30%);
+  }
+}
+
 .opening__dateline {
   font-size: var(--step-small);
   font-weight: 600;
@@ -535,11 +657,21 @@
 }
 
 .card[data-live] .opening__title {
-  animation: wipe-across var(--dur-land) var(--ease-out) var(--delay-land) both;
+  animation:
+    logo-in 900ms cubic-bezier(0.34, 1.4, 0.64, 1) var(--delay-land) both,
+    logo-float 4.8s ease-in-out calc(var(--delay-land) + 900ms) infinite alternate;
+}
+
+.card[data-live] .logo__ribbon {
+  animation: ribbon-unfurl 760ms var(--ease-out) calc(var(--delay-land) + 380ms) both;
+}
+
+:root[data-motion='off'] .card[data-live] .logo__ribbon {
+  animation: none;
 }
 
 .card[data-live] .opening__dateline {
-  animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 240ms) both;
+  animation: settle var(--dur-settle) var(--ease-out) calc(var(--delay-land) + 700ms) both;
 }
 
 /* Still. Every part still arrives — on opacity alone, with nothing travelling,

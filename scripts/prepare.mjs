@@ -15,6 +15,7 @@ const fonts = [
     '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2',
     'text-latin.woff2',
   ],
+  ['@fontsource/lobster/files/lobster-latin-400-normal.woff2', 'logo-latin.woff2'],
   [
     '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-ext-wght-normal.woff2',
     'text-latin-ext.woff2',

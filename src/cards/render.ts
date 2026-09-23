@@ -205,9 +205,37 @@ function elapsedSince(sinceIso: string): HTMLElement {
   return p;
 }
 
+/**
+ * The title, set as a logo: the words up to the last in the script face, and
+ * the last word on a ribbon beneath — "Relationship", then "Wrapped" on the
+ * band. A one-word title is all script.
+ */
+function renderLogo(title: string): HTMLElement {
+  const words = title.trim().split(/\s+/);
+  const band = words.length > 1 ? words.pop() : undefined;
+  const h1 = el('h1', 'opening__title logo');
+
+  const script = el('span', 'logo__script', words.join(' '));
+  script.dataset.fit = script.textContent ?? '';
+  h1.append(script);
+
+  if (band) {
+    // A real space, so the heading still reads as two words, not one.
+    h1.append(' ');
+    const ribbon = el('span', 'logo__ribbon');
+    ribbon.append(
+      el('span', 'logo__tail logo__tail--left'),
+      el('span', 'logo__tail logo__tail--right'),
+      el('span', 'logo__band', band)
+    );
+    h1.append(ribbon);
+  }
+  return h1;
+}
+
 function renderOpening(card: OpeningCard): HTMLElement {
   const opening = el('div', 'opening');
-  opening.append(el('h1', 'opening__title', card.title));
+  opening.append(renderLogo(card.title));
   opening.append(el('p', 'opening__dateline', card.dateline));
   return opening;
 }

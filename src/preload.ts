@@ -12,6 +12,7 @@ function faces(): Promise<unknown> {
   return Promise.all([
     document.fonts.load('400 10rem "Gloock"'),
     document.fonts.load('400 2rem "Gloock"'),
+    document.fonts.load('400 3rem "Lobster"'),
     document.fonts.load('450 1rem "Schibsted Grotesk"'),
     document.fonts.load('500 3rem "Schibsted Grotesk"'),
   ]).then(() => document.fonts.ready);
