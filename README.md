@@ -51,16 +51,17 @@ card. The generator detects it and says so.
 
 ## The score
 
-Drop an audio file at `public/score.mp3`. Nothing else is needed — it is loaded
+The score is `public/score.mp3`, committed with the site. To change it, replace
+that file. Nothing else is needed — it is loaded
 in the background, never gates the first card, fades up over 1.8s on the first
 tap (browsers will not start audio without a gesture), loops, and dips briefly
 on each card change. A sound toggle appears in the corner and the choice is
 remembered per browser.
 
-Leave the file out and `loadScore()` resolves to null, the control never
-appears, and the sequence behaves exactly as it does now. The file is
-git-ignored: supply it at deploy time rather than committing music into the
-repo.
+Remove the file and `loadScore()` resolves to null, the control never
+appears, and the sequence runs silent. The file sits behind the password gate
+on the live site, but anyone who can see this repository can download it, so
+keep the repository private.
 
 ## Motion
 
