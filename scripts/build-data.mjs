@@ -288,7 +288,7 @@ function build(messages, config) {
         format: 'integer',
         unit: 'messages',
         countUp: true,
-        caption: 'We bother each other a LOT...',
+        caption: 'We bother each other a lot...',
       },
       {
         kind: 'split',
