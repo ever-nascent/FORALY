@@ -79,8 +79,11 @@ function renderWord(card: WordCard): HTMLElement {
  * A message, reproduced exactly. No name attached: the caption underneath
  * already says whose it is, and the last card says nothing at all.
  */
+/** Past this many characters a message is set smaller and wider. */
+const LONG_QUOTE = 120;
+
 function renderQuote(text: string): HTMLElement {
-  const quote = el('blockquote', 'quote');
+  const quote = el('blockquote', text.length > LONG_QUOTE ? 'quote quote--long' : 'quote');
   const body = el('p', 'quote__text');
   body.textContent = text;
   quote.append(body);

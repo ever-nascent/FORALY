@@ -51,7 +51,9 @@ function remember(muted: boolean): void {
 async function present(): Promise<boolean> {
   try {
     const res = await fetch(SRC, { method: 'HEAD' });
-    return res.ok;
+    // A host with a single-page fallback answers a missing file with the page
+    // itself and a 200, so the status alone is not proof there is any audio.
+    return res.ok && (res.headers.get('content-type') ?? '').startsWith('audio/');
   } catch {
     return false;
   }

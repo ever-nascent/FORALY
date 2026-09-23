@@ -48,10 +48,33 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
   });
   els.pace.replaceChildren(...segments);
 
+  // Fonts that missed the preload ceiling change every measurement; re-fit
+  // once they are in so no figure is left sized for the fallback face.
+  if ('fonts' in document) void document.fonts.ready.then(() => fit(els.stage));
+
   let index = -1;
   let counting: CountHandle | null = null;
   let score: Score | null = null;
   let woken = false;
+
+  /**
+   * A card keeps its animations (`data-live`) for as long as it is on screen:
+   * while it is current, and for the length of the push that takes it away.
+   * Dropping them the moment it starts leaving would blank its shapes and jump
+   * its light mid-push. These timers take `data-live` off once it is gone.
+   */
+  const exits = new Map<HTMLElement, number>();
+
+  function retire(node: HTMLElement): void {
+    window.clearTimeout(exits.get(node));
+    exits.set(
+      node,
+      window.setTimeout(() => {
+        exits.delete(node);
+        if (node.dataset.state === 'past') delete node.dataset.live;
+      }, cssMs('--dur-push') + 60)
+    );
+  }
 
   function show(target: number, direction: 1 | -1): void {
     const wanted = Math.min(Math.max(target, 0), cards.length - 1);
@@ -65,18 +88,32 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
       leaving.style.setProperty('--card-x', `${direction > 0 ? -EXIT : EXIT}%`);
       leaving.dataset.state = 'past';
       leaving.inert = true;
+      retire(leaving);
     }
 
     const entering = nodes[wanted];
     const card = cards[wanted];
     if (!entering || !card) return;
 
-    // Park the incoming card off-screen without animating it there.
-    entering.style.transition = 'none';
-    entering.style.setProperty('--card-x', `${direction > 0 ? ENTER : -ENTER}%`);
-    void entering.offsetWidth;
-    entering.style.transition = '';
+    // Called back while it is still on its way out: let it turn round from
+    // wherever it is, still moving, rather than snapping it off-screen and
+    // replaying its entrance from the top.
+    const returning = exits.has(entering);
+    window.clearTimeout(exits.get(entering));
+    exits.delete(entering);
+
+    if (!returning) {
+      // Park the incoming card off-screen without animating it there, with
+      // its animations removed so they replay from the start.
+      entering.style.transition = 'none';
+      entering.dataset.state = 'upcoming';
+      delete entering.dataset.live;
+      entering.style.setProperty('--card-x', `${direction > 0 ? ENTER : -ENTER}%`);
+      void entering.offsetWidth;
+      entering.style.transition = '';
+    }
     entering.dataset.state = 'current';
+    entering.dataset.live = '';
     entering.inert = false;
 
     // The seam behind the push takes the colour of the card arriving.
@@ -85,7 +122,7 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     }
 
     const live = entering.querySelector<HTMLElement>('[data-count-to]');
-    if (live?.dataset.countTo) {
+    if (live?.dataset.countTo && !returning) {
       counting = countUp(
         live,
         Number(live.dataset.countTo),
@@ -124,6 +161,11 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     if (event.metaKey || event.ctrlKey || event.altKey) return;
     const onControl = event.target instanceof HTMLButtonElement;
     wake();
+    // A held key would otherwise race through the whole sequence.
+    if (event.repeat) {
+      if (!onControl) event.preventDefault();
+      return;
+    }
 
     switch (event.key) {
       case 'ArrowRight':

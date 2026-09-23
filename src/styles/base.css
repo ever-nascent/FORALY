@@ -48,6 +48,14 @@ blockquote {
   transition: opacity 420ms var(--ease-out);
 }
 
+.loader__error {
+  max-width: 20rem;
+  padding: 0 var(--gutter);
+  color: #c9bbd1;
+  font-size: var(--step-caption);
+  text-align: center;
+}
+
 .loader[data-done='true'] {
   opacity: 0;
   pointer-events: none;
@@ -107,14 +115,21 @@ blockquote {
   transform: translate3d(0, 0, 0);
   visibility: visible;
   transition-delay: 0s;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* The outgoing card travels a fraction of the distance, so the two worlds
-   move at different rates and the push reads as depth rather than a slide. */
+   move at different rates and the push reads as depth rather than a slide.
+   It stays visible only for the length of the push — the base transition
+   hides it once it is out of frame — and sits above any older card still on
+   its way out, so a quick run of taps never shows a stale world through the
+   seam. */
 .card[data-state='past'] {
-  visibility: visible;
   z-index: 0;
+}
+
+.card[data-state='past'][data-live] {
+  z-index: 1;
 }
 
 /* The light in the ground is a shape of its own, and it moves. Oversized so
@@ -127,16 +142,17 @@ blockquote {
   background: radial-gradient(closest-side, var(--glow), transparent);
 }
 
-.card[data-state='current']::before {
+.card[data-live]::before {
   animation: glow-drift 26s var(--ease-in-out) infinite alternate;
 }
 
 @keyframes glow-drift {
+  /* Starts from rest, so the light does not jump when a card comes up. */
   from {
-    transform: translate3d(-7%, -5%, 0) scale(1);
+    transform: translate3d(0, 0, 0) scale(1);
   }
   to {
-    transform: translate3d(7%, 6%, 0) scale(1.14);
+    transform: translate3d(10%, 8%, 0) scale(1.14);
   }
 }
 
@@ -316,7 +332,7 @@ blockquote {
   }
 
   /* Nothing keeps moving on its own. */
-  :root:not([data-motion='on']) .card[data-state='current']::before {
+  :root:not([data-motion='on']) .card[data-live]::before {
     animation: none;
   }
 }

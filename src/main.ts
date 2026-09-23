@@ -54,4 +54,17 @@ async function start(): Promise<void> {
   need<HTMLElement>('#loader').dataset.done = 'true';
 }
 
-void start();
+/** If the data never arrives, say so rather than leave the loader breathing forever. */
+function fail(error: unknown): void {
+  // eslint-disable-next-line no-console
+  console.error(error);
+  const loader = document.querySelector<HTMLElement>('#loader');
+  if (!loader) return;
+  const message = document.createElement('p');
+  message.className = 'loader__error';
+  message.setAttribute('role', 'alert');
+  message.textContent = 'Something did not load. Refresh the page to try again.';
+  loader.replaceChildren(message);
+}
+
+start().catch(fail);

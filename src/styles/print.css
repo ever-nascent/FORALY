@@ -78,6 +78,10 @@
     --ceiling: 0mm;
   }
 
+  .quote--long {
+    font-size: 6.5mm;
+  }
+
   /* The counting figures print at their final value, not mid-count. */
   .figure__ghost {
     visibility: visible;
