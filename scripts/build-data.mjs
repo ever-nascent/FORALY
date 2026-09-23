@@ -293,7 +293,7 @@ function build(messages, config) {
       },
       {
         kind: 'split',
-        theme: 'coral',
+        theme: 'dusk',
         gimmick: 'tug',
         format: 'integer',
         sides: [
