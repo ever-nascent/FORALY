@@ -1254,6 +1254,11 @@
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
+.quote__dash {
+  font-family: var(--face-text);
+  font-weight: 600;
+}
+
 @keyframes ring-sign {
   from {
     opacity: 1;

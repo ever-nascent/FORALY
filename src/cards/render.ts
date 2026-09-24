@@ -260,7 +260,11 @@ function head(card: NonGreetingCard): HTMLElement {
       return renderQuote(card.text);
     case 'closing': {
       const quote = renderQuote(card.text, true);
-      quote.append(el('cite', 'quote__sign', card.signature ?? card.author));
+      // The dash in the sans (the script's own is short), and a
+      // non-breaking space so it never ends a line on its own.
+      const sign = el('cite', 'quote__sign');
+      sign.append(el('span', 'quote__dash', '\u2014'), `\u00a0${card.signature ?? card.author}`);
+      quote.append(sign);
       return quote;
     }
   }
