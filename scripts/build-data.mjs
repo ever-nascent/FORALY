@@ -444,13 +444,14 @@ function build(messages, config) {
         context: 'The longest we went quiet.',
         caption: "If you ever stop talking to me for this long again, we're going to have a problem.",
       },
-      // TODO(closing card): earmarked for a redesign — holding the current
-      // one-line-and-nothing-else treatment (see ClosingCard in
-      // cards/types.ts and the closing case in cards/render.ts) until then.
+      // Her line, engraved in a ring box and signed with her full name
+      // (ringBox in src/gimmicks.ts).
       {
         kind: 'closing',
         text: closing.content,
         author: herName,
+        // Quoted on it, by her full name.
+        signature: config.people.her.fullName || herName,
         loves: lovesFrom(rows, closing),
       },
     ],

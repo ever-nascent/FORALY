@@ -119,11 +119,13 @@ export interface QuoteCard extends Base {
   footnote?: string;
 }
 
-/** The last card. One line she said, and nothing else. */
+/** The last card. One line she said, signed with her full name. */
 export interface ClosingCard {
   kind: 'closing';
   text: string;
   author: string;
+  /** Her full name, set under the line like a signature. */
+  signature?: string;
   /** Every short "I love you" from the conversation, drifting up behind it. */
   loves?: string[];
 }

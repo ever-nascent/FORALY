@@ -258,8 +258,11 @@ function head(card: NonGreetingCard): HTMLElement {
       return renderWord(card);
     case 'quote':
       return renderQuote(card.text);
-    case 'closing':
-      return renderQuote(card.text, true);
+    case 'closing': {
+      const quote = renderQuote(card.text, true);
+      quote.append(el('cite', 'quote__sign', card.signature ?? card.author));
+      return quote;
+    }
   }
 }
 
@@ -390,7 +393,7 @@ export function describe(card: Card): string {
     case 'quote':
       return `${card.author} said, ${card.text}. ${card.caption}`;
     case 'closing':
-      return `${card.author} said, ${card.text}`;
+      return `${card.signature ?? card.author} said, ${card.text}`;
     case 'greeting':
       return (
         `${card.night.word}, ${formatInteger(card.night.value)} ${card.night.unit ?? 'times'}. ` +

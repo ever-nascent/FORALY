@@ -3,7 +3,7 @@
   "timezone": "America/Los_Angeles",
   "range": { "start": "", "end": "" },
   "people": {
-    "her": { "name": "Alyshia", "discordId": "829516976148709406" },
+    "her": { "name": "Alyshia", "fullName": "Alyshia Robinson", "discordId": "829516976148709406" },
     "him": { "name": "Zechariah", "discordId": "1378474650010652762" }
   },
   "quotes": {

@@ -1241,6 +1241,39 @@
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75), 0 -1px 0 rgba(90, 50, 10, 0.18);
 }
 
+/* Signed underneath in her own hand, as it were: her full name in script,
+   written left to right once the last word is in. */
+.quote__sign {
+  display: block;
+  margin-top: 0.35em;
+  font: 400 1.05em/1.1 var(--face-logo);
+  font-style: normal;
+  /* impeccable-disable-next-line design-system-color */
+  color: #8a2a3c;
+  /* impeccable-disable-next-line design-system-color */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+@keyframes ring-sign {
+  from {
+    opacity: 1;
+    clip-path: inset(-20% 100% -20% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(-20% 0 -20% 0);
+  }
+}
+
+/* Fourteen words at 160ms each, then the name. */
+.card--closing[data-live] .quote__sign {
+  animation: ring-sign 1.1s ease-in-out calc(var(--delay-land) + 6s) both;
+}
+
+:root[data-motion='off'] .card--closing[data-live] .quote__sign {
+  animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
 /* The cushion, with the slit the ring stands in. */
 .ring__well {
   position: absolute;
