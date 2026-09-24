@@ -1161,3 +1161,371 @@
     transform: rotate(var(--deg));
   }
 }
+
+/* --- The last card: a ring box ------------------------------------------
+   From the back: the satin inside of the lid (her line, engraved), the
+   cushion, the ring, the cushion's front roll, the closed lid, and the
+   box's velvet front. The closed lid folds away up its hinge, the inside
+   of the lid swings up behind it, and the ring rises and catches the light.
+--------------------------------------------------------------------------- */
+
+.ring {
+  --box-w: min(80vw, 28rem, 52vh);
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: var(--box-w);
+}
+
+.ring__box {
+  position: relative;
+  width: 100%;
+  /* lid + cushion + front */
+  height: calc(var(--box-w) * 1.02);
+  perspective: 900px;
+}
+
+/* Soft light turning slowly behind the box once it is open. */
+.ring__rays {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: calc(var(--box-w) * 2.2);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  translate: -50% -50%;
+  /* impeccable-disable-next-line design-system-color */
+  background: repeating-conic-gradient(rgba(255, 246, 225, 0.4) 0deg 7deg, transparent 7deg 22deg);
+  mask-image: radial-gradient(circle, #000 12%, transparent 62%);
+  -webkit-mask-image: radial-gradient(circle, #000 12%, transparent 62%);
+  opacity: 0;
+}
+
+/* The inside of the lid: cream satin in a velvet frame, hinged at its foot. */
+.ring__lid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 58%;
+  display: grid;
+  place-items: start center;
+  padding: calc(var(--box-w) * 0.075) calc(var(--box-w) * 0.08) 0;
+  border: calc(var(--box-w) * 0.035) solid #6d1030;
+  border-radius: calc(var(--box-w) * 0.07) calc(var(--box-w) * 0.07) 0.4rem 0.4rem;
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(255, 255, 255, 0.8), transparent 60%),
+    linear-gradient(170deg, #fbf3e6, #efdcc4 70%, #e3c9a8);
+  box-shadow:
+    inset 0 0 1.4rem rgba(120, 70, 30, 0.28),
+    0 -0.2rem 1rem rgba(60, 10, 25, 0.25);
+  transform-origin: 50% 100%;
+  transform: rotateX(0deg);
+}
+
+/* Her line, engraved: a warm gold-brown pressed into the satin. */
+.ring .quote {
+  max-width: none;
+  font-size: clamp(0.98rem, 4.3vw, 1.3rem);
+}
+
+.ring .quote__text {
+  font-family: var(--face-display);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  /* impeccable-disable-next-line design-system-color */
+  color: #6e4a1c;
+  /* impeccable-disable-next-line design-system-color */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75), 0 -1px 0 rgba(90, 50, 10, 0.18);
+}
+
+/* The cushion, with the slit the ring stands in. */
+.ring__well {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 56%;
+  height: 12%;
+  border-radius: 0.5rem 0.5rem 0 0;
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    linear-gradient(90deg, transparent 49.2%, #2a0512 49.2% 50.8%, transparent 50.8%),
+    linear-gradient(180deg, #4a0a20, #7c1837);
+}
+
+.ring__band {
+  position: absolute;
+  left: 50%;
+  top: 37%;
+  width: 36%;
+  translate: -50% 0;
+  overflow: visible;
+  filter: drop-shadow(0 0.25rem 0.35rem rgba(40, 0, 15, 0.45));
+}
+
+.ring__metal {
+  fill: none;
+  stroke: url(#ring-gold);
+  stroke-width: 4.5;
+}
+
+.ring__setting {
+  fill: url(#ring-gold);
+}
+
+.ring__stone {
+  fill: url(#ring-ice);
+  stroke: #8fb6d6;
+  stroke-width: 0.6;
+  stroke-linejoin: round;
+}
+
+.ring__facets {
+  fill: none;
+  /* impeccable-disable-next-line design-system-color */
+  stroke: rgba(110, 150, 190, 0.7);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+/* The flash off the stone: a four-point star. */
+.ring__glint {
+  position: absolute;
+  left: 50%;
+  /* Centred on the stone: the band's top, plus the stone's middle. */
+  top: calc(37% + var(--box-w) * 0.075);
+  width: calc(var(--box-w) * 0.26);
+  aspect-ratio: 1;
+  margin: calc(var(--box-w) * -0.13) 0 0 calc(var(--box-w) * -0.13 + var(--box-w) * 0.05);
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    radial-gradient(circle, #fff 0 8%, transparent 26%),
+    conic-gradient(from 0deg, transparent 0 40deg, rgba(255, 255, 255, 0.95) 45deg, transparent 50deg 130deg, rgba(255, 255, 255, 0.95) 135deg, transparent 140deg 220deg, rgba(255, 255, 255, 0.95) 225deg, transparent 230deg 310deg, rgba(255, 255, 255, 0.95) 315deg, transparent 320deg);
+  mask-image: radial-gradient(circle, #000 20%, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle, #000 20%, transparent 70%);
+  opacity: 0;
+  scale: 0.4;
+}
+
+/* The front roll of the cushion, over the foot of the band. */
+.ring__lip {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 62%;
+  height: 8%;
+  border-radius: 50% / 0 0 100% 100%;
+  /* impeccable-disable-next-line design-system-color */
+  background: linear-gradient(180deg, #9a2346, #6a0f2c);
+  box-shadow: 0 0.15rem 0.3rem rgba(30, 0, 10, 0.35);
+}
+
+/* The lid, closed: a slab of velvet sitting on the box, hinged at the back. */
+.ring__cover {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 20%;
+  border-radius: calc(var(--box-w) * 0.07) calc(var(--box-w) * 0.07) 0.3rem 0.3rem;
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    linear-gradient(180deg, rgba(255, 200, 215, 0.35), transparent 30%),
+    linear-gradient(180deg, #a3264b, #7a1235);
+  box-shadow: 0 0.2rem 0.4rem rgba(30, 0, 10, 0.35);
+  transform-origin: 50% 0;
+  opacity: 0;
+}
+
+/* The box itself, in velvet, with a thin gold line along the seam. */
+.ring__front {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 69%;
+  bottom: 0;
+  border-top: 2px solid #d5a24a;
+  border-radius: 0.3rem 0.3rem calc(var(--box-w) * 0.08) calc(var(--box-w) * 0.08);
+  /* impeccable-disable-next-line design-system-color */
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 190, 210, 0.35), transparent 60%),
+    linear-gradient(180deg, #8e1a40, #5c0b26);
+  box-shadow:
+    0 1.2rem 1.6rem -0.6rem rgba(40, 0, 15, 0.55),
+    inset 0 -0.4rem 0.8rem rgba(0, 0, 0, 0.25);
+}
+
+@keyframes ring-drop {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -40vh, 0) rotate(-6deg);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(2deg) scale(1.03, 0.96);
+  }
+  75% {
+    transform: translate3d(0, -3%, 0) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Knock, knock. */
+@keyframes ring-knock {
+  0%,
+  100% {
+    transform: none;
+  }
+  15%,
+  55% {
+    transform: translate3d(0, -4%, 0) rotate(-2deg);
+  }
+  30%,
+  70% {
+    transform: none;
+  }
+}
+
+@keyframes ring-cover-open {
+  0% {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+  99% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: rotateX(-90deg);
+  }
+}
+
+@keyframes ring-lid-open {
+  0% {
+    opacity: 0;
+    transform: rotateX(90deg);
+  }
+  8% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+    transform: rotateX(-8deg);
+  }
+  100% {
+    opacity: 1;
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes ring-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 38%, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes ring-flash {
+  0% {
+    opacity: 0;
+    scale: 0.3;
+    rotate: 0deg;
+  }
+  30% {
+    opacity: 1;
+    scale: 1.5;
+    rotate: 45deg;
+  }
+  100% {
+    opacity: 0.2;
+    scale: 0.4;
+    rotate: 90deg;
+  }
+}
+
+@keyframes ring-rays-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ring-rays-turn {
+  to {
+    rotate: 360deg;
+  }
+}
+
+.card--closing[data-live] .ring__box {
+  animation:
+    ring-drop 900ms var(--ease-out) var(--delay-land) both,
+    ring-knock 700ms ease-in-out calc(var(--delay-land) + 1.2s);
+}
+
+.card--closing[data-live] .ring__cover {
+  animation: ring-cover-open 380ms ease-in calc(var(--delay-land) + 2.1s) both;
+}
+
+.card--closing[data-live] .ring__lid {
+  animation: ring-lid-open 800ms var(--ease-out) calc(var(--delay-land) + 2.4s) both;
+}
+
+.card--closing[data-live] .ring__band {
+  animation: ring-rise 900ms var(--ease-out) calc(var(--delay-land) + 2.7s) both;
+}
+
+.card--closing[data-live] .ring__glint {
+  animation: ring-flash 1s var(--ease-out) calc(var(--delay-land) + 3.3s) both;
+}
+
+.card--closing[data-live] .ring__rays {
+  animation:
+    ring-rays-in 1.6s var(--ease-out) calc(var(--delay-land) + 3.1s) both,
+    ring-rays-turn 40s linear calc(var(--delay-land) + 3.1s) infinite;
+}
+
+/* Her words are engraved once the lid is up, a word at a time. */
+.card--closing[data-live] .ring .quote__word {
+  animation-delay: calc(var(--delay-land) + 3.4s + var(--i) * 160ms);
+}
+
+/* Still: the box already open, the ring up, the light holding still. */
+:root[data-motion='off'] .card--closing[data-live] .ring__box,
+:root[data-motion='off'] .card--closing[data-live] .ring__lid,
+:root[data-motion='off'] .card--closing[data-live] .ring__band {
+  animation: fade-in var(--dur-land) var(--ease-out) var(--delay-land) both;
+}
+
+:root[data-motion='off'] .card--closing[data-live] .ring__cover,
+:root[data-motion='off'] .card--closing[data-live] .ring__glint {
+  animation: none;
+  opacity: 0;
+}
+
+:root[data-motion='off'] .card--closing[data-live] .ring__rays {
+  animation: none;
+  opacity: 1;
+}
+
+:root[data-motion='off'] .card--closing[data-live] .ring .quote__word {
+  animation-delay: var(--delay-land);
+}
+
+@media print {
+  .ring__cover,
+  .ring__glint {
+    display: none;
+  }
+
+  .ring__rays {
+    opacity: 1;
+  }
+}

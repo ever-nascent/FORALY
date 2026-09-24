@@ -178,7 +178,7 @@ in front of it:
 | 4am | A crescent and two small stars | The small hours |
 | Longest conversation | Nested rotated rounded rects | Something that kept turning back on itself |
 | Longest silence | One line, one dot | Emptiness, made literal |
-| Closing | Overlapping ellipses | Her rose, opening |
+| Closing | A velvet ring box | Opens on its hinge; the ring rises and her line is engraved in the lid |
 
 Compositions are placed to complement each card's alignment — a card that sets
 its type at the top gets its shapes below it, and the reverse — so nothing ever
@@ -243,7 +243,7 @@ than marching:
 | 4am | The moon drifts, the stars go in and out |
 | Longest conversation | Four rings turning at four different speeds |
 | Longest silence | Almost nothing: a line that stretches, a dot that drifts |
-| Closing | Five petals turning at different rates |
+| Closing | The ring box knocks, opens, and the stone flashes on the beat |
 
 The light in the ground moves too: the glow is its own oversized element on a
 26s drift, so the light source travels across the card rather than sitting where

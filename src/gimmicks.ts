@@ -392,7 +392,67 @@ function dawn(root: HTMLElement): void {
 }
 
 /** Adds a card's gimmick markup. Called once, when the card is built. */
+/**
+ * Her last line, engraved inside a ring box. The box lands, knocks twice,
+ * and its lid swings open on the hinge: the satin inside the lid carries
+ * her words, and the ring rises out of the cushion and catches the light.
+ * The quote is moved in, not copied, so it is still the card's one text.
+ */
+function ringBox(root: HTMLElement): void {
+  const quote = root.querySelector<HTMLElement>('.card__head .quote');
+  if (!quote) return;
+  const box = el('div', 'ring');
+  const rays = el('span', 'ring__rays');
+  rays.setAttribute('aria-hidden', 'true');
+
+  const lid = el('div', 'ring__lid');
+  quote.replaceWith(box);
+  lid.append(quote);
+
+  const art = svg('svg', { class: 'ring__band', viewBox: '0 0 60 72', 'aria-hidden': 'true', focusable: 'false' });
+  const defs = svg('defs');
+  const gold = svg('linearGradient', { id: 'ring-gold', x1: 0, y1: 0, x2: 1, y2: 1 });
+  gold.append(
+    svg('stop', { offset: '0', 'stop-color': '#fff1c4' }),
+    svg('stop', { offset: '0.45', 'stop-color': '#e2b45a' }),
+    svg('stop', { offset: '1', 'stop-color': '#a8741f' })
+  );
+  const ice = svg('linearGradient', { id: 'ring-ice', x1: 0, y1: 0, x2: 0, y2: 1 });
+  ice.append(
+    svg('stop', { offset: '0', 'stop-color': '#ffffff' }),
+    svg('stop', { offset: '0.6', 'stop-color': '#d9f0ff' }),
+    svg('stop', { offset: '1', 'stop-color': '#9ec9ea' })
+  );
+  defs.append(gold, ice);
+  art.append(
+    defs,
+    // The band, and the setting that holds the stone.
+    svg('ellipse', { cx: 30, cy: 48, rx: 18, ry: 20, class: 'ring__metal' }),
+    svg('path', { d: 'M 23 29 L 26 24 L 34 24 L 37 29 Z', class: 'ring__setting' }),
+    // The stone: a table, a crown and the pavilion, with a few facet lines.
+    svg('path', { d: 'M 18 13 L 23 6 L 37 6 L 42 13 L 30 27 Z', class: 'ring__stone' }),
+    svg('path', { d: 'M 18 13 L 42 13 M 23 6 L 27 13 L 30 6 L 33 13 L 37 6 M 27 13 L 30 27 L 33 13', class: 'ring__facets' })
+  );
+  const glint = el('span', 'ring__glint');
+  glint.setAttribute('aria-hidden', 'true');
+
+  const lip = el('span', 'ring__lip');
+  const cover = el('span', 'ring__cover');
+  const front = el('span', 'ring__front');
+  for (const part of [lip, cover, front]) part.setAttribute('aria-hidden', 'true');
+  const well = el('span', 'ring__well');
+  well.setAttribute('aria-hidden', 'true');
+
+  const body = el('div', 'ring__box');
+  body.append(lid, well, art, glint, lip, cover, front);
+  box.append(rays, body);
+}
+
 export function decorate(root: HTMLElement, card: Card): void {
+  if (card.kind === 'closing') {
+    ringBox(root);
+    return;
+  }
   if (!('gimmick' in card) || !card.gimmick) return;
   root.dataset.gimmick = card.gimmick;
   const head = root.querySelector<HTMLElement>('.card__head');
@@ -951,7 +1011,7 @@ function mountChat(root: HTMLElement): GimmickHandle {
  * and the warm glow behind it swells.
  */
 function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
-  const hearts = [...root.querySelectorAll<SVGElement>('.shape[data-motion="fill"], .shape[data-motion="draw"]')];
+  const glint = root.querySelector<HTMLElement>('.ring__glint');
   const glow = root.querySelector<HTMLElement>('.warm__glow');
   if (currentMotion() === 'off') return { cancel() {} };
   const onBeat = beatWatcher(songTime);
@@ -960,21 +1020,16 @@ function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
   const step = (now: number): void => {
     if (begun === 0) begun = now;
     const wall = (now - begun) / 1000;
-    // Wait for the heart to finish drawing itself before it starts to beat.
-    if (onBeat(wall) && wall > 2.2) {
-      for (const heart of hearts) {
-        heart.animate(
-          [
-            { scale: '1' },
-            { scale: '1.07', offset: 0.14 },
-            { scale: '1', offset: 0.3 },
-            { scale: '1.04', offset: 0.44 },
-            { scale: '1', offset: 0.7 },
-            { scale: '1' },
-          ],
-          { duration: 760, easing: 'ease-out' }
-        );
-      }
+    // Once the box is open and the ring is up, the stone flashes on the beat.
+    if (onBeat(wall) && wall > 3.4) {
+      glint?.animate(
+        [
+          { opacity: 0.2, scale: '0.4', rotate: '0deg' },
+          { opacity: 1, scale: '1.15', rotate: '45deg', offset: 0.18 },
+          { opacity: 0.2, scale: '0.4', rotate: '90deg' },
+        ],
+        { duration: 760, easing: 'ease-out' }
+      );
       glow?.animate(
         [
           { opacity: 0.75, scale: '1' },

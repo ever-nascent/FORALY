@@ -298,21 +298,14 @@ function build(kind: ShapeKind, uid: string): SVGElement[] {
     case 'plain':
       return [];
 
-    // Her last line: a heart that draws itself, fills, and then beats — with
-    // a few small ones drifting up past it.
+    // Her last line: the ring box is the picture (src/gimmicks.ts); a few
+    // small hearts drift up past it.
     case 'heart': {
       const rising: [number, number, number][] = [
         [34, 90, 3.2], [45, 94, 2.4], [55, 91, 3.6], [64, 95, 2.6], [40, 97, 2.2], [60, 99, 3],
         [28, 96, 2.8], [70, 92, 3.4], [50, 98, 2], [38, 93, 3.8], [58, 96, 2.3], [66, 99, 3.1],
       ];
       return [
-        // Sat a little low, so its widest part — just under the lobes — is
-        // level with the middle of the frame, where her words are.
-        part('path', { d: heart(50, 54, 42) }, 'a', 0, { motion: 'fill', pivot: [50, 54] }),
-        part('path', { d: heart(50, 54, 42), fill: 'none', pathLength: 1 }, 'line', 0, {
-          motion: 'draw',
-          pivot: [50, 54],
-        }),
         ...rising.map(([x, y, w], i) =>
           part('path', { d: heart(x, y, w) }, i % 2 ? 'b' : 'a', i, { motion: 'rise' })
         ),
