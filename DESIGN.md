@@ -264,13 +264,16 @@ Every part of this is `transform` and `opacity` only, so it runs on the
 compositor rather than the main thread, and only ever on the card that is
 actually up — the other twelve are idle.
 
-Between cards is a parallax push: the incoming card travels the full width, the
-outgoing one 28% of it, on `cubic-bezier(0.32, 0.72, 0, 1)` over 520ms. The seam
-behind the push takes the colour of the card arriving, so the join between two
-worlds is never a flash of something else.
-
-Curves come from the animation standards verbatim; `transform`, `opacity` and
-`clip-path` only; no `ease-in` anywhere and no `transition: all`.
+Between cards, each card has its own way in and its own way out
+(`src/transitions.ts`), and a change of card plays the old one's exit with the
+new one's entrance: the curtain goes up on the opening, the scale drops in, the
+keyboard slides up, its page turns to the dictionary, the alarm clock opens out
+from its face, the calendar page is torn off, the sky dives into the moon and
+comes out of the club's spotlight, an iris closes on the mic, the night flips
+down like a clock's leaf, the stream switches off like an old television into
+the quiet, and the sky comes down with the ring box falling out of it. Going
+back plays the same move in reverse, and a tap back mid-move turns it round
+where it is. With motion off they only crossfade.
 
 **Count-ups on three cards only** — messages, words, laughs — where the
 magnitude is the point. The counter runs on the same cubic-bezier as the

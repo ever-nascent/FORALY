@@ -4,6 +4,8 @@ import { mountElapsed, type ElapsedHandle } from './elapsed';
 import { fit } from './fit';
 import { mountGimmick, type GimmickHandle } from './gimmicks';
 import { mountMonitor, type MonitorHandle } from './monitor';
+import { currentMotion } from './motion';
+import { playTransition } from './transitions';
 import { wireGreeting } from './greeting';
 import type { Card } from './cards/types';
 import type { Score } from './audio';
@@ -19,10 +21,6 @@ export interface DeckElements {
   begin: HTMLElement;
 }
 
-/** How far a card travels. The outgoing one moves a fraction of the incoming
- *  one's distance, so the push reads as depth rather than as a slide. */
-const ENTER = 100;
-const EXIT = 28;
 /** Past this, a pointer gesture is a swipe rather than a tap. */
 const SWIPE_PX = 40;
 const TAP_PX = 10;
@@ -120,10 +118,25 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
 
   /**
    * A card keeps its animations (`data-live`) for as long as it is on screen:
-   * while it is current, and for the length of the push that takes it away.
-   * Dropping them the moment it starts leaving would blank its shapes and jump
-   * its light mid-push. These timers take `data-live` off once it is gone.
+   * while it is current, and for as long as the move that takes it away. Each
+   * card has its own way in and out (src/transitions.ts); `moving` is the one
+   * under way, so a quick tap back can turn it round where it is.
    */
+  let moving: { from: number; to: number; animations: Animation[]; token: number } | null = null;
+  let moves = 0;
+
+  /** Ends a move: the card that left goes quiet, and nothing is left applied. */
+  function settle(move: { animations: Animation[]; token: number }): void {
+    if (moving?.token === move.token) moving = null;
+    for (const animation of move.animations) animation.cancel();
+    for (const node of nodes) {
+      node.style.zIndex = '';
+      if (node.dataset.state === 'past') delete node.dataset.live;
+    }
+  }
+
+  /** With motion off the cards only crossfade, in CSS; this takes `data-live`
+   *  off the one that left once the fade is over. */
   const exits = new Map<HTMLElement, number>();
 
   function retire(node: HTMLElement): void {
@@ -151,33 +164,52 @@ export function createDeck(cards: Card[], els: DeckElements): Deck {
     gimmick = null;
 
     const leaving = nodes[index];
-    if (leaving) {
-      leaving.style.setProperty('--card-x', `${direction > 0 ? -EXIT : EXIT}%`);
-      leaving.dataset.state = 'past';
-      leaving.inert = true;
-      retire(leaving);
-    }
-
     const entering = nodes[wanted];
     const card = cards[wanted];
+    const leavingCard = cards[index];
     if (!entering || !card) return;
 
-    // Called back while it is still on its way out: let it turn round from
-    // wherever it is, still moving, rather than snapping it off-screen and
-    // replaying its entrance from the top.
-    const returning = exits.has(entering);
-    window.clearTimeout(exits.get(entering));
-    exits.delete(entering);
+    let returning = false;
+    if (currentMotion() === 'off') {
+      // Called back while it is still fading out: it keeps what it had.
+      returning = exits.has(entering);
+      window.clearTimeout(exits.get(entering));
+      exits.delete(entering);
+      if (leaving) retire(leaving);
+    } else if (moving && moving.from === wanted && moving.to === index) {
+      // Called back mid-move: turn the same move round from where it is,
+      // still moving, rather than snapping and starting over.
+      returning = true;
+      for (const animation of moving.animations) animation.reverse();
+      moving = { ...moving, from: index, to: wanted };
+    } else {
+      if (moving) settle(moving);
+      if (leaving && leavingCard) {
+        const forward = direction > 0;
+        const animations = forward
+          ? playTransition(leaving, leavingCard, entering, card, true)
+          : playTransition(entering, card, leaving, leavingCard, false);
+        const move = { from: index, to: wanted, animations, token: (moves += 1) };
+        moving = move;
+        void Promise.all(animations.map((a) => a.finished)).then(
+          () => {
+            // Unless a newer move has already settled this one.
+            if (moving?.token === move.token) settle(move);
+          },
+          () => {}
+        );
+      }
+    }
+
+    if (leaving) {
+      leaving.dataset.state = 'past';
+      leaving.inert = true;
+    }
 
     if (!returning) {
-      // Park the incoming card off-screen without animating it there, with
-      // its animations removed so they replay from the start.
-      entering.style.transition = 'none';
-      entering.dataset.state = 'upcoming';
+      // Its animations are removed and put back, so they replay from the start.
       delete entering.dataset.live;
-      entering.style.setProperty('--card-x', `${direction > 0 ? ENTER : -ENTER}%`);
       void entering.offsetWidth;
-      entering.style.transition = '';
     }
     entering.dataset.state = 'current';
     entering.dataset.live = '';

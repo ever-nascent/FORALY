@@ -104,31 +104,23 @@ blockquote {
   overflow: hidden;
   background: var(--ground);
   color: var(--ink);
-  transform: translate3d(var(--card-x, 100%), 0, 0);
   visibility: hidden;
-  transition:
-    transform var(--dur-push) var(--ease-push),
-    visibility 0s linear var(--dur-push);
 }
 
+/* Each card moves in and out in its own way (src/transitions.ts); the move
+   sets which of the two is on top while it plays. The card that left stays
+   visible only for as long as its move, and sits above any older one. */
 .card[data-state='current'] {
-  transform: translate3d(0, 0, 0);
   visibility: visible;
-  transition-delay: 0s;
   z-index: 2;
 }
 
-/* The outgoing card travels a fraction of the distance, so the two worlds
-   move at different rates and the push reads as depth rather than a slide.
-   It stays visible only for the length of the push — the base transition
-   hides it once it is out of frame — and sits above any older card still on
-   its way out, so a quick run of taps never shows a stale world through the
-   seam. */
 .card[data-state='past'] {
   z-index: 0;
 }
 
 .card[data-state='past'][data-live] {
+  visibility: visible;
   z-index: 1;
 }
 

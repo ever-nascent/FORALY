@@ -1021,7 +1021,7 @@ function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
     if (begun === 0) begun = now;
     const wall = (now - begun) / 1000;
     // Once the box is open and the ring is up, the stone flashes on the beat.
-    if (onBeat(wall) && wall > 3.4) {
+    if (onBeat(wall) && wall > 4.1) {
       glint?.animate(
         [
           { opacity: 0.2, scale: '0.4', rotate: '0deg' },
