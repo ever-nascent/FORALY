@@ -1,7 +1,7 @@
 {
   "_README": "Edit this before running `npm run data`. Hour-of-day figures are meaningless without the right timezone, and the split card is wrong without the right author ids.",
   "timezone": "America/Los_Angeles",
-  "range": { "start": "", "end": "" },
+  "range": { "start": "2026-05-22", "end": "2026-09-24" },
   "people": {
     "her": { "name": "Alyshia", "fullName": "Alyshia Robinson", "discordId": "829516976148709406" },
     "him": { "name": "Zechariah", "discordId": "1378474650010652762" }
@@ -11,6 +11,7 @@
     "first": "1507853000109064322",
     "closing": "1545819993642508460"
   },
+  "lovesSkip": ["1510499170753187970", "1537903146745987313"],
   "laughPatterns": ["lol", "lmao", "lmfao", "haha", "hehe", "heh", "hah", "ahaha"],
   "goodnightPatterns": ["goodnight", "good night", "gn", "night night", "nini"],
   "goodMorningPatterns": ["good morning", "goodmorning", "gm"],

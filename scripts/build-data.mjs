@@ -137,9 +137,12 @@ const LOVE_LIMIT = 40;
  * Every short message from either of them that says "I love you" (or "i love
  * u", "love you so much", …), minus exact repeats, in the order they were
  * sent — thinned evenly across the months if there are more than fit. The
- * closing line itself is left out; it is already the card.
+ * closing line itself is left out; it is already the card, and so is any
+ * message listed in config.lovesSkip (by id). Those are dropped after the
+ * thinning, so skipping one never reshuffles the rest.
  */
-function lovesFrom(rows, closing) {
+function lovesFrom(rows, closing, skip = []) {
+  const skipped = new Set(skip);
   const seen = new Set();
   const found = [];
   for (const row of rows) {
@@ -150,11 +153,11 @@ function lovesFrom(rows, closing) {
     const key = text.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    found.push(text);
+    found.push({ id: row.id, text });
   }
-  if (found.length <= LOVE_LIMIT) return found;
-  const step = found.length / LOVE_LIMIT;
-  return Array.from({ length: LOVE_LIMIT }, (_, i) => found[Math.floor(i * step)]);
+  const step = Math.max(found.length / LOVE_LIMIT, 1);
+  const kept = Array.from({ length: Math.min(found.length, LOVE_LIMIT) }, (_, i) => found[Math.floor(i * step)]);
+  return kept.filter((love) => !skipped.has(love.id)).map((love) => love.text);
 }
 
 function words(content) {
@@ -173,7 +176,9 @@ function build(messages, config) {
     authorId: message.author?.id,
     content: message.content ?? '',
     ...read(message.timestamp),
-  }));
+  }))
+    // Only the days asked for, in her timezone, when a range is set.
+    .filter((row) => (!config.range.start || row.day >= config.range.start) && (!config.range.end || row.day <= config.range.end));
 
   const ids = new Set(rows.map((row) => row.authorId));
   for (const [who, id] of [
@@ -455,7 +460,7 @@ function build(messages, config) {
         author: herName,
         // Quoted on it, by her full name.
         signature: config.people.her.fullName || herName,
-        loves: lovesFrom(rows, closing),
+        loves: lovesFrom(rows, closing, config.lovesSkip),
       },
     ],
   };
