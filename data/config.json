@@ -8,8 +8,8 @@
   },
   "quotes": {
     "_README": "Message ids picked by hand from the export. `first` is the opening quote card; `closing` is the last card and must be something she said.",
-    "first": "3",
-    "closing": "21507"
+    "first": "1507853000109064322",
+    "closing": "1545819993642508460"
   },
   "laughPatterns": ["lol", "lmao", "lmfao", "haha", "hehe", "heh", "hah", "ahaha"],
   "goodnightPatterns": ["goodnight", "good night", "gn", "night night", "nini"],

@@ -604,7 +604,10 @@
   position: absolute;
   left: var(--x);
   bottom: -2rem;
-  max-width: 60vw;
+  /* Its own width, not what is left of the frame to its right, and never
+     wider than the space either side of its centre. */
+  width: max-content;
+  max-width: 42vw;
   padding: 0.3em 0.7em;
   border-radius: 1em;
   background: rgba(255, 255, 255, 0.28);
@@ -614,24 +617,7 @@
   opacity: 0;
 }
 
-@keyframes love-rise {
-  0% {
-    opacity: 0;
-    transform: translateY(0);
-  }
-  10%,
-  70% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-105vh);
-  }
-}
-
-.card[data-live] .warm__love {
-  animation: love-rise 14s linear calc(var(--delay-land) + 2.5s + var(--i) * (14s / var(--n))) infinite;
-}
+/* Each is sent up on the beat, one at a time (mountWarm, src/gimmicks.ts). */
 
 /* The rising hearts, warmer. */
 .card--closing .shape[data-motion='rise'].shape--a {

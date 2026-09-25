@@ -1013,13 +1013,38 @@ function mountChat(root: HTMLElement): GimmickHandle {
 function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
   const glint = root.querySelector<HTMLElement>('.ring__glint');
   const glow = root.querySelector<HTMLElement>('.warm__glow');
+  const loves = [...root.querySelectorAll<HTMLElement>('.warm__love')];
   if (currentMotion() === 'off') return { cancel() {} };
   const onBeat = beatWatcher(songTime);
+  const onBeatForLoves = beatWatcher(songTime);
+  const rising: Animation[] = [];
+  let beats = 0;
+  let next = 0;
   let frame = 0;
   let begun = 0;
   const step = (now: number): void => {
     if (begun === 0) begun = now;
     const wall = (now - begun) / 1000;
+    // Every other beat, once the box is open, the next "I love you" is sent
+    // up from the bottom, so only a handful are ever on screen at once.
+    if (loves.length > 0 && wall > 3.2 && onBeatForLoves(wall)) {
+      beats += 1;
+      const love = beats % 2 === 1 ? loves[next % loves.length] : undefined;
+      if (love) {
+        next += 1;
+        const rise = love.animate(
+          [
+            { opacity: 0, transform: 'translateY(0)' },
+            { opacity: 0.9, offset: 0.1 },
+            { opacity: 0.9, offset: 0.72 },
+            { opacity: 0, transform: 'translateY(-108vh)' },
+          ],
+          { duration: 13000, easing: 'linear' }
+        );
+        rising.push(rise);
+        rise.onfinish = () => rising.splice(rising.indexOf(rise), 1);
+      }
+    }
     // Once the box is open and the ring is up, the stone flashes on the beat.
     if (onBeat(wall) && wall > 4.1) {
       glint?.animate(
@@ -1045,6 +1070,7 @@ function mountWarm(root: HTMLElement, songTime: SongClock): GimmickHandle {
   return {
     cancel() {
       cancelAnimationFrame(frame);
+      for (const rise of rising.splice(0)) rise.cancel();
     },
   };
 }

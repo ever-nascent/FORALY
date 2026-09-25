@@ -58,6 +58,9 @@ async function loadExport() {
 
   const messages = [...seen.values()]
     .filter((m) => m.type === 'Default' || m.type === 'Reply')
+    // Game and activity bots (Wordle and the like) post in DMs too; only the
+    // two of them count.
+    .filter((m) => !m.author?.isBot)
     .sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
 
   if (messages.length === 0) die('The export contains no ordinary messages.');
@@ -471,7 +474,12 @@ for (const card of wrapped.cards) {
   const figure =
     card.kind === 'split'
       ? card.sides.map((s) => `${s.label} ${s.value}`).join(' / ')
-      : (card.word ?? card.value ?? card.text ?? card.dateline);
+      : card.kind === 'greeting'
+        ? `goodnight ${card.night.value} / good morning ${card.day.value}`
+        : (card.word ?? card.value ?? card.text ?? card.dateline);
   console.log(`  ${String(figure).slice(0, 60).padEnd(62)}${card.caption ?? ''}`);
 }
+const loves = wrapped.cards.at(-1)?.loves ?? [];
+console.log(`\n  ${loves.length} "I love you"s for the last card:`);
+for (const line of loves) console.log(`    ${line}`);
 console.log('\nRead every line above before you ship it.\n');
